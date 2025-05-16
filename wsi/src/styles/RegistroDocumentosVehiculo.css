@@ -1,0 +1,161 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow: visible; /* Cambiado de auto a visible */
+  height: auto; /* Cambiado de 100% a auto */
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f5f5;
+  overflow-x: hidden; /* Evita el scroll horizontal */
+}
+
+/* Header */
+.registro-header {
+  width: 100%;
+  background-color: #ff6a00;
+  padding: 20px 0;
+  text-align: center;
+  position: sticky; /* Mantiene sticky */
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.registro-header h1 {
+  margin: 0;
+  color: white; /* Color del texto */
+  font-size: 2rem; /* Tamaño de fuente */
+  font-weight: bold; /* Negrita */
+}
+
+/* Wrapper principal */
+.registro-documentos-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Cambiado de center a flex-start */
+  min-height: auto; /* Cambiado de 100vh a auto */
+  padding: 120px 20px; /* Ajustado para evitar que el header cubra el contenido */
+  background-color: #f5f5f5;
+  position: relative;
+  z-index: 1;
+}
+
+/* Fondo */
+.registro-documentos-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.registro-documentos-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.2;
+}
+
+/* Contenedor principal */
+.registro-documentos-container {
+  max-width: 600px;
+  width: 100%;
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  margin: 20px auto;
+}
+
+/* Título */
+.titulo {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Formulario */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.campo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.campo label {
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.campo input,
+.campo select {
+  padding: 12px; /* Aumenta el padding para mejor apariencia */
+  border: 1px solid #ccc;
+  border-radius: 25px; /* Bordes redondeados */
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.campo input:focus,
+.campo select:focus {
+  border-color: #ff6a00;
+}
+
+/* Botón */
+.boton-registrar {
+  width: 100%;
+  padding: 15px; /* Aumenta el padding para mejor apariencia */
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 25px; /* Bordes redondeados */
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.boton-registrar:hover {
+  background-color: #0056b3;
+}
+
+/* Media Queries para pantallas más pequeñas */
+@media (max-width: 768px) {
+  .fila {
+    flex-direction: column; /* Cambia a diseño vertical en pantallas pequeñas */
+  }
+
+  .registro-documentos-container {
+    padding: 20px; /* Reduce el padding en pantallas pequeñas */
+  }
+}
+
+/* Nueva clase */
+.home-wrapper {
+  overflow: visible; /* Cambiado de auto a visible */
+  height: auto; /* Cambiado de 100vh a auto */
+}

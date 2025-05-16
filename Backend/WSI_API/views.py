@@ -1,0 +1,93 @@
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from .models import Usuario
+from .serializers import RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_csrf_token(request):
+    token = get_token(request)
+    return JsonResponse({'csrfToken': token})
+
+@csrf_exempt
+@api_view(['POST'])
+def registrar_usuario(request):
+    serializer = RegistroUsuarioSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": "Empleado registrado exitosamente"}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CustomLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = CustomAuthTokenSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                'token': token.key,
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'nombre': user.nombre,
+                    'apellido': user.apellido,
+                    'cedula': user.cedula,
+                    'rol': user.rol,
+                }
+            })
+
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not email or not password:
+            return Response(
+                {"detail": "El correo y la contraseña son obligatorios."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = Usuario.objects.get(email=email)
+            if not user.check_password(password):
+                return Response(
+                    {"detail": "Contraseña incorrecta."},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+        except Usuario.DoesNotExist:
+            return Response(
+                {"detail": "Correo no encontrado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response(
+            {"detail": "Error al iniciar sesión."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+class VerifyTokenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_data = UsuarioSerializer(request.user).data
+        return Response({
+            "isValid": True,
+            "user": user_data
+        })
+
+    def post(self, request):
+        user_data = UsuarioSerializer(request.user).data
+        return Response({
+            "message": "Token válido (POST)",
+            "user": user_data
+        })

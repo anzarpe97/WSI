@@ -1,0 +1,174 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f5f5;
+  overflow-x: hidden; /* Evita el scroll horizontal */
+}
+
+.home-header p{
+
+  color: #fff;
+  font-weight: 700;
+
+}
+
+/* Wrapper principal */
+.home-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header naranja */
+.home-header {
+  width: 100%;
+  background-color: #ff6a00;
+  padding: 20px 5px;
+  text-align: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+}
+
+.home-header h1 {
+  margin: 0;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+/* Contenido principal */
+.home-content {
+  margin-top: 120px; /* Ajusta el margen para evitar que el header cubra el contenido */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+}
+
+.header-icon {
+  font-size: 2rem; /* Aumenta el tamaño del ícono */
+  color: white; /* Cambia el color a blanco */
+  margin: 0 10px; /* Agrega espacio horizontal entre los íconos */
+  cursor: pointer; /* Cambia el cursor al pasar sobre el ícono */
+  transition: transform 0.2s ease; /* Agrega una transición suave al pasar el mouse */
+}
+
+.header-icon:hover {
+  transform: scale(1.2); /* Aumenta ligeramente el tamaño al pasar el mouse */
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Tres columnas */
+  gap: 30px; /* Espaciado entre los cuadros */
+  max-width: 1200px;
+  width: 100%;
+  justify-items: center; /* Centra los cuadros horizontalmente */
+}
+
+/* Tarjetas */
+.home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #ff6a00;
+  color: white;
+  border-radius: 20px;
+  width: 250px; /* Ancho fijo */
+  height: 250px; /* Alto fijo */
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-card svg {
+  margin-bottom: 10px;
+  color: white;
+  font-size: 4rem; /* Tamaño del ícono */
+}
+
+.home-card p {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.home-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Fondo */
+.home-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.home-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.2; /* Ajusta la opacidad según sea necesario */
+}
+/* Media Queries para pantallas más pequeñas */
+@media (max-width: 1024px) {
+  .home-grid {
+    grid-template-columns: repeat(2, 1fr); /* Dos columnas en pantallas medianas */
+    gap: 20px; /* Reduce el espacio entre cuadros */
+  }
+
+  .home-card {
+    width: 200px; /* Reduce el tamaño de los cuadros */
+    height: 200px;
+  }
+
+  .home-card svg {
+    font-size: 3.5rem; /* Ajusta el tamaño del ícono */
+  }
+
+  .home-card p {
+    font-size: 1rem; /* Ajusta el tamaño del texto */
+  }
+}
+
+@media (max-width: 768px) {
+  .home-grid {
+    grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+    gap: 15px; /* Reduce aún más el espacio entre cuadros */
+  }
+
+  .home-card {
+    width: 180px; /* Reduce aún más el tamaño de los cuadros */
+    height: 180px;
+  }
+
+  .home-card svg {
+    font-size: 3rem; /* Ajusta el tamaño del ícono */
+  }
+
+  .home-card p {
+    font-size: 0.9rem; /* Ajusta el tamaño del texto */
+  }
+}
