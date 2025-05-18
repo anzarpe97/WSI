@@ -1,77 +1,107 @@
 import '../styles/home.css';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCar, faUser, faWrench, faChartBar, faBell,faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faCar, faUser, faWrench, faChartBar, faIdCard, faCarBurst, faPeopleGroup, faScrewdriverWrench, faFileContract, faCog,  } from '@fortawesome/free-solid-svg-icons';
 import { verifyToken } from '../services/auth';
 import { Link } from 'react-router-dom';
+import UserHeader from './Home-Header';
 import bgImage from '../assets/bg-login.jpg';
 import React, { useEffect, useState } from 'react';
 
 const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState({ nombre: '', apellido: '' });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const check = async () => {
-      const result = await verifyToken();
-      console.log("Usuario recibido:", result.user); // ✅ DEBUG
+      try {
+        const result = await verifyToken();
+        console.log("Usuario recibido:", result.user);
 
-      if (result.isValid && result.user) {
-        setUser({
-          nombre: result.user.nombre,
-          apellido: result.user.apellido
-        });
-      } else {
+        if (result.isValid && result.user) {
+          setUser({
+            nombre: result.user.nombre,
+            apellido: result.user.apellido
+          });
+        } else {
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error("Error verifying token:", error);
         navigate('/login');
+      } finally {
+        setLoading(false);
       }
     };
 
     check();
   }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="loader-container">
+        <div className="loader"></div>
+        <p>Cargando...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="home-wrapper">
-      <header className="home-header">
-        <div className="user-info-container">
-    <p>{user.nombre}   (Admin)</p>
-  </div>
-        <h1>WSI</h1>
-
-        <div className="home-header-right">
-        <FontAwesomeIcon icon={faBell} size="lg" className="header-icon" title="Notificaciones" />
-        <FontAwesomeIcon icon={faUserCircle} size="lg" className="header-icon" title="Perfil" />
-        <FontAwesomeIcon
-          icon={faSignOutAlt}
-          size="lg"
-          className="header-icon"
-          title="Cerrar sesión"
-          onClick={() => {
-            localStorage.removeItem('token');
-            navigate('/login');
-          }}
-        />
-      </div>
-      </header>
+      <UserHeader 
+      userName={`${user.nombre}`} 
+      title="WSI"
+      showIcons={true}
+    />
 
       <div className="home-content">
-        <div className="home-grid">
-          <Link to="/registro-documentos-vehiculo" className="home-card">
-            <FontAwesomeIcon icon={faCar} size="3x" />
-            <p>Registro de vehículos</p>
-          </Link>
-          <Link to="/registro-empleado" className="home-card">
-            <FontAwesomeIcon icon={faUser} size="3x" />
-            <p>Registro de empleados</p>
-          </Link>
-          <Link to="/mantenimiento-vehiculos" className="home-card">
-            <FontAwesomeIcon icon={faWrench} size="3x" />
-            <p>Mantenimiento de vehículos</p>
-          </Link>
-          <Link to="/reportes" className="home-card">
-            <FontAwesomeIcon icon={faChartBar} size="3x" />
-            <p>Reportes</p>
-          </Link>
-        </div>
-      </div>
+  <div className="home-grid">
+    {/* Cards originales */}
+    <Link to="/registro-vehiculo" className="home-card">
+      <FontAwesomeIcon icon={faCar} size="3x" />
+      <p>Registro de vehículos</p>
+    </Link>
+    <Link to="/registro-empleado" className="home-card">
+      <FontAwesomeIcon icon={faUser} size="3x" />
+      <p>Registro de empleados</p>
+    </Link>
+    <Link to="/mantenimiento-vehiculos" className="home-card">
+      <FontAwesomeIcon icon={faWrench} size="3x" />
+      <p>Mantenimiento de vehículos</p>
+    </Link>
+    <Link to="/reportes" className="home-card">
+      <FontAwesomeIcon icon={faChartBar} size="3x" />
+      <p>Reportes</p>
+    </Link>
+
+    {/* 6 nuevas cards */}
+    <Link to="/conductores" className="home-card">
+      <FontAwesomeIcon icon={faIdCard} size="3x" />
+      <p>Gestión de conductores</p>
+    </Link>
+    <Link to="/rutas" className="home-card">
+    <FontAwesomeIcon icon={faCarBurst} size="3x" />
+      <p>Gestión de Vehiculos</p>
+    </Link>
+    <Link to="/inventario" className="home-card">
+      <FontAwesomeIcon icon={faPeopleGroup} size="3x" />
+      <p>Gestión de Empleados</p>
+    </Link>
+    <Link to="/combustible" className="home-card">
+      <FontAwesomeIcon icon={faScrewdriverWrench} size = "3x"/>
+      <p>Gestión Mantenimiento</p>
+    </Link>
+    <Link to="/seguros" className="home-card">
+      <FontAwesomeIcon icon={faFileContract} size="3x" />
+      <p>Gestión de seguros</p>
+    </Link>
+    <Link to="/configuracion" className="home-card">
+      <FontAwesomeIcon icon={faCog} size="3x" />
+      <p>Configuración del sistema</p>
+    </Link>
+  </div>
+</div>
 
       <div className="home-bg">
         <img src={bgImage} alt="Fondo Home" onError={(e) => (e.target.style.display = 'none')} />

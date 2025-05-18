@@ -36,6 +36,7 @@ class UsuarioManager(BaseUserManager):
         return usuario
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
+    
     email = models.EmailField('correo electrónico', unique=True, max_length=150, null=False)
     nombre = models.CharField('nombre', max_length=30, null=False)
     apellido = models.CharField('apellido', max_length=30, null=False)
@@ -68,3 +69,41 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def has_module_perms(self, app_label):
         return True
+    
+class Vehiculo(models.Model):
+    
+    ESTADOS_VEHICULO = [
+        ('ACTIVO', 'Activo'),
+        ('INACTIVO', 'Inactivo'),
+        ('EN_MANTENIMIENTO', 'En Mantenimiento'),
+    ]
+    
+    TIPOS_COMBUSTIBLE = [
+        ('GASOLINA', 'Gasolina'),
+        ('DIESEL', 'Diésel'),
+    ]
+    
+    id_vehiculo = models.AutoField(primary_key=True, verbose_name='ID Vehiculo' )
+    placa = models.CharField(unique=True, max_length=20, verbose_name='Placa Vehiculo')
+    kilometraje = models.IntegerField(null = False, verbose_name='Kilometraje Vehiculo')
+    estado = models.CharField(max_length=16, choices=ESTADOS_VEHICULO, default='ACTIVO', verbose_name='Estado del vehículo')
+    marca = models.CharField(max_length=50, null=False, verbose_name='Marca vehículo')
+    modelo = models.CharField(max_length=50, null=False, verbose_name='Modelo vehículo')
+    motor = models.CharField( max_length=50, blank=True, null=False, verbose_name="Número/Código del motor")
+    anio = models.IntegerField( blank=True, null=False, verbose_name="Año de fabricación")
+    color = models.CharField( max_length=30, blank=True, null=False, verbose_name="Color del vehículo")
+    tipologia = models.CharField( max_length=50, blank=True, null=False, verbose_name="Tipología del vehículo")
+    capacidad_carga = models.DecimalField( max_digits=10, decimal_places=2, blank=True, null=False, verbose_name="Capacidad máxima de carga (kg)")
+    capacidad_combustible = models.DecimalField( max_digits=10, decimal_places=2, blank=True, null=False, verbose_name="Capacidad del tanque (litros") 
+    costo = models.DecimalField( max_digits=10, decimal_places=2, null=False, verbose_name="Costo del vehículo")
+    tipo_combustible = models.CharField(max_length=10, choices = TIPOS_COMBUSTIBLE, default='GASOLINA', null=False, blank=False, verbose_name='Tipo de Combustible')
+    fecha_creado = models.DateTimeField(auto_now_add=True,verbose_name='Fecha de creación')
+
+    def __str__(self):
+        
+        return f"{self.placa} - ({self.marca} {self.modelo})"
+
+    class Meta:
+        verbose_name = 'Vehiculo'
+        verbose_name_plural = 'Vehiculos'
+        db_table = 'vehiculo'

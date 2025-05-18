@@ -1,0 +1,39 @@
+/* Estilos existentes se mantienen igual */
+
+/* Nuevos estilos añadidos */
+.user-name {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-left: 15px;
+  padding: 5px 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.user-name {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .user-name {
+    font-size: 1rem;
+    margin-left: 10px;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-name {
+    font-size: 0.9rem;
+    margin-left: 5px;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

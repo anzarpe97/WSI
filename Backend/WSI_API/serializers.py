@@ -1,8 +1,7 @@
-# serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
-from .models import Usuario
+from .models import Usuario, Vehiculo
 import re
 
 User = get_user_model()
@@ -69,14 +68,48 @@ class UsuarioSerializer(serializers.ModelSerializer):
         model = Usuario
         fields = ['id', 'nombre', 'apellido', 'email', 'rol'] 
         
-class RegistroUsuarioSerializer (serializers.ModelSerializer):
+class RegistroUsuarioSerializer(serializers.ModelSerializer):
     
+    """
+    Serializer para registrar nuevos usuarios en el sistema.
+
+    Este serializer valida y crea una instancia del modelo Usuario.
+    Incluye validaciones para asegurar que los datos ingresados sean correctos y seguros.
+
+    Campos:
+        - email (str): Correo electrónico único del usuario. Requerido.
+        - nombre (str): Nombre del usuario. Requerido.
+        - apellido (str): Apellido del usuario. Requerido.
+        - tipoCedula (str): Tipo de cédula (V o E). Requerido.
+        - cedula (str): Número de cédula único. Solo números. Requerido.
+        - telefono (str): Número de teléfono de 10 dígitos. Requerido.
+        - rol (str): Rol del usuario ('0': Admin, '1': Supervisor, '2': Empleado). Requerido.
+        - password (str): Contraseña del usuario. Requerido. Mínimo 8 caracteres, debe incluir al menos una mayúscula, un número y un carácter especial.
+
+    Métodos:
+        - validate_<campo>: Métodos individuales para validar campos específicos.
+        - validate_password: Asegura que la contraseña cumpla con los requisitos de seguridad.
+        - create: Crea un nuevo usuario y encripta su contraseña.
+
+    Errores posibles:
+        - Email duplicado.
+        - Cédula duplicada o no numérica.
+        - Teléfono no válido.
+        - Rol fuera de los valores aceptados.
+        - Contraseña débil o inválida.
+    """
+    
+    password = serializers.CharField(write_only=True, min_length=6)
+
     class Meta:
-        
         model = Usuario
-        field = ['password', 'nombre', 'apellido', 'tipoCedula', 'cedula', 'telefono', 'rol']
-    
-        # --- VALIDACIÓN NOMBRE --- 
+        fields = [
+            'email', 'nombre', 'apellido',
+            'tipoCedula', 'cedula', 'telefono',
+            'rol', 'password'
+        ]
+
+     # --- VALIDACIÓN NOMBRE --- 
         def validate_nombre(self, value):
             
             value = value.title()
@@ -114,15 +147,108 @@ class RegistroUsuarioSerializer (serializers.ModelSerializer):
             if value > 99999999 or value < 1000000:
                 raise serializers.ValidationError("Numero de cedula no valido")
 
-            
             return value          
+
+    def validate_password(self, value):
         
-        def validate_telefono(self, value):
-            
-            if len(value) < 10 or len(value) > 15:
-                raise serializers.ValidationError("El teléfono debe tener entre 10 y 15 dígitos.")
-            
-            return value  
-            
-            
+        if len(value) < 8:
+            raise serializers.ValidationError("La contraseña debe tener al menos 8 caracteres.")
+        
+        if not re.search(r'[A-Z]', value):
+            raise serializers.ValidationError("La contraseña debe contener al menos una letra mayúscula.")
+        
+        if not re.search(r'[0-9]', value):
+            raise serializers.ValidationError("La contraseña debe contener al menos un número.")
+        
+        if not re.search(r'[!@#$%^&*()_+\-=\[\]{};\'\\:"|<,./<>?]', value):
+            raise serializers.ValidationError("La contraseña debe contener al menos un carácter especial.")
+        
+        return value
+
+    def validate_email(self, value):
+        if Usuario.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Este correo ya está registrado.")
+        return value
+
+    def validate_cedula(self, value):
+        if Usuario.objects.filter(cedula=value).exists():
+            raise serializers.ValidationError("Esta cédula ya está registrada.")
+        if not value.isdigit():
+            raise serializers.ValidationError("La cédula debe contener solo números.")
+        return value
+
+    def validate_telefono(self, value):
+        if not value.isdigit():
+            raise serializers.ValidationError("El teléfono debe contener solo números.")
+        if len(value) != 10:
+            raise serializers.ValidationError("El teléfono debe tener 10 dígitos.")
+        return value
+
+    def validate_rol(self, value):
+        if value not in ['0', '1', '2']:
+            raise serializers.ValidationError("Rol inválido. Use 0, 1 o 2.")
+        return value
+
+    def validate_tipoCedula(self, value):
+        if value not in ['V', 'E']:
+            raise serializers.ValidationError("Tipo de cédula inválido. Use 'V' o 'E'.")
+        return value
+
+    def validate(self, data):
+        # Puedes agregar validaciones cruzadas aquí si lo deseas
+        return data
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = Usuario(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user  
+
+class VehiculoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vehiculo
+        fields = [
+            'id_vehiculo', 'placa', 'kilometraje', 'estado', 'marca', 'modelo', 'motor',
+            'anio', 'color', 'tipologia', 'capacidad_carga', 'capacidad_combustible',
+            'costo', 'tipo_combustible'
+        ]
+
+    def validate_placa(self, value):
+        if not value:
+            raise serializers.ValidationError("La placa es requerida.")
+        if len(value) > 20:
+            raise serializers.ValidationError("La placa no puede tener más de 20 caracteres.")
+        return value.upper()
+
+    def validate_kilometraje(self, value):
+        if value < 0:
+            raise serializers.ValidationError("El kilometraje debe ser un número positivo.")
+        return value
+
+    def validate_anio(self, value):
+        from datetime import datetime
+        current_year = datetime.now().year
+        if value < 1950 or value > current_year:
+            raise serializers.ValidationError(f"El año debe estar entre 1950 y {current_year}.")
+        return value
+
+    def validate_capacidad_carga(self, value):
+        if value < 0:
+            raise serializers.ValidationError("La capacidad de carga debe ser positiva.")
+        return value
+
+    def validate_capacidad_combustible(self, value):
+        if value < 0:
+            raise serializers.ValidationError("La capacidad de combustible debe ser positiva.")
+        return value
+
+    def validate_costo(self, value):
+        if value < 0:
+            raise serializers.ValidationError("El costo debe ser positivo.")
+        return value
+
+    def validate(self, attrs):
+        # Puedes agregar validaciones cruzadas aquí si lo necesitas
+        return attrs
         

@@ -285,3 +285,59 @@ body {
 .toggle-password-icon:hover {
   color: #f2f2f2; /* Cambia el color al pasar el mouse */
 }
+
+/* Estilo base del botón */
+button {
+  background-color: #2c3e50; /* Color normal del botón */
+  color: white;
+  padding: 12px 20px; /* Altura normal */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  height: 44px; /* Altura fija inicial */
+  box-sizing: border-box;
+  position: relative; /* Necesario para posicionar el loader */
+}
+
+/* Botón durante carga - más alto */
+button:disabled {
+  background-color: #ff6a00;
+  color: #ffffff;
+  cursor: not-allowed;
+  height: 50px; /* 6px más alto que el normal */
+  padding: 15px 20px; /* Aumentamos padding vertical */
+}
+
+/* Loader centrado en botón más grande */
+button:disabled .loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  width: 22px; /* Tamaño un poco mayor */
+  height: 22px;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Efecto hover durante carga */
+button:disabled:hover {
+  background-color: #E67E00;
+  box-shadow: 0 2px 5px rgba(230, 126, 0, 0.4);
+}
+
+/* Animación del loader */
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+button {
+  transition: all 0.3s ease, height 0.2s ease-out;
+}
+
+/* Esto hará que el cambio de altura sea más suave */

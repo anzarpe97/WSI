@@ -1,0 +1,138 @@
+/* Wrapper principal */
+.home-wrapper {
+  min-height: 100vh;
+  position: relative;
+  background: #fafafa;
+}
+
+/* Header unificado */
+.registro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background-color: #ff6a00;
+  padding: 10px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.registro-header h1 {
+  margin: 0;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: bold;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.header-icons {
+  display: flex;
+  gap: 15px;
+}
+
+.header-icons svg {
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.header-icons svg:hover {
+  transform: scale(1.2);
+  color: #ffd700;
+}
+
+.header-back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 32px;
+  color: #fff;
+  font-size: 2rem;
+  transition: transform 0.2s, color 0.2s;
+  outline: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.header-back-btn:hover,
+.header-back-btn:focus {
+  color: #f1f1f1;
+  transform: translateX(-8px) scale(1.1);
+  background: rgba(255,255,255,0.08);
+}
+
+/* Contenido principal */
+.home-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+  position: relative;
+  z-index: 1;
+  padding-top: 80px; /* Espacio para el header fijo */
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+  max-width: 400px;
+  width: 100%;
+  justify-items: center;
+}
+
+.home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #ff6a00;
+  color: white;
+  border-radius: 20px;
+  width: 300px;
+  height: 200px;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.home-card svg {
+  margin-bottom: 10px;
+  color: white;
+  font-size: 4rem;
+}
+
+.home-card p {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.home-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.home-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
+
+.home-bg img {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  opacity: 0.15;
+  pointer-events: none;
+  user-select: none;
+}

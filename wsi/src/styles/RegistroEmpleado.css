@@ -8,41 +8,97 @@
 body {
   font-family: 'Arial', sans-serif;
   background-color: #f5f5f5;
-  overflow-x: hidden; /* Evita el scroll horizontal */
+  overflow-x: hidden;
 }
 
-/* Header */
-.header {
+/* -------------------- */
+/* HEADER - VERSIÓN MEJORADA */
+/* -------------------- */
+/* Header - Versión ajustada para igualar altura */
+.registro-header {
   width: 100%;
-  background-color: #ff6a00; /* Color de fondo naranja */
-  padding: 20px 0; /* Espaciado interno */
-  text-align: center; /* Centrar el texto */
-  position: fixed; /* Fijar el header en la parte superior */
+  background-color: #ff6a00;
+  padding: 20px 5px;
+  position: fixed;
   top: 0;
   left: 0;
-  z-index: 2; /* Asegura que esté por encima de otros elementos */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para darle profundidad */
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.header h1 {
+/* Mantengo el resto de tus estilos exactamente igual */
+.header-left {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.registro-header h1 {
+  color: white;
+  font-size: 2rem; /* Igual que en home-header */
+  font-weight: bold;
   margin: 0;
-  color: white; /* Color del texto */
-  font-size: 2rem; /* Tamaño de fuente */
-  font-weight: bold; /* Negrita */
+  text-align: center;
 }
 
-/* Wrapper principal */
+.header-icons {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-icons svg {
+  color: white;
+  font-size: 2rem; /* Igual que header-icon en home-header */
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.header-icons svg:hover {
+  transform: scale(1.2); /* Igual efecto hover */
+}
+
+.header-back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-size: 2rem; /* Igual tamaño que otros iconos */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.header-back-btn:hover {
+  transform: scale(1.2); /* Mismo efecto hover */
+}
+
+/* -------------------- */
+/* CONTENIDO PRINCIPAL */
+/* -------------------- */
 .registro-empleado-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  position: relative;
-  z-index: 1;
+  min-height: calc(100vh - 65px);
+  padding-top: 85px;
+  padding-bottom: 40px;
 }
 
-/* Fondo */
 .registro-empleado-bg {
   position: fixed;
   top: 0;
@@ -56,38 +112,55 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.2; /* Ajusta la opacidad según sea necesario */
+  opacity: 0.2;
 }
 
-/* Contenedor principal */
+.error {
+  color: #d32f2f;
+  background: #ffeaea;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  font-weight: 500;
+  display: inline-block;
+  box-shadow: 0 1px 4px rgba(211, 47, 47, 0.1);
+  border-left: 3px solid #d32f2f;
+}
+
 .registro-empleado-container {
-  max-width: 800px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 15px;
-  padding: 20px 40px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  max-width: 850px;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 12px;
+  padding: 35px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  width: 90%;
+  margin: 20px auto;
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* Título */
 .titulo {
   text-align: center;
-  font-size: 24px;
+  font-size: 2rem;
   font-weight: bold;
   color: #333;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  letter-spacing: 0.5px;
 }
 
-/* Formulario */
+/* -------------------- */
+/* FORMULARIO */
+/* -------------------- */
 .formulario {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
 }
 
 .fila {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  gap: 25px;
 }
 
 .campo {
@@ -97,47 +170,153 @@ body {
 }
 
 .campo label {
-  font-size: 14px;
-  margin-bottom: 5px;
+  font-size: 1rem;
+  margin-bottom: 10px;
   color: #555;
+  font-weight: 600;
 }
 
 .campo input,
 .campo select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 25px;
-  font-size: 14px;
+  padding: 14px 18px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1rem;
   outline: none;
-  transition: border-color 0.3s;
+  transition: all 0.3s;
+  width: 100%;
+  background-color: #fafafa;
 }
 
 .campo input:focus,
 .campo select:focus {
   border-color: #ff6a00;
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.15);
+  background-color: #fff;
 }
 
-/* Botón */
+.campo select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 15px;
+}
+
+/* -------------------- */
+/* BOTÓN */
+/* -------------------- */
 .boton-registrar {
-  width: 100%;
-  padding: 12px;
-  background-color: #ff6a00;
-  color: white;
+  background: linear-gradient(to right, #ff6a00, #ff8c00);
+  color: #fff;
   border: none;
-  border-radius: 25px;
-  font-size: 16px;
+  border-radius: 10px;
+  padding: 16px 0;
+  font-size: 1.2rem;
   font-weight: bold;
+  width: 100%;
+  margin-top: 20px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(255, 106, 0, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .boton-registrar:hover {
-  background-color: #e65500;
+  background: linear-gradient(to right, #e55d00, #e57e00);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 106, 0, 0.4);
 }
 
-/* Media Queries para pantallas más pequeñas */
+.boton-registrar:active {
+  transform: translateY(0);
+}
+
+.mensaje {
+  text-align: center;
+  margin-top: 25px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #4caf50;
+  color: white;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+/* -------------------- */
+/* RESPONSIVE */
+/* -------------------- */
 @media (max-width: 768px) {
+  .registro-header {
+    padding: 0 15px;
+    height: 60px;
+  }
+  
+  .registro-header h1 {
+    font-size: 1.5rem;
+    line-height: 60px;
+  }
+  
+  .header-icons {
+    gap: 15px;
+  }
+  
+  .header-icons svg,
+  .header-back-btn {
+    font-size: 1.5rem;
+  }
+  
+  .header-back-btn {
+    height: 40px;
+    width: 40px;
+  }
+  
   .fila {
     flex-direction: column;
+    gap: 20px;
+  }
+  
+  .registro-empleado-container {
+    padding: 25px;
+    width: 95%;
+  }
+  
+  .titulo {
+    font-size: 1.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .registro-header {
+    height: 55px;
+  }
+  
+  .registro-header h1 {
+    font-size: 1.3rem;
+    line-height: 55px;
+  }
+  
+  .header-icons {
+    gap: 12px;
+  }
+  
+  .header-icons svg,
+  .header-back-btn {
+    font-size: 1.3rem;
+  }
+  
+  .registro-empleado-wrapper {
+    padding-top: 75px;
+  }
+  
+  .campo input,
+  .campo select {
+    padding: 12px 15px;
+  }
+  
+  .boton-registrar {
+    padding: 14px 0;
+    font-size: 1.1rem;
   }
 }

@@ -4,10 +4,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
-from .models import Usuario
-from .serializers import RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer
+from .models import Usuario, Vehiculo
+from .serializers import VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer, RegistroUsuarioSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
@@ -91,3 +91,16 @@ class VerifyTokenView(APIView):
             "message": "Token válido (POST)",
             "user": user_data
         })
+
+class RegistroUsuarioAPIView(APIView):
+    def post(self, request):
+        serializer = RegistroUsuarioSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"mensaje": "Usuario registrado correctamente"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class VehiculoCreateView(generics.CreateAPIView):
+    queryset = Vehiculo.objects.all()
+    serializer_class = VehiculoSerializer
+    permission_classes = [permissions.IsAuthenticated]

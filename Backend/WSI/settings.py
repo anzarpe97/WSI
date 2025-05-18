@@ -1,62 +1,40 @@
 from pathlib import Path
 
-# --- Rutas base ---
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- Seguridad ---
 SECRET_KEY = 'django-insecure-xx+0%b$%i!wer#ucd9+83iq57yns=ysam#a882y*elt+e+p@^4'
 
-DEBUG = True  # Recuerda poner False en producción
+DEBUG = True  
 
-ALLOWED_HOSTS = []  # Para desarrollo local esto está bien
+ALLOWED_HOSTS = []  
 
-
-# --- Aplicaciones instaladas ---
 INSTALLED_APPS = [
-    'django.contrib.admin',               # Admin de Django
-    'django.contrib.auth',                # Sistema de autenticación
-    'django.contrib.contenttypes',        # Manejo de tipos de contenido
-    'django.contrib.sessions',            # Manejo de sesiones
-    'django.contrib.messages',            # Mensajes del sistema
-    'django.contrib.staticfiles',         # Archivos estáticos
-
-    # Terceros
-    'corsheaders',                        # CORS para frontend
-    'rest_framework',                    # DRF para APIs
-    'rest_framework.authtoken',          # Token auth
-
-    # Tu app
+    'django.contrib.admin',               
+    'django.contrib.auth',                
+    'django.contrib.contenttypes',       
+    'django.contrib.sessions',           
+    'django.contrib.messages',           
+    'django.contrib.staticfiles',         
+    'corsheaders',                        
+    'rest_framework',                   
+    'rest_framework.authtoken',          
     'WSI_API.apps.WsiApiConfig',
 ]
 
-
-# --- Middleware ---
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    
-    # Cors debe ir antes que CommonMiddleware
     'corsheaders.middleware.CorsMiddleware',
-    
     'django.middleware.common.CommonMiddleware',
-
-    # Middleware CSRF habilitado para protección
     'django.middleware.csrf.CsrfViewMiddleware',
-    
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-    # Middleware personalizado (si tienes)
     'WSI_API.middleware.IPRestrictMiddleware',
 ]
 
-
-# --- Configuración de URLs ---
 ROOT_URLCONF = 'WSI.urls'
 
-
-# --- Plantillas (templates) ---
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',  # Backend obligatorio para admin

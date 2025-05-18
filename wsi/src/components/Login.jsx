@@ -5,14 +5,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import bg from '../assets/bg-login.jpg';
 import camion from '../assets/camion-login.png';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [showNotification, setShowNotification] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const validateForm = () => {
@@ -28,8 +29,7 @@ const Login = () => {
     setFormErrors(errors);
 
     if (Object.keys(errors).length > 0) {
-      setError(Object.values(errors).join(' '));
-      setShowNotification(true);
+      toast.error(Object.values(errors).join(' '));
       return false;
     }
     return true;
@@ -37,10 +37,10 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
-    setShowNotification(false);
 
     if (!validateForm()) return;
+
+    setIsLoading(true);
 
     try {
       // 1. Solicita token CSRF desde backend
@@ -65,31 +65,33 @@ const Login = () => {
         const data = await response.json();
         localStorage.setItem('token', data.token);
 
-        switch (parseInt(data.user.rol)) {
-          case 0:
-            navigate('/adminHome', { state: { data } });
-            break;
-          case 1:
-            navigate('/supervisor-dashboard', { state: { data } });
-            break;
-          case 2:
-            navigate('/employee-dashboard', { state: { data } });
-            break;
-          default:
-            setError('Rol no reconocido');
-            setShowNotification(true);
-        }
+        toast.success('Inicio de sesión exitoso');
+
+        setTimeout(() => {
+          switch (parseInt(data.user.rol)) {
+            case 0:
+              navigate('/adminHome', { state: { data } });
+              break;
+            case 1:
+              navigate('/supervisor-dashboard', { state: { data } });
+              break;
+            case 2:
+              navigate('/employee-dashboard', { state: { data } });
+              break;
+            default:
+              toast.error('Rol no reconocido');
+          }
+        }, 1000);
       } else {
         const errorData = await response.json();
-        setError(errorData.detail || 'Error al iniciar sesión');
-        setShowNotification(true);
+        toast.error(errorData.detail || 'Error al iniciar sesión');
       }
     } catch (err) {
-      setError('Error de conexión con el servidor');
-      setShowNotification(true);
+      toast.error('Error de conexión con el servidor');
+    } finally {
+      setIsLoading(false);
     }
   };
-
 
   return (
     <div className="login-wrapper">
@@ -111,24 +113,36 @@ const Login = () => {
           <label>Contraseña</label>
           <div className="password-wrapper">
             <input
-              type={showPassword ? 'text' : 'password'} // Alterna entre 'text' y 'password'
+              type={showPassword ? 'text' : 'password'}
               placeholder="Ingrese su contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
             <FontAwesomeIcon
-              icon={showPassword ? faEyeSlash : faEye} // Cambia el ícono según el estado
+              icon={showPassword ? faEyeSlash : faEye}
               className="toggle-password-icon"
-              onClick={() => setShowPassword(!showPassword)} // Alterna el estado
+              onClick={() => setShowPassword(!showPassword)}
             />
           </div>
-
 
           <Link to="/recuperar-contraseña" className="forgot-password">
             ¿Olvidó su contraseña?
           </Link>
-          <button type="submit">Iniciar sesión</button>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={isLoading ? "with-text" : ""}
+          >
+            {isLoading ? (
+              <>
+                Cargando...
+                <span className="loader-with-text"></span>
+              </>
+            ) : (
+              'Iniciar sesión'
+            )}
+          </button>
         </form>
 
         <div className="login-image">
@@ -148,15 +162,7 @@ const Login = () => {
         />
       </div>
 
-      {showNotification && (
-        <div className="notification">
-          <span className="notification-close" onClick={() => setShowNotification(false)}>
-            &times;
-          </span>
-          <p className="notification-title">Error</p>
-          <p className="notification-message">{error}</p>
-        </div>
-      )}
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };
