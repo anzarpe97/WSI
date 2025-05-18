@@ -14,6 +14,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = "WSI - Home";
     const check = async () => {
       try {
         const result = await verifyToken();
@@ -80,7 +81,7 @@ const Home = () => {
       <FontAwesomeIcon icon={faIdCard} size="3x" />
       <p>Gestión de conductores</p>
     </Link>
-    <Link to="/rutas" className="home-card">
+    <Link to="/ver-vehiculos" className="home-card">
     <FontAwesomeIcon icon={faCarBurst} size="3x" />
       <p>Gestión de Vehiculos</p>
     </Link>
@@ -92,7 +93,7 @@ const Home = () => {
       <FontAwesomeIcon icon={faScrewdriverWrench} size = "3x"/>
       <p>Gestión Mantenimiento</p>
     </Link>
-    <Link to="/seguros" className="home-card">
+    <Link to="/seguros" className="home-card" disabled>
       <FontAwesomeIcon icon={faFileContract} size="3x" />
       <p>Gestión de seguros</p>
     </Link>

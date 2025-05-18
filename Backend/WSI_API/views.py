@@ -104,3 +104,15 @@ class VehiculoCreateView(generics.CreateAPIView):
     queryset = Vehiculo.objects.all()
     serializer_class = VehiculoSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+class VehiculoListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        vehiculos = Vehiculo.objects.all()
+        serializer = VehiculoSerializer(vehiculos, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class VehiculoDetailView(generics.RetrieveAPIView):
+    queryset = Vehiculo.objects.all()
+    serializer_class = VehiculoSerializer
+    permission_classes = [IsAuthenticated]

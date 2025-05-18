@@ -1,0 +1,224 @@
+/* Contenedor principal */
+#detalle-vehiculo-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.detalle-vehiculo-content {
+  padding: 20px;
+  margin-top: 70px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Encabezado */
+.detalle-vehiculo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.detalle-vehiculo-titulo {
+  font-size: 1.8rem;
+  color: #333;
+  margin: 0;
+}
+
+.detalle-vehiculo-acciones {
+  display: flex;
+  gap: 10px;
+}
+
+.detalle-vehiculo-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background-color: #fff;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.detalle-vehiculo-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.detalle-vehiculo-btn.editar {
+  color: #ff6a00;
+}
+
+.detalle-vehiculo-btn.eliminar {
+  color: #dc3545;
+}
+
+.detalle-vehiculo-btn.imprimir {
+  color: #17a2b8;
+}
+
+/* Tarjeta principal */
+.detalle-vehiculo-card {
+  background: white;
+  border-radius: 10px;
+  padding: 25px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 30px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.detalle-vehiculo-imagen {
+  flex: 0 0 150px;
+}
+
+.detalle-vehiculo-imagen-placeholder {
+  width: 150px;
+  height: 150px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: #6c757d;
+  font-weight: bold;
+}
+
+.detalle-vehiculo-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detalle-vehiculo-info-row {
+  display: flex;
+  align-items: center;
+}
+
+.detalle-vehiculo-label {
+  font-weight: 600;
+  color: #495057;
+  width: 150px;
+}
+
+.detalle-vehiculo-value {
+  color: #212529;
+}
+
+.detalle-vehiculo-color-indicator {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 1px solid #ddd;
+  vertical-align: middle;
+}
+
+.estado {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.estado.activo {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.estado.inactivo {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Secciones adicionales */
+.detalle-vehiculo-seccion {
+  background: white;
+  border-radius: 10px;
+  padding: 20px 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.detalle-vehiculo-subtitulo {
+  font-size: 1.3rem;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icono-seccion {
+  color: #ff6a00;
+  font-size: 1.1rem;
+}
+
+.icono-info {
+  color: #6c757d;
+  margin-right: 8px;
+  font-size: 0.9rem;
+}
+
+.detalle-vehiculo-info-adicional {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .detalle-vehiculo-content {
+    padding: 15px;
+    margin-top: 60px;
+  }
+  
+  .detalle-vehiculo-card {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .detalle-vehiculo-imagen {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .detalle-vehiculo-info-row {
+    flex-wrap: wrap;
+  }
+  
+  .detalle-vehiculo-label {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .detalle-vehiculo-titulo {
+    font-size: 1.4rem;
+  }
+  
+  .detalle-vehiculo-card,
+  .detalle-vehiculo-seccion {
+    padding: 15px;
+  }
+  
+  .detalle-vehiculo-subtitulo {
+    font-size: 1.1rem;
+  }
+}

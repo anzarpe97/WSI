@@ -25,6 +25,7 @@ const RegistroEmpleado = () => {
 
   // Verificación de token
   useEffect(() => {
+    document.title = "WSI - Registro Empleado";
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");

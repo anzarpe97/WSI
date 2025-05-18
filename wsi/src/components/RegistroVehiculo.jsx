@@ -11,6 +11,8 @@ const RegistroVehiculo = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    document.title = "WSI - Registro Vehículo";
+
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');

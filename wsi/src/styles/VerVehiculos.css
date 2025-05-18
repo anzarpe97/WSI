@@ -1,0 +1,312 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f5f5;
+  overflow-x: hidden;
+}
+
+
+
+
+/* Header - Ajusta el padding para más espacio */
+.registro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background-color: #ff6a00;
+  padding: 10px 20px; /* Ajusta estos valores para más/menos espacio */
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.registro-header h1 {
+  margin: 0;
+  color: white;
+  font-size: 1.6rem; /* Ajusta el tamaño del título */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.menu-icon {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 18px; /* Ajusta la altura del menú */
+  width: 24px; /* Ajusta el ancho del menú */
+}
+
+.menu-icon span {
+  width: 100%;
+  height: 3px; /* Ajusta el grosor de las líneas */
+  background-color: white;
+}
+
+.header-icons {
+  display: flex;
+  gap: 15px; /* Ajusta el espacio entre iconos */
+}
+
+.header-icon {
+  color: white;
+  font-size: 1.3rem; /* Ajusta el tamaño de los iconos */
+}
+
+/* Contenedor principal - Ajusta padding para más espacio */
+.ver-vehiculos-container {
+  max-width: 1100px; /* Ajusta el ancho máximo */
+  background: white;
+  border-radius: 10px;
+  padding: 20px 25px; /* Ajusta estos valores para más/menos espacio */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  width: 95%;
+  margin: 70px auto 25px; /* Ajusta el margen superior */
+}
+
+/* Título y botón - Ajusta márgenes */
+.titulo-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px; /* Ajusta este valor para más/menos espacio */
+}
+
+.titulo {
+  font-size: 22px; /* Ajusta el tamaño del título */
+  font-weight: bold;
+  color: #333;
+}
+
+.boton-crear-vehiculo {
+  background-color: #ff6a00;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 18px; /* Ajusta el padding del botón */
+  font-size: 15px; /* Ajusta el tamaño del texto */
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Ajusta el espacio entre icono y texto */
+  transition: all 0.2s;
+}
+
+.boton-crear-vehiculo:hover {
+  background-color: #e65500;
+  transform: translateY(-2px);
+}
+
+.icono-boton {
+  font-size: 13px; /* Ajusta el tamaño del icono */
+}
+
+/* Tabla - Ajusta padding de celdas */
+.table-responsive {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.tabla-vehiculos {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.tabla-vehiculos th,
+.tabla-vehiculos td {
+  padding: 12px 15px; /* Ajusta estos valores para más/menos espacio */
+  text-align: left;
+  border: 1px solid #e0e0e0;
+  font-size: 14px; /* Ajusta el tamaño de fuente */
+}
+
+.tabla-vehiculos th {
+  background-color: #ff6a00;
+  color: white;
+  font-weight: bold;
+  font-size: 15px; /* Ajusta el tamaño de fuente */
+}
+
+.tabla-vehiculos tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.tabla-vehiculos tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Estados - Ajusta padding y tamaño */
+.estado-badge {
+  padding: 5px 10px; /* Ajusta estos valores */
+  border-radius: 12px;
+  font-size: 12px; /* Ajusta el tamaño de fuente */
+  font-weight: 600;
+  display: inline-block;
+}
+
+.estado-activo {
+  background-color: #e6f7e6;
+  color: #2a7a2a;
+}
+
+.estado-mantenimiento {
+  background-color: #fff8e1;
+  color: #b38f00;
+  font-weight: bold;
+}
+
+.estado-inactivo {
+  background-color: #ffe6e6;
+  color: #cc0000;
+}
+
+/* Acciones - Ajusta el ancho y espacio */
+.acciones {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 110px; /* Ajusta este valor para más/menos espacio entre iconos */
+  margin: 0 auto;
+}
+
+.accion-icon {
+  color: #ff6a00;
+  font-size: 14px; /* Ajusta el tamaño de los iconos */
+  transition: all 0.2s;
+}
+
+.accion-icon:hover {
+  color: #e65500;
+  transform: scale(1.1);
+}
+
+/* Media Queries - Responsive Design */
+@media (max-width: 768px) {
+  .ver-vehiculos-container {
+    padding: 15px 18px; /* Ajusta para móviles */
+    margin-top: 65px;
+    width: 98%;
+  }
+
+  .titulo {
+    font-size: 20px; /* Ajuste para móviles */
+  }
+
+  .boton-crear-vehiculo {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+
+  /* Estilo de tarjetas para móviles */
+  .tabla-vehiculos thead {
+    display: none;
+  }
+
+  .tabla-vehiculos tr {
+    display: block;
+    margin-bottom: 12px; /* Ajusta este valor */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+  }
+
+  .tabla-vehiculos td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+    padding: 10px 12px; /* Ajusta para móviles */
+    border-bottom: 1px solid #eee;
+  }
+
+  .tabla-vehiculos td:last-child {
+    border-bottom: none;
+  }
+
+  .tabla-vehiculos td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    margin-right: auto;
+    padding-right: 15px;
+    color: #ff6a00;
+    font-size: 13px;
+  }
+
+  .acciones {
+    max-width: 100px; /* Ajusta para móviles */
+  }
+}
+
+@media (max-width: 480px) {
+  .registro-header {
+    padding: 8px 12px; /* Ajusta para móviles pequeños */
+  }
+
+  .ver-vehiculos-container {
+    padding: 12px 15px;
+    margin-top: 60px;
+  }
+
+  .titulo-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px; /* Ajusta este valor */
+    margin-bottom: 15px;
+  }
+
+  .boton-crear-vehiculo {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tabla-vehiculos td {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px; /* Ajusta este valor */
+    padding: 8px 10px;
+  }
+
+  .tabla-vehiculos td::before {
+    align-self: flex-start;
+    margin-bottom: 3px;
+  }
+
+  .acciones {
+    max-width: 90px; /* Ajusta para móviles pequeños */
+    justify-content: space-around;
+  }
+}
+
+.vehiculos-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.vehiculos-bg img {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  opacity: 0.18;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ver-vehiculos-container {
+  position: relative;
+  z-index: 2;
+  background: white;
+}

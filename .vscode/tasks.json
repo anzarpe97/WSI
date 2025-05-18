@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Iniciar Frontend",
+      "type": "shell",
+      "command": "npm start",
+      "options": {
+        "cwd": "${workspaceFolder}/wsi"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Iniciar Backend",
+      "type": "shell",
+      "command": "venv\\Scripts\\activate && python manage.py runserver",
+      "options": {
+        "cwd": "${workspaceFolder}/Backend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run-all",
+      "dependsOn": ["Iniciar Frontend", "Iniciar Backend"],
+      "dependsOrder": "parallel"
+    }
+  ]
+}
