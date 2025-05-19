@@ -116,3 +116,4 @@ class VehiculoDetailView(generics.RetrieveAPIView):
     queryset = Vehiculo.objects.all()
     serializer_class = VehiculoSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'id_vehiculo'

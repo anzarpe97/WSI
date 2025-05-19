@@ -11,5 +11,5 @@ urlpatterns = [
     path('api/csrf/', get_csrf_token, name='get_csrf_token'),
     path('api/vehiculos/registrar/', VehiculoCreateView.as_view(), name='registrar-vehiculo'),
     path('api/vehiculos/', VehiculoListView.as_view(), name='listar-vehiculos'),
-    path('api/vehiculos/<int:pk>/', VehiculoDetailView.as_view(), name='detalle-vehiculo'),
+    path('api/vehiculos/<int:id_vehiculo>/', VehiculoDetailView.as_view(), name='detalle-vehiculo'),
 ]

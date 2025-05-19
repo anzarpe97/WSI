@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
-import '../styles/VerVehiculos.css';
+import '../../styles/VerVehiculos.css';
 import { useNavigate } from 'react-router-dom';
-import bgImage from '../assets/bg-login.jpg';
-import { verifyToken } from '../services/auth';
-import { getVehiculos } from '../services/vehiculos';
+import Header from '../header';
+import bgImage from '../../assets/bg-login.jpg';
+import { verifyToken } from '../../services/auth';
+import { getVehiculos } from '../../services/vehiculos';
 
 const VerVehiculos = () => {
   const [vehiculos, setVehiculos] = useState([]);
@@ -90,43 +91,46 @@ const VerVehiculos = () => {
             </thead>
             <tbody>
               {vehiculos.length === 0 ? (
-                <tr>
+                <tr key="no-vehiculos">
                   <td colSpan="6" style={{ textAlign: 'center' }}>No hay vehículos registrados.</td>
                 </tr>
               ) : (
-                vehiculos.map((vehiculo) => (
-                  <tr key={vehiculo.id}>
-                    <td data-label="Placa">{vehiculo.placa}</td>
-                    <td data-label="Marca">{vehiculo.marca}</td>
-                    <td data-label="Modelo">{vehiculo.modelo}</td>
-                    <td data-label="Color">{vehiculo.color}</td>
-                    <td data-label="Estado">
-                      {vehiculo.estado === "EN_MANTENIMIENTO" ? (
-                        <span className="estado-badge estado-mantenimiento">
-                          MANTENIMIENTO
-                        </span>
-                      ) : (
-                        <span className={`estado-badge estado-${vehiculo.estado?.toLowerCase().replace(' ', '-')}`}>
-                          {vehiculo.estado}
-                        </span>
-                      )}
-                    </td>
-                    <td data-label="Acciones">
-                      <div className="acciones">
-                        <FontAwesomeIcon
-                          icon={faEye}
-                          size="lg"
-                          className="accion-icon"
-                          title="Ver detalles"
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => handleVerDetalles(vehiculo.id)}
-                        />
-                        <FontAwesomeIcon icon={faPen} size="lg" className="accion-icon" title="Editar vehículo"/>
-                        <FontAwesomeIcon icon={faTrashAlt} size="lg" className="accion-icon" title="Eliminar vehículo"/>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                vehiculos.map((vehiculo) => {
+                  console.log(vehiculo); // <-- Aquí verás la estructura en la consola
+                  return (
+                    <tr key={vehiculo.id_vehiculo}>
+                      <td data-label="Placa">{vehiculo.placa}</td>
+                      <td data-label="Marca">{vehiculo.marca}</td>
+                      <td data-label="Modelo">{vehiculo.modelo}</td>
+                      <td data-label="Color">{vehiculo.color}</td>
+                      <td data-label="Estado">
+                        {vehiculo.estado === "EN_MANTENIMIENTO" ? (
+                          <span className="estado-badge estado-mantenimiento">
+                            MANTENIMIENTO
+                          </span>
+                        ) : (
+                          <span className={`estado-badge estado-${vehiculo.estado?.toLowerCase().replace(' ', '-')}`}>
+                            {vehiculo.estado}
+                          </span>
+                        )}
+                      </td>
+                      <td data-label="Acciones">
+                        <div className="acciones">
+                          <FontAwesomeIcon
+                            icon={faEye}
+                            size="lg"
+                            className="accion-icon"
+                            title="Ver detalles"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => handleVerDetalles(vehiculo.id_vehiculo)}
+                          />
+                          <FontAwesomeIcon icon={faPen} size="lg" className="accion-icon" title="Editar vehículo"/>
+                          <FontAwesomeIcon icon={faTrashAlt} size="lg" className="accion-icon" title="Eliminar vehículo"/>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

@@ -2,12 +2,12 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import RecuperarContraseña from './components/RecuperarContraseña';
-import Home from './components/Home';
-import RegistroEmpleado from './components/RegistroEmpleado';
-import RegistroVehiculo from './components/RegistroVehiculo';
-import RegistroDocumentosVehiculo from './components/RegistroDocumentosVehiculo';
-import VerVehiculos from './components/VerVehiculos';
-import DetalleVehiculo from './components/DetallesVehiculo';
+import Home from './components/admin/Home';
+import RegistroEmpleado from './components/admin/RegistroEmpleado';
+import RegistroVehiculo from './components/admin/RegistroVehiculo';
+import RegistroDocumentosVehiculo from './components/admin/RegistroDocumentosVehiculo';
+import VerVehiculos from './components/admin/VerVehiculos';
+import DetalleVehiculo from './components/admin/DetallesVehiculo';
 
 const App = () => {
   return (
@@ -24,7 +24,10 @@ const App = () => {
         <Route path="/registro-vehiculo" element={<RegistroVehiculo />} />
         <Route path="/ver-vehiculos" element={<VerVehiculos />} />
         <Route path="/detalle-vehiculo/:id" element={<DetalleVehiculo />} />
-
+        
+        {/* RUTAS ADMINISTRADOR*/}
+        
+        {/* RUTAS ADMINISTRADOR*/}
 
       </Routes>
     </Router>

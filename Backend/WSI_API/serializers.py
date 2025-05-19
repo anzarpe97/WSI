@@ -208,11 +208,7 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
 class VehiculoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehiculo
-        fields = [
-            'id_vehiculo', 'placa', 'kilometraje', 'estado', 'marca', 'modelo', 'motor',
-            'anio', 'color', 'tipologia', 'capacidad_carga', 'capacidad_combustible',
-            'costo', 'tipo_combustible'
-        ]
+        fields = '__all__'
 
     def validate_placa(self, value):
         if not value:

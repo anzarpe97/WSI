@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Header from './header';
-import '../styles/RegistroDocumentosVehiculo.css'; // Archivo CSS para los estilos
-import bgImage from '../assets/bg-login.jpg'; // Verifica que esta imagen exista
+import Header from '../header';
+import '../../styles/RegistroDocumentosVehiculo.css'; // Archivo CSS para los estilos
+import bgImage from '../../assets/bg-login.jpg'; // Verifica que esta imagen exista
 
 const RegistroDocumentosVehiculo = () => {
   console.log('🔸 RegistroDocumentosVehiculo renderizado'); // Log para indicar que el componente fue renderizado

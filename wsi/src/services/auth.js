@@ -22,7 +22,7 @@ export const verifyToken = async () => {
     }
 
     const data = await response.json();
-    console.log("✅ Datos del usuario:", data.user);
+    //console.log("✅ Datos del usuario:", data.user);
     return {
       isValid: true,
       user: data.user

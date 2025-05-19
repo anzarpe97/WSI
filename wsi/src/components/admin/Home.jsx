@@ -1,11 +1,11 @@
-import '../styles/home.css';
+import '../../styles/home.css';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCar, faUser, faWrench, faChartBar, faIdCard, faCarBurst, faPeopleGroup, faScrewdriverWrench, faFileContract, faCog,  } from '@fortawesome/free-solid-svg-icons';
-import { verifyToken } from '../services/auth';
+import { verifyToken } from '../../services/auth';
 import { Link } from 'react-router-dom';
-import UserHeader from './Home-Header';
-import bgImage from '../assets/bg-login.jpg';
+import UserHeader from '../Home-Header';
+import bgImage from '../../assets/bg-login.jpg';
 import React, { useEffect, useState } from 'react';
 
 const Home = () => {
@@ -18,7 +18,7 @@ const Home = () => {
     const check = async () => {
       try {
         const result = await verifyToken();
-        console.log("Usuario recibido:", result.user);
+        //console.log("Usuario recibido:", result.user);
 
         if (result.isValid && result.user) {
           setUser({

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faEdit, faPrint, faGasPump, faWeight, faCalendarAlt, faDollarSign } from '@fortawesome/free-solid-svg-icons';
-import '../styles/DetalleVehiculo.css';
-import Header from './Header';
+import { faArrowLeft, faEdit, faPrint, faGasPump, faWeightHanging, faGauge, faMoneyBill, faWeight, faCalendarAlt, faDollarSign } from '@fortawesome/free-solid-svg-icons';
+import '../../styles/DetalleVehiculo.css';
+import Header from '../header';
 
 const DetalleVehiculo = () => {
   const { id } = useParams();
@@ -16,7 +16,7 @@ const DetalleVehiculo = () => {
     const token = localStorage.getItem('token');
     const fetchVehiculo = async () => {
       try {
-        const response = await fetch(`/api/vehiculos/${id}/`, {
+        const response = await fetch(`http://localhost:8000/api/vehiculos/${id}/`, {
           headers: {
             'Authorization': `Token ${token}`,
             'Content-Type': 'application/json'
@@ -39,18 +39,23 @@ const DetalleVehiculo = () => {
   };
 
   const handleEditar = () => {
-    navigate(`/editar-vehiculo/${vehiculo.id}`);
+    navigate(`/editar-vehiculo/${vehiculo.id_vehiculo}`);
   };
 
   if (loading) return <div className="loader">Cargando...</div>;
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
   if (!vehiculo) return null;
-
-  const fechaCreacion = new Date(vehiculo.fecha_creado).toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  
+  console.log('Vehiculo recibido:', vehiculo); 
+  console.log('Fecha recibida:', vehiculo.fecha_creado);
+  // Validación para evitar "Invalid Date"
+  const fechaCreacion = vehiculo.fecha_creado
+    ? new Date(vehiculo.fecha_creado).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    : 'Sin registro';
 
   return (
     <div id="detalle-vehiculo-container">
@@ -124,6 +129,7 @@ const DetalleVehiculo = () => {
           </h3>
           <div className="detalle-vehiculo-info-adicional">
             <div className="detalle-vehiculo-info-row">
+              <FontAwesomeIcon icon={faWeightHanging}  className="icono-info"/>
               <span className="detalle-vehiculo-label">Capacidad de carga:</span>
               <span className="detalle-vehiculo-value">{vehiculo.capacidad_carga} kg</span>
             </div>
@@ -137,6 +143,7 @@ const DetalleVehiculo = () => {
               </span>
             </div>
             <div className="detalle-vehiculo-info-row">
+              <FontAwesomeIcon icon={faGauge} className="icono-info" />
               <span className="detalle-vehiculo-label">Kilometraje:</span>
               <span className="detalle-vehiculo-value">{vehiculo.kilometraje?.toLocaleString()} km</span>
             </div>
@@ -150,6 +157,7 @@ const DetalleVehiculo = () => {
           </h3>
           <div className="detalle-vehiculo-info-adicional">
             <div className="detalle-vehiculo-info-row">
+              <FontAwesomeIcon icon={faMoneyBill} className="icono-info" />
               <span className="detalle-vehiculo-label">Costo:</span>
               <span className="detalle-vehiculo-value">
                 ${vehiculo.costo?.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Header from './header';
+import Header from '../header';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import bgImage from '../assets/camion-login.png';
-import '../styles/RegistroVehiculo.css';
+import bgImage from '../../assets/camion-login.png';
+import '../../styles/RegistroVehiculo.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
