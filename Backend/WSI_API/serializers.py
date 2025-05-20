@@ -248,3 +248,12 @@ class VehiculoSerializer(serializers.ModelSerializer):
         # Puedes agregar validaciones cruzadas aquí si lo necesitas
         return attrs
         
+class VehiculoPlacaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vehiculo
+        fields = ['id_vehiculo', 'placa']
+        
+class MecanicoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = ['id', 'nombre', 'apellido']

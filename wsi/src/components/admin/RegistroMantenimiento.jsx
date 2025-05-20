@@ -1,25 +1,43 @@
-import React from "react";
-import "../styles/RegistroMantenimiento.css"; // Archivo CSS para los estilos
-import bgImage from '../assets/bg-login.jpg'; // Verifica que esta imagen exista
-import { faBell, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useEffect, useState } from "react";
+import "../../styles/RegistroMantenimiento.css";
+import bgImage from '../../assets/bg-login.jpg';
+import Header from '../header';
 
 const RegistroMantenimiento = () => {
-  console.log('🔸 RegistroMantenimiento renderizado'); // Log para indicar que el componente fue renderizado
+  const [vehiculos, setVehiculos] = useState([]);
+  const [mecanicos, setMecanicos] = useState([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
+    fetch("http://localhost:8000/api/vehiculos-usuarios/", {
+      headers: {
+        "Authorization": `Token ${token}`,
+      },
+    })
+      .then(res => {
+        if (res.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data) {
+          setVehiculos(data.vehiculos || []);
+          setMecanicos(data.usuarios || []);
+        }
+      })
+      .catch(err => console.error("Error cargando datos:", err));
+  }, []);
 
   return (
     <div className="home-wrapper">
-      {/* Header */}
-      <header className="registro-header">
-        <h1>WSI</h1>
-        <div className="header-icons">
-                  <FontAwesomeIcon icon={faBell} size="lg" className="header-icon" />
-                  <FontAwesomeIcon icon={faUser} size="lg" className="header-icon" />
-                  <FontAwesomeIcon icon={faSignOutAlt} size="lg" className="header-icon" />
-                </div>
-      </header>
-
-      {/* Fondo */}
+      <Header title="WSI" />
       <div className="registro-mantenimiento-wrapper">
         <div className="registro-mantenimiento-bg">
           <img
@@ -28,8 +46,6 @@ const RegistroMantenimiento = () => {
             onError={(e) => (e.target.style.display = 'none')}
           />
         </div>
-
-        {/* Contenedor del formulario */}
         <div className="registro-mantenimiento-container">
           <h1 className="titulo">Registro Orden de Mantenimiento</h1>
           <form className="formulario">
@@ -41,7 +57,12 @@ const RegistroMantenimiento = () => {
               </div>
               <div className="campo">
                 <label htmlFor="placa">Placa vehículo</label>
-                <input type="text" id="placa" name="placa" placeholder="Placa" required />
+                <select id="placa" name="placa" required>
+                  <option value="">Seleccione placa...</option>
+                  {vehiculos.map(v => (
+                    <option key={v.id_vehiculo} value={v.id_vehiculo}>{v.placa}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -61,7 +82,12 @@ const RegistroMantenimiento = () => {
             <div className="fila">
               <div className="campo">
                 <label htmlFor="mecanico">Mecánico Encargado</label>
-                <input type="text" id="mecanico" name="mecanico" placeholder="Mecánico" required />
+                <select id="mecanico" name="mecanico" required>
+                  <option value="">Seleccione mecánico...</option>
+                  {mecanicos.map(m => (
+                    <option key={m.id} value={m.id}>{m.nombre} {m.apellido}</option>
+                  ))}
+                </select>
               </div>
               <div className="campo">
                 <label htmlFor="tipoMantenimiento">Tipo de Mantenimiento</label>
@@ -69,6 +95,7 @@ const RegistroMantenimiento = () => {
                   <option value="">Seleccione tipo...</option>
                   <option value="preventivo">Preventivo</option>
                   <option value="correctivo">Correctivo</option>
+                  <option value="predictivo">Predictivo</option>
                 </select>
               </div>
             </div>

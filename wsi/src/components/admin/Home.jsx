@@ -67,7 +67,7 @@ const Home = () => {
       <FontAwesomeIcon icon={faUser} size="3x" />
       <p>Registro de empleados</p>
     </Link>
-    <Link to="/mantenimiento-vehiculos" className="home-card">
+    <Link to="/registro-mantenimiento" className="home-card">
       <FontAwesomeIcon icon={faWrench} size="3x" />
       <p>Mantenimiento de vehículos</p>
     </Link>
@@ -85,7 +85,7 @@ const Home = () => {
     <FontAwesomeIcon icon={faCarBurst} size="3x" />
       <p>Gestión de Vehiculos</p>
     </Link>
-    <Link to="/inventario" className="home-card">
+    <Link to="/gestion-empleados" className="home-card">
       <FontAwesomeIcon icon={faPeopleGroup} size="3x" />
       <p>Gestión de Empleados</p>
     </Link>
