@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
 from .models import Usuario, Vehiculo
-from .serializers import MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer, RegistroUsuarioSerializer
+from .serializers import EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer, RegistroUsuarioSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
@@ -136,3 +136,10 @@ class VehiculoMecanicoComboAPIView(APIView):
             "usuarios": usuarios_data
         })
         
+class UsuarioListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        usuarios = Usuario.objects.filter(rol__in=['1', '2'])
+        serializer = EmpleadoSerializer(usuarios, many=True)
+        return Response(serializer.data)

@@ -14,10 +14,11 @@ body {
 /* Loader */
 .empleados-loader-container {
   display: flex;
+  margin-top: 200px; /* Más espacio superior */
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  /* height: 100vh;  <-- Elimina o comenta esta línea */
 }
 
 .empleados-loader {

@@ -89,7 +89,7 @@ const Home = () => {
       <FontAwesomeIcon icon={faPeopleGroup} size="3x" />
       <p>Gestión de Empleados</p>
     </Link>
-    <Link to="/combustible" className="home-card">
+    <Link to="/gestion-mantenimiento" className="home-card">
       <FontAwesomeIcon icon={faScrewdriverWrench} size = "3x"/>
       <p>Gestión Mantenimiento</p>
     </Link>

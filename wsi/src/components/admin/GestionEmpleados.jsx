@@ -5,8 +5,6 @@ import '../../styles/GestionEmpleados.css';
 import { useNavigate } from 'react-router-dom';
 import Header from '../header';
 import bgImage from '../../assets/bg-login.jpg';
-//import { verifyToken } from '../../services/auth';
-//import { getEmpleados } from '../../services/empleados';
 
 const GestionEmpleados = () => {
   const [empleados, setEmpleados] = useState([]);
@@ -16,23 +14,31 @@ const GestionEmpleados = () => {
 
   useEffect(() => {
     document.title = "WSI - Empleados";
-    const check = async () => {
-      try {
-        const result = await verifyToken();
-        if (!result.isValid) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    fetch("http://localhost:8000/api/usuarios/", {
+      headers: {
+        "Authorization": `Token ${token}`,
+      },
+    })
+      .then(res => {
+        if (res.status === 401) {
           navigate('/login');
-          return;
+          return null;
         }
-        // Si el token es válido, carga los empleados
-        const data = await getEmpleados();
-        setEmpleados(data);
-      } catch (error) {
-        setError('No se pudieron cargar los empleados');
-      } finally {
-        setLoading(false);
-      }
-    };
-    check();
+        return res.json();
+      })
+      .then(data => {
+        if (data) {
+          setEmpleados(data);
+        }
+      })
+      .catch(() => setError('No se pudieron cargar los empleados'))
+      .finally(() => setLoading(false));
   }, [navigate]);
 
   const handleRegistroEmpleadoClick = () => {
@@ -95,11 +101,11 @@ const GestionEmpleados = () => {
                 </tr>
               ) : (
                 empleados.map((empleado) => (
-                  <tr key={empleado.id_empleado}>
+                  <tr key={empleado.id}>
                     <td data-label="Nombre">{`${empleado.nombre} ${empleado.apellido}`}</td>
                     <td data-label="Cédula">{empleado.cedula}</td>
-                    <td data-label="Correo">{empleado.correo}</td>
-                    <td data-label="Cargo">{empleado.cargo}</td>
+                    <td data-label="Correo">{empleado.email}</td>
+                    <td data-label="Cargo">{empleado.rol}</td>
                     <td data-label="Acciones">
                       <div className="empleados-acciones">
                         <FontAwesomeIcon
@@ -108,7 +114,7 @@ const GestionEmpleados = () => {
                           className="empleados-accion-icon"
                           title="Ver detalles"
                           style={{ cursor: 'pointer' }}
-                          onClick={() => handleVerDetalles(empleado.id_empleado)}
+                          onClick={() => handleVerDetalles(empleado.id)}
                         />
                         <FontAwesomeIcon 
                           icon={faPen} 

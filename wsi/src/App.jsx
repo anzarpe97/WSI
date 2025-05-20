@@ -10,6 +10,7 @@ import VerVehiculos from './components/admin/VerVehiculos';
 import DetalleVehiculo from './components/admin/DetallesVehiculo';
 import RegistroMantenimiento from './components/admin/RegistroMantenimiento';
 import GestionEmpleados from './components/admin/GestionEmpleados';
+import GestionMantenimiento from './components/admin/GestionManteminimento';
 
 const App = () => {
   return (
@@ -27,7 +28,8 @@ const App = () => {
         <Route path="/ver-vehiculos" element={<VerVehiculos />} />
         <Route path="/detalle-vehiculo/:id" element={<DetalleVehiculo />} />
         <Route path="/registro-mantenimiento" element={<RegistroMantenimiento />} />
-        
+        <Route path="/gestion-mantenimiento" element={<GestionMantenimiento />} />
+              
         {/* RUTAS ADMINISTRADOR*/}        
         {/* RUTAS ADMINISTRADOR*/}
 
