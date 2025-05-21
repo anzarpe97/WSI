@@ -6,6 +6,8 @@ import bgImage from "../../assets/bg-login.jpg";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBell, faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const RegistroEmpleado = () => {
   const [formData, setFormData] = useState({
@@ -20,7 +22,6 @@ const RegistroEmpleado = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   // Verificación de token
@@ -28,6 +29,7 @@ const RegistroEmpleado = () => {
     document.title = "WSI - Registro Empleado";
     const token = localStorage.getItem("token");
     if (!token) {
+      toast.error("Debe iniciar sesión para acceder a esta página");
       navigate("/login");
       return;
     }
@@ -37,6 +39,7 @@ const RegistroEmpleado = () => {
       })
       .catch(() => {
         localStorage.removeItem("token");
+        toast.error("Sesión expirada, por favor inicie sesión nuevamente");
         navigate("/login");
       });
   }, [navigate]);
@@ -44,7 +47,6 @@ const RegistroEmpleado = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: "" });
-    setMessage("");
   };
 
   const validateForm = () => {
@@ -110,7 +112,10 @@ const RegistroEmpleado = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      toast.error("Por favor corrija los errores en el formulario");
+      return;
+    }
 
     try {
       const token = localStorage.getItem("token");
@@ -123,7 +128,7 @@ const RegistroEmpleado = () => {
           },
         }
       );
-      setMessage("Usuario registrado exitosamente");
+      toast.success("Empleado registrado exitosamente");
       setFormData({
         nombre: "",
         apellido: "",
@@ -137,23 +142,41 @@ const RegistroEmpleado = () => {
       setErrors({});
     } catch (error) {
       if (error.response?.data) {
-        setErrors(error.response.data);
+        // Mostrar errores del servidor
+        Object.values(error.response.data).forEach(errorMsg => {
+          toast.error(Array.isArray(errorMsg) ? errorMsg[0] : errorMsg);
+        });
       } else {
-        setMessage("Error al registrar usuario");
+        toast.error("Error al registrar empleado. Por favor intente nuevamente.");
       }
     }
   };
 
   return (
     <div className="registro-empleado-wrapper">
-
       <Header title="WSI" />
+      
+      {/* Toast container */}
+      <ToastContainer 
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       
       <div className="registro-empleado-bg">
         <img
           src={bgImage}
           alt="Fondo Registro Empleado"
-          onError={(e) => (e.target.style.display = "none")}
+          onError={(e) => {
+            e.target.style.display = "none";
+            toast.warn("No se pudo cargar la imagen de fondo");
+          }}
         />
       </div>
 
@@ -276,8 +299,6 @@ const RegistroEmpleado = () => {
           <button type="submit" className="boton-registrar">
             Registrar Empleado
           </button>
-
-          {message && <p className="mensaje">{message}</p>}
         </form>
       </div>
     </div>

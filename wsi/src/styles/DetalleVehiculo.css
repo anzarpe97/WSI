@@ -1,16 +1,14 @@
-/* Contenedor principal */
-#detalle-vehiculo-container {
-  width: 100%;
+/* Estilos base */
+.detalle-vehiculo-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
   min-height: 100vh;
-  background-color: #f5f5f5;
 }
 
 .detalle-vehiculo-content {
-  padding: 20px;
-  margin-top: 70px;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 70px auto 0;
 }
 
 /* Encabezado */
@@ -18,127 +16,146 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 2rem;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 1rem;
 }
 
 .detalle-vehiculo-titulo {
   font-size: 1.8rem;
-  color: #333;
+  color: #2c3e50;
   margin: 0;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .detalle-vehiculo-acciones {
   display: flex;
-  gap: 10px;
+  gap: 0.75rem;
 }
 
 .detalle-vehiculo-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
   border: none;
   background-color: #fff;
-  color: #666;
+  color: #495057;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .detalle-vehiculo-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .detalle-vehiculo-btn.editar {
-  color: #ff6a00;
-}
-
-.detalle-vehiculo-btn.eliminar {
-  color: #dc3545;
+  background-color: #ffc107;
+  color: #212529;
 }
 
 .detalle-vehiculo-btn.imprimir {
-  color: #17a2b8;
+  background-color: #17a2b8;
+  color: white;
+}
+
+.detalle-vehiculo-btn.volver {
+  background-color: #6c757d;
+  color: white;
 }
 
 /* Tarjeta principal */
 .detalle-vehiculo-card {
   background: white;
-  border-radius: 10px;
-  padding: 25px;
-  margin-bottom: 20px;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
   display: flex;
-  gap: 30px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  gap: 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
 .detalle-vehiculo-imagen {
-  flex: 0 0 150px;
+  flex: 0 0 200px;
 }
 
 .detalle-vehiculo-imagen-placeholder {
-  width: 150px;
-  height: 150px;
-  background-color: #e9ecef;
-  border-radius: 10px;
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(135deg, #3498db, #2c3e50);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
-  color: #6c757d;
+  font-size: 4rem;
+  color: white;
   font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .detalle-vehiculo-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 1rem;
 }
 
 .detalle-vehiculo-info-row {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .detalle-vehiculo-label {
   font-weight: 600;
   color: #495057;
-  width: 150px;
+  min-width: 150px;
+  font-size: 1rem;
 }
 
 .detalle-vehiculo-value {
   color: #212529;
+  font-size: 1rem;
 }
 
 .detalle-vehiculo-color-indicator {
   display: inline-block;
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  margin-right: 8px;
+  margin-right: 0.5rem;
   border: 1px solid #ddd;
   vertical-align: middle;
 }
 
 .estado {
-  padding: 5px 12px;
+  padding: 0.35rem 1rem;
   border-radius: 20px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
+  text-transform: capitalize;
 }
 
-.estado.activo {
+.estado.activo, .estado.disponible {
   background-color: #d4edda;
   color: #155724;
 }
 
-.estado.inactivo {
+.estado.inactivo, .estado.en_mantenimiento {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.estado.reparacion {
   background-color: #f8d7da;
   color: #721c24;
 }
@@ -146,56 +163,66 @@
 /* Secciones adicionales */
 .detalle-vehiculo-seccion {
   background: white;
-  border-radius: 10px;
-  padding: 20px 25px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
 .detalle-vehiculo-subtitulo {
-  font-size: 1.3rem;
-  color: #333;
+  font-size: 1.4rem;
+  color: #2c3e50;
   margin-top: 0;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f1f1f1;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.75rem;
+  font-weight: 600;
 }
 
 .icono-seccion {
-  color: #ff6a00;
-  font-size: 1.1rem;
+  color: #3498db;
+  font-size: 1.3rem;
 }
 
 .icono-info {
   color: #6c757d;
-  margin-right: 8px;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  min-width: 20px;
 }
 
 .detalle-vehiculo-info-adicional {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 1rem;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .detalle-vehiculo-content {
-    padding: 15px;
-    margin-top: 60px;
+    padding: 1.5rem;
   }
-  
+}
+
+@media (max-width: 768px) {
   .detalle-vehiculo-card {
     flex-direction: column;
-    gap: 20px;
+    gap: 1.5rem;
+    padding: 1.5rem;
   }
   
   .detalle-vehiculo-imagen {
     display: flex;
     justify-content: center;
+    width: 100%;
+  }
+  
+  .detalle-vehiculo-imagen-placeholder {
+    width: 150px;
+    height: 150px;
+    font-size: 3rem;
   }
   
   .detalle-vehiculo-info-row {
@@ -203,22 +230,29 @@
   }
   
   .detalle-vehiculo-label {
-    width: 100%;
-    margin-bottom: 5px;
+    min-width: 100%;
+    margin-bottom: 0.25rem;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 576px) {
   .detalle-vehiculo-titulo {
     font-size: 1.4rem;
   }
   
-  .detalle-vehiculo-card,
   .detalle-vehiculo-seccion {
-    padding: 15px;
+    padding: 1.25rem;
   }
   
   .detalle-vehiculo-subtitulo {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+  }
+  
+  .detalle-vehiculo-btn {
+    padding: 0.5rem;
+  }
+  
+  .detalle-vehiculo-btn span {
+    display: none;
   }
 }

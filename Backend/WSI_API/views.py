@@ -6,8 +6,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
-from .models import Usuario, Vehiculo
-from .serializers import EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer, RegistroUsuarioSerializer
+from .models import Usuario, Vehiculo, Mantenimiento, DetalleMantenimiento
+from .serializers import PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer, RegistroUsuarioSerializer
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
@@ -143,3 +143,61 @@ class UsuarioListAPIView(APIView):
         usuarios = Usuario.objects.filter(rol__in=['1', '2'])
         serializer = EmpleadoSerializer(usuarios, many=True)
         return Response(serializer.data)
+    
+class BuscarVehiculoPorPlacaAPIView(APIView):
+    def get(self, request):
+        placa = request.GET.get('placa', '').upper()
+        try:
+            vehiculo = Vehiculo.objects.get(placa=placa)
+            serializer = PlacaSerializer(vehiculo)
+            print("puto")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Vehiculo.DoesNotExist:
+            print("reputo")
+            
+            return Response({"detail": "Placa no registrada"}, status=status.HTTP_404_NOT_FOUND)
+    
+class CrearMantenimientoAPIView(APIView):
+    def post(self, request):
+        data = request.data
+        try:
+            mantenimiento = Mantenimiento.objects.create(
+                id_vehiculo_id=data['id_vehiculo'],
+                id_mecanico_id=data['id_mecanico'],
+                id_motivo_id=data['id_motivo'],
+                fecha_programada=data['fecha_programada'],
+                fecha_finalizado=data.get('fecha_finalizado'),
+                tipo_mantenimiento=data['tipo_mantenimiento'],
+                estado=data.get('estado', 'ACTIVO'),
+                observaciones=data.get('observaciones', '')
+            )
+            for suministro in data.get('suministros', []):
+                DetalleMantenimiento.objects.create(
+                    id_mantenimiento=mantenimiento,
+                    motivo=suministro['motivo'],
+                    cantidad=suministro['cantidad'],
+                    precio_und=suministro['precio_und'],
+                    total=suministro['total']
+                )
+            # Cambiar el estado del vehículo
+            vehiculo = Vehiculo.objects.get(pk=data['id_vehiculo'])
+            vehiculo.estado = 'EN_MANTENIMIENTO'  # O el estado que desees
+            vehiculo.save()
+
+            return Response({"message": "Mantenimiento y suministros registrados correctamente"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST) 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

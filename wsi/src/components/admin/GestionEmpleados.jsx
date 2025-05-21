@@ -5,11 +5,12 @@ import '../../styles/GestionEmpleados.css';
 import { useNavigate } from 'react-router-dom';
 import Header from '../header';
 import bgImage from '../../assets/bg-login.jpg';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const GestionEmpleados = () => {
   const [empleados, setEmpleados] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,9 +36,10 @@ const GestionEmpleados = () => {
       .then(data => {
         if (data) {
           setEmpleados(data);
+          toast.success('Empleados cargados correctamente');
         }
       })
-      .catch(() => setError('No se pudieron cargar los empleados'))
+      .catch(() => toast.error('No se pudieron cargar los empleados'))
       .finally(() => setLoading(false));
   }, [navigate]);
 
@@ -49,11 +51,18 @@ const GestionEmpleados = () => {
     navigate(`/detalle-empleado/${id}`);
   };
 
+  const getRolNombre = (rol) => {
+    if (rol === '1') return 'Supervisor';
+    if (rol === '2') return 'Empleado';
+    return rol;
+  };
+
   if (loading) {
     return (
       <div className="empleados-loader-container">
         <div className="empleados-loader"></div>
         <p>Cargando...</p>
+        <ToastContainer position="top-right" autoClose={3000} />
       </div>
     );
   }
@@ -81,8 +90,6 @@ const GestionEmpleados = () => {
           </button>
         </div>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-
         <div className="empleados-table-responsive">
           <table className="tabla-empleados">
             <thead>
@@ -105,7 +112,7 @@ const GestionEmpleados = () => {
                     <td data-label="Nombre">{`${empleado.nombre} ${empleado.apellido}`}</td>
                     <td data-label="Cédula">{empleado.cedula}</td>
                     <td data-label="Correo">{empleado.email}</td>
-                    <td data-label="Cargo">{empleado.rol}</td>
+                    <td data-label="Cargo">{getRolNombre(empleado.rol)}</td>
                     <td data-label="Acciones">
                       <div className="empleados-acciones">
                         <FontAwesomeIcon

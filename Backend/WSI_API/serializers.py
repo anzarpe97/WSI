@@ -263,4 +263,13 @@ class EmpleadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = ['id', 'nombre', 'apellido', 'cedula', 'email', 'rol']
-        
+
+class PlacaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vehiculo
+        fields = ['id_vehiculo', 'placa', 'modelo', 'marca']
+
+
+
+
+

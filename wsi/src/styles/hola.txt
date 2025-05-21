@@ -1,0 +1,235 @@
+// src/components/RegistroMantenimiento.jsx
+import React, { useState } from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import "../../styles/RegistroMantenimiento.css";
+import bgImage from '../../assets/bg-login.jpg';
+import Header from '../header';
+
+const RegistroMantenimiento = () => {
+  const [motivo, setMotivo] = useState('');
+  const [placa, setPlaca] = useState('');
+  const [vehicleInfo, setVehicleInfo] = useState({ placa: '', modelo: '', marca: '' });
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaLimite, setFechaLimite] = useState('');
+  const [mecanico, setMecanico] = useState('');
+  const [tipo, setTipo] = useState('');
+  const [errors, setErrors] = useState({});
+
+  const [suministros, setSuministros] = useState([{ detalle: '', cantidad: '', precio: '', total: '0.00' }]);
+
+  // Validar sección general
+  const validateGeneral = () => {
+    const errs = {};
+    if (!motivo.trim()) errs.motivo = 'El motivo es obligatorio';
+    if (!placa.trim()) errs.placa = 'La placa es obligatoria';
+    if (!fechaInicio) errs.fechaInicio = 'Fecha inicio requerida';
+    if (!fechaLimite) errs.fechaLimite = 'Fecha límite requerida';
+    if (fechaInicio && fechaLimite && fechaInicio > fechaLimite) errs.fechaLimite = 'La fecha límite debe ser posterior';
+    if (!mecanico) errs.mecanico = 'Seleccione un mecánico';
+    if (!tipo) errs.tipo = 'Seleccione tipo de mantenimiento';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handlePlacaBlur = () => {
+    if (placa.trim()) {
+      // Simular búsqueda de vehículo
+      setVehicleInfo({ placa, modelo: 'Modelo X', marca: 'Marca Y' });
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!validateGeneral() || !validarSuministros()) {
+      toast.error('Por favor complete todos los campos correctamente');
+      return;
+    }
+    // Lógica de envío...
+  };
+
+  const validarSuministros = () => suministros.every(s => s.detalle && s.cantidad && s.precio);
+
+  const handleSuministroChange = (i, field, value) => {
+    const copy = [...suministros];
+    copy[i][field] = value;
+    if (field === 'cantidad' || field === 'precio') {
+      const cant = parseFloat(copy[i].cantidad) || 0;
+      const prec = parseFloat(copy[i].precio) || 0;
+      copy[i].total = (cant * prec).toFixed(2);
+    }
+    setSuministros(copy);
+  };
+
+  const addSuministro = () => {
+    if (!validarSuministros()) {
+      toast.error('Complete suministros antes de agregar');
+      return;
+    }
+    setSuministros([...suministros, { detalle: '', cantidad: '', precio: '', total: '0.00' }]);
+  };
+
+  const removeSuministro = (i) => {
+    if (suministros.length > 1) setSuministros(suministros.filter((_, idx) => idx !== i));
+  };
+
+  return (
+    <div className="registroMantenimiento-wrapper">
+      <Header title="WSI" />
+      <ToastContainer position="top-right" autoClose={3000} />
+      <div className="registroMantenimiento-content">
+        <div className="registroMantenimiento-bg">
+          <img src={bgImage} alt="Fondo Registro Mantenimiento" onError={e => (e.target.style.display = 'none')} />
+        </div>
+        <div className="registroMantenimiento-container">
+          <h1 className="registroMantenimiento-title">Registro Orden de Mantenimiento</h1>
+          <form className="registroMantenimiento-form" onSubmit={handleSubmit} noValidate>
+
+            {/* Información General */}
+            <div className="registroMantenimiento-section">
+              <h3 className="registroMantenimiento-sectionTitle">Información General</h3>
+              <div className="registroMantenimiento-row">
+                <div className="registroMantenimiento-field animated-input">
+                  <input
+                    type="text"
+                    id="motivo"
+                    value={motivo}
+                    onChange={e => setMotivo(e.target.value)}
+                    required
+                  />
+                  <label htmlFor="motivo">Motivo Mantenimiento</label>
+                  {errors.motivo && <span className="error">{errors.motivo}</span>}
+                </div>
+
+                <div className="registroMantenimiento-field animated-input">
+                  <input
+                    type="text"
+                    id="placa"
+                    value={placa}
+                    onChange={e => setPlaca(e.target.value)}
+                    onBlur={handlePlacaBlur}
+                    required
+                  />
+                  <label htmlFor="placa">Placa Vehículo</label>
+                  {errors.placa && <span className="error">{errors.placa}</span>}
+                </div>
+              </div>
+
+              {vehicleInfo.placa && (
+                <div className="registroMantenimiento-vehicleInfo">
+                  <p><strong>Placa:</strong> {vehicleInfo.placa}</p>
+                  <p><strong>Modelo:</strong> {vehicleInfo.modelo}</p>
+                  <p><strong>Marca:</strong> {vehicleInfo.marca}</p>
+                </div>
+              )}
+
+              <div className="registroMantenimiento-row">
+                <div className="registroMantenimiento-field">
+                  <label htmlFor="fechaInicio">Fecha inicio</label>
+                  <input
+                    type="date"
+                    id="fechaInicio"
+                    value={fechaInicio}
+                    onChange={e => setFechaInicio(e.target.value)}
+                    required
+                  />
+                  {errors.fechaInicio && <span className="error">{errors.fechaInicio}</span>}
+                </div>
+                <div className="registroMantenimiento-field">
+                  <label htmlFor="fechaLimite">Fecha límite</label>
+                  <input
+                    type="date"
+                    id="fechaLimite"
+                    value={fechaLimite}
+                    onChange={e => setFechaLimite(e.target.value)}
+                    required
+                  />
+                  {errors.fechaLimite && <span className="error">{errors.fechaLimite}</span>}
+                </div>
+              </div>
+
+              <div className="registroMantenimiento-row">
+                <div className="registroMantenimiento-field">
+                  <label htmlFor="mecanico">Mecánico Encargado</label>
+                  <select
+                    id="mecanico"
+                    value={mecanico}
+                    onChange={e => setMecanico(e.target.value)}
+                    required
+                  >
+                    <option value="">Seleccione mecánico...</option>
+                  </select>
+                  {errors.mecanico && <span className="error">{errors.mecanico}</span>}
+                </div>
+                <div className="registroMantenimiento-field">
+                  <label htmlFor="tipo">Tipo de Mantenimiento</label>
+                  <select
+                    id="tipo"
+                    value={tipo}
+                    onChange={e => setTipo(e.target.value)}
+                    required
+                  >
+                    <option value="">Seleccione tipo...</option>
+                    <option value="preventivo">Preventivo</option>
+                    <option value="correctivo">Correctivo</option>
+                    <option value="predictivo">Predictivo</option>
+                  </select>
+                  {errors.tipo && <span className="error">{errors.tipo}</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* Suministros */}
+            <div className="registroMantenimiento-section">
+              <h3 className="registroMantenimiento-sectionTitle">Suministros</h3>
+              <div className="registroMantenimiento-supplies">
+                {suministros.map((s, i) => (
+                  <div key={i} className="registroMantenimiento-supplyItem">
+                    <div className="registroMantenimiento-supplyField">
+                      <label>Detalle</label>
+                      <input
+                        type="text"
+                        value={s.detalle}
+                        onChange={e => handleSuministroChange(i, 'detalle', e.target.value)}
+                        placeholder="Descripción del material"
+                        required
+                      />
+                    </div>
+                    <div className="registroMantenimiento-supplyField">
+                      <label>Cantidad</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={s.cantidad}
+                        onChange={e => handleSuministroChange(i, 'cantidad', e.target.value)}
+                        placeholder="0"
+                        required
+                      />
+                    </div>
+                    <div className="registroMantenimiento-supplyField">
+                      <label>Precio Unitario</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={s.precio}
+                        onChange={e => handleSuministroChange(i, 'precio', e.target.value)}
+                        placeholder="0.00"
+                        required
+                      />
+                    </div>
+                    <div className="registroMantenimiento-supplyField registroMantenimiento-total">
+                      <label>Total</label>
+                      <div className="registroMantenimiento-totalDisplay">${s.total}</div>
+                    </div>
+                    {suministros.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeSuministro(i)}
+                        className="registroMantenimiento-deleteBtn"
+                        title="Eliminar suministro"
+                      >
+                        <FontAwesomeIcon icon={faTrashAlt} />

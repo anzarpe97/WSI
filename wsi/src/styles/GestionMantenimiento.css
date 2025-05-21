@@ -1,7 +1,7 @@
 /* Estilos base */
 .mantenimiento-home-wrapper {
   position: relative;
-  min-height: 100vh;
+  
 }
 
 .mantenimiento-bg {
@@ -32,7 +32,7 @@
   padding: 20px 25px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
   width: 95%;
-  margin: 70px auto 25px;
+  margin: 120px auto 25px;
 }
 
 /* Título y botón */
