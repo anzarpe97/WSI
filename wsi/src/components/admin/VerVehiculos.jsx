@@ -8,10 +8,15 @@ import bgImage from '../../assets/bg-login.jpg';
 import { verifyToken } from '../../services/auth';
 import { getVehiculos } from '../../services/vehiculos';
 
+const PAGE_SIZE = 5;
+
 const VerVehiculos = () => {
   const [vehiculos, setVehiculos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('');
+  const [filtroPlaca, setFiltroPlaca] = useState('');
+  const [paginaActual, setPaginaActual] = useState(1);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,7 +28,6 @@ const VerVehiculos = () => {
           navigate('/login');
           return;
         }
-        // Si el token es válido, carga los vehículos
         const data = await getVehiculos();
         setVehiculos(data);
       } catch (error) {
@@ -35,6 +39,20 @@ const VerVehiculos = () => {
     check();
   }, [navigate]);
 
+  // Filtros
+  const vehiculosFiltrados = vehiculos.filter((v) => {
+    const coincideEstado = filtroEstado ? v.estado === filtroEstado : true;
+    const coincidePlaca = filtroPlaca ? v.placa.toLowerCase().includes(filtroPlaca.toLowerCase()) : true;
+    return coincideEstado && coincidePlaca;
+  });
+
+  // Paginación
+  const totalPaginas = Math.ceil(vehiculosFiltrados.length / PAGE_SIZE);
+  const vehiculosPagina = vehiculosFiltrados.slice(
+    (paginaActual - 1) * PAGE_SIZE,
+    paginaActual * PAGE_SIZE
+  );
+
   const handleRegistroVehiculoClick = () => {
     navigate('/registro-vehiculo');
   };
@@ -42,6 +60,17 @@ const VerVehiculos = () => {
   const handleVerDetalles = (id) => {
     navigate(`/detalle-vehiculo/${id}`);
   };
+
+  const handlePagina = (nuevaPagina) => {
+    if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
+      setPaginaActual(nuevaPagina);
+    }
+  };
+
+  // Resetear página al cambiar filtros
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [filtroEstado, filtroPlaca]);
 
   if (loading) {
     return (
@@ -75,6 +104,30 @@ const VerVehiculos = () => {
           </button>
         </div>
 
+        {/* Filtros */}
+        <div style={{ marginBottom: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
+          <label style={{ fontWeight: 600 }}>Filtrar por estado:</label>
+          <select
+            value={filtroEstado}
+            onChange={e => setFiltroEstado(e.target.value)}
+            className="mantenimiento-filtro-select"
+            style={{ minWidth: 160 }}
+          >
+            <option value="">Todos</option>
+            <option value="ACTIVO">Activo</option>
+            <option value="INACTIVO">Inactivo</option>
+            <option value="EN_MANTENIMIENTO">En Mantenimiento</option>
+          </select>
+          <label style={{ fontWeight: 600 }}>Filtrar por placa:</label>
+          <input
+            type="text"
+            placeholder="Buscar placa..."
+            value={filtroPlaca}
+            onChange={e => setFiltroPlaca(e.target.value)}
+            style={{ borderRadius: 18, border: '1.5px solid #ff6a00', padding: '7px 12px', fontSize: 15 }}
+          />
+        </div>
+
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
         <div className="table-responsive">
@@ -90,51 +143,98 @@ const VerVehiculos = () => {
               </tr>
             </thead>
             <tbody>
-              {vehiculos.length === 0 ? (
+              {vehiculosPagina.length === 0 ? (
                 <tr key="no-vehiculos">
                   <td colSpan="6" style={{ textAlign: 'center' }}>No hay vehículos registrados.</td>
                 </tr>
               ) : (
-                vehiculos.map((vehiculo) => {
-                  console.log(vehiculo); // <-- Aquí verás la estructura en la consola
-                  return (
-                    <tr key={vehiculo.id_vehiculo}>
-                      <td data-label="Placa">{vehiculo.placa}</td>
-                      <td data-label="Marca">{vehiculo.marca}</td>
-                      <td data-label="Modelo">{vehiculo.modelo}</td>
-                      <td data-label="Color">{vehiculo.color}</td>
-                      <td data-label="Estado">
-                        {vehiculo.estado === "EN_MANTENIMIENTO" ? (
-                          <span className="estado-badge estado-mantenimiento">
-                            MANTENIMIENTO
-                          </span>
-                        ) : (
-                          <span className={`estado-badge estado-${vehiculo.estado?.toLowerCase().replace(' ', '-')}`}>
-                            {vehiculo.estado}
-                          </span>
-                        )}
-                      </td>
-                      <td data-label="Acciones">
-                        <div className="acciones">
-                          <FontAwesomeIcon
-                            icon={faEye}
-                            size="lg"
-                            className="accion-icon"
-                            title="Ver detalles"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => handleVerDetalles(vehiculo.id_vehiculo)}
-                          />
-                          <FontAwesomeIcon icon={faPen} size="lg" className="accion-icon" title="Editar vehículo"/>
-                          <FontAwesomeIcon icon={faTrashAlt} size="lg" className="accion-icon" title="Eliminar vehículo"/>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
+                vehiculosPagina.map((vehiculo) => (
+                  <tr key={vehiculo.id_vehiculo}>
+                    <td data-label="Placa">{vehiculo.placa}</td>
+                    <td data-label="Marca">{vehiculo.marca}</td>
+                    <td data-label="Modelo">{vehiculo.modelo}</td>
+                    <td data-label="Color">{vehiculo.color}</td>
+                    <td data-label="Estado">
+                      {vehiculo.estado === "EN_MANTENIMIENTO" ? (
+                        <span className="estado-badge estado-mantenimiento">
+                          MANTENIMIENTO
+                        </span>
+                      ) : (
+                        <span className={`estado-badge estado-${vehiculo.estado?.toLowerCase().replace(' ', '-')}`}>
+                          {vehiculo.estado}
+                        </span>
+                      )}
+                    </td>
+                    <td data-label="Acciones">
+                      <div className="acciones">
+                        <FontAwesomeIcon icon={faEye} size="lg" className="accion-icon" title="Ver detalles" style={{ cursor: 'pointer' }} onClick={() => handleVerDetalles(vehiculo.id_vehiculo)}/>
+                        <FontAwesomeIcon icon={faPen} size="lg" className="accion-icon" title="Editar vehículo" style={{ cursor: 'pointer' }} onClick={() => navigate(`/editar-vehiculo/${vehiculo.id_vehiculo}`)}/>
+                        <FontAwesomeIcon icon={faTrashAlt} size="lg" className="accion-icon" title="Eliminar vehículo"/>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Paginación */}
+        {totalPaginas > 1 && (
+          <div style={{ marginTop: 18, display: 'flex', justifyContent: 'center', gap: 8 }}>
+            <button
+              onClick={() => handlePagina(paginaActual - 1)}
+              disabled={paginaActual === 1}
+              style={{
+                background: '#fafafa',
+                border: '1.5px solid #222',
+                color: '#ff6a00',
+                borderRadius: 8,
+                padding: '6px 16px',
+                fontWeight: 600,
+                cursor: paginaActual === 1 ? 'not-allowed' : 'pointer',
+                opacity: paginaActual === 1 ? 0.6 : 1
+              }}
+            >
+              Anterior
+            </button>
+            {[...Array(totalPaginas)].map((_, idx) => (
+              <button
+                key={idx + 1}
+                onClick={() => handlePagina(idx + 1)}
+                style={{
+                  background: '#fafafa',
+                  border: '1.5px solid #222',
+                  color: '#ff6a00',
+                  borderRadius: 8,
+                  padding: '6px 16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: paginaActual === idx + 1 ? '0 0 0 2px #ff6a00' : undefined,
+                  borderColor: paginaActual === idx + 1 ? '#ff6a00' : '#222'
+                }}
+              >
+                {idx + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => handlePagina(paginaActual + 1)}
+              disabled={paginaActual === totalPaginas}
+              style={{
+                background: '#fff',
+                border: '1.5px solid #222',
+                color: '#ff6a00',
+                borderRadius: 8,
+                padding: '6px 16px',
+                fontWeight: 600,
+                cursor: paginaActual === totalPaginas ? 'not-allowed' : 'pointer',
+                opacity: paginaActual === totalPaginas ? 0.6 : 1
+              }}
+            >
+              Siguiente
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

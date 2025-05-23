@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
-from .models import Usuario, Vehiculo
+from .models import Usuario, Vehiculo, Mantenimiento
 import re
 
 User = get_user_model()
@@ -269,7 +269,11 @@ class PlacaSerializer(serializers.ModelSerializer):
         model = Vehiculo
         fields = ['id_vehiculo', 'placa', 'modelo', 'marca']
 
+class MantenimientoSerializer(serializers.ModelSerializer):
+    motivo = serializers.CharField(source='id_motivo.motivo', read_only=True)
+    placa = serializers.CharField(source='id_vehiculo.placa', read_only=True)
 
-
-
+    class Meta:
+        model = Mantenimiento
+        fields = ['id_mantenimiento', 'motivo', 'placa', 'estado', 'fecha_programada']
 

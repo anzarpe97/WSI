@@ -11,6 +11,7 @@ import DetalleVehiculo from './components/admin/DetallesVehiculo';
 import RegistroMantenimiento from './components/admin/RegistroMantenimiento';
 import GestionEmpleados from './components/admin/GestionEmpleados';
 import GestionMantenimiento from './components/admin/GestionManteminimento';
+import EditarVehiculo from './components/admin/EditarVehiculo';
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="/gestion-empleados" element={<GestionEmpleados />} />
         <Route path="/registro-documentos-vehiculo" element={<RegistroDocumentosVehiculo />} />
         <Route path="/registro-vehiculo" element={<RegistroVehiculo />} />
+        <Route path="/editar-vehiculo/:id" element={<EditarVehiculo />} />
         <Route path="/ver-vehiculos" element={<VerVehiculos />} />
         <Route path="/detalle-vehiculo/:id" element={<DetalleVehiculo />} />
         <Route path="/registro-mantenimiento" element={<RegistroMantenimiento />} />

@@ -8,9 +8,13 @@ import bgImage from '../../assets/bg-login.jpg';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+const PAGE_SIZE = 5;
+
 const GestionEmpleados = () => {
   const [empleados, setEmpleados] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filtroCedula, setFiltroCedula] = useState('');
+  const [paginaActual, setPaginaActual] = useState(1);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,6 +46,23 @@ const GestionEmpleados = () => {
       .catch(() => toast.error('No se pudieron cargar los empleados'))
       .finally(() => setLoading(false));
   }, [navigate]);
+
+  // Filtro por cédula
+  const empleadosFiltrados = empleados.filter(e =>
+    filtroCedula ? e.cedula.toLowerCase().includes(filtroCedula.toLowerCase()) : true
+  );
+
+  // Paginación
+  const totalPaginas = Math.ceil(empleadosFiltrados.length / PAGE_SIZE);
+  const empleadosPagina = empleadosFiltrados.slice(
+    (paginaActual - 1) * PAGE_SIZE,
+    paginaActual * PAGE_SIZE
+  );
+
+  // Resetear página al cambiar filtro
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [filtroCedula]);
 
   const handleRegistroEmpleadoClick = () => {
     navigate('/registro-empleado');
@@ -90,6 +111,18 @@ const GestionEmpleados = () => {
           </button>
         </div>
 
+        {/* Filtro por cédula */}
+        <div style={{ marginBottom: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
+          <label style={{ fontWeight: 600 }}>Filtrar por cédula:</label>
+          <input
+            type="text"
+            placeholder="Buscar cédula..."
+            value={filtroCedula}
+            onChange={e => setFiltroCedula(e.target.value)}
+            style={{ borderRadius: 18, border: '1.5px solid #ff6a00', padding: '7px 12px', fontSize: 15 }}
+          />
+        </div>
+
         <div className="empleados-table-responsive">
           <table className="tabla-empleados">
             <thead>
@@ -102,12 +135,12 @@ const GestionEmpleados = () => {
               </tr>
             </thead>
             <tbody>
-              {empleados.length === 0 ? (
+              {empleadosPagina.length === 0 ? (
                 <tr key="no-empleados">
                   <td colSpan="5" style={{ textAlign: 'center' }}>No hay empleados registrados.</td>
                 </tr>
               ) : (
-                empleados.map((empleado) => (
+                empleadosPagina.map((empleado) => (
                   <tr key={empleado.id}>
                     <td data-label="Nombre">{`${empleado.nombre} ${empleado.apellido}`}</td>
                     <td data-label="Cédula">{empleado.cedula}</td>
@@ -143,6 +176,63 @@ const GestionEmpleados = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Paginación */}
+        {totalPaginas > 1 && (
+          <div style={{ marginTop: 18, display: 'flex', justifyContent: 'center', gap: 8 }}>
+            <button
+              onClick={() => setPaginaActual(paginaActual - 1)}
+              disabled={paginaActual === 1}
+              style={{
+                background: '#fff',
+                border: '1.5px solid #222',
+                color: '#ff6a00',
+                borderRadius: 8,
+                padding: '6px 16px',
+                fontWeight: 600,
+                cursor: paginaActual === 1 ? 'not-allowed' : 'pointer',
+                opacity: paginaActual === 1 ? 0.6 : 1
+              }}
+            >
+              Anterior
+            </button>
+            {[...Array(totalPaginas)].map((_, idx) => (
+              <button
+                key={idx + 1}
+                onClick={() => setPaginaActual(idx + 1)}
+                style={{
+                  background: '#fff',
+                  border: '1.5px solid #222',
+                  color: '#ff6a00',
+                  borderRadius: 8,
+                  padding: '6px 16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: paginaActual === idx + 1 ? '0 0 0 2px #ff6a00' : undefined,
+                  borderColor: paginaActual === idx + 1 ? '#ff6a00' : '#222'
+                }}
+              >
+                {idx + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => setPaginaActual(paginaActual + 1)}
+              disabled={paginaActual === totalPaginas}
+              style={{
+                background: '#fff',
+                border: '1.5px solid #222',
+                color: '#ff6a00',
+                borderRadius: 8,
+                padding: '6px 16px',
+                fontWeight: 600,
+                cursor: paginaActual === totalPaginas ? 'not-allowed' : 'pointer',
+                opacity: paginaActual === totalPaginas ? 0.6 : 1
+              }}
+            >
+              Siguiente
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

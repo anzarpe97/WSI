@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Usuario, Vehiculo
+from .models import Usuario, Vehiculo, Mantenimiento
 
 class UsuarioAdmin(UserAdmin):
        
@@ -27,3 +27,4 @@ class UsuarioAdmin(UserAdmin):
     readonly_fields = ('fechaRegistro',)
 admin.site.register(Usuario, UsuarioAdmin)
 admin.site.register(Vehiculo)
+admin.site.register(Mantenimiento)
