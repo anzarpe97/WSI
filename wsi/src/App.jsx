@@ -12,6 +12,7 @@ import RegistroMantenimiento from './components/admin/RegistroMantenimiento';
 import GestionEmpleados from './components/admin/GestionEmpleados';
 import GestionMantenimiento from './components/admin/GestionManteminimento';
 import EditarVehiculo from './components/admin/EditarVehiculo';
+import MenuDocumentos from './components/admin/MenuDocumentos';
 
 const App = () => {
   return (
@@ -22,18 +23,24 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/adminHome" element={<Home />} />
         <Route path="/recuperar-contraseña" element={<RecuperarContraseña />} />
+        {/* RUTAS EMPLEADOS ADMINISTRADOR*/}
         <Route path="/registro-empleado" element={<RegistroEmpleado />} />
         <Route path="/gestion-empleados" element={<GestionEmpleados />} />
+        {/* RUTAS DOCUMENTOS ADMINISTRADOR*/}
+        <Route path="/menu-documentos" element={<MenuDocumentos />} />
         <Route path="/registro-documentos-vehiculo" element={<RegistroDocumentosVehiculo />} />
+        {/* RUTAS VEHICULOS ADMINISTRADOR*/}
         <Route path="/registro-vehiculo" element={<RegistroVehiculo />} />
         <Route path="/editar-vehiculo/:id" element={<EditarVehiculo />} />
         <Route path="/ver-vehiculos" element={<VerVehiculos />} />
         <Route path="/detalle-vehiculo/:id" element={<DetalleVehiculo />} />
+        {/* RUTAS MANTENIMIENTO ADMINISTRADOR*/}        
         <Route path="/registro-mantenimiento" element={<RegistroMantenimiento />} />
         <Route path="/gestion-mantenimiento" element={<GestionMantenimiento />} />
               
-        {/* RUTAS ADMINISTRADOR*/}        
-        {/* RUTAS ADMINISTRADOR*/}
+        {/* RUTAS SUPERVISOR*/}     
+
+        {/* RUTAS USUARIO*/}
 
       </Routes>
     </Router>

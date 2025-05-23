@@ -1,0 +1,126 @@
+.menu-documentos-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+  background: #f5f5f5;
+}
+
+.menu-documentos-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+}
+
+#menu-documentos-bg img {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  opacity: 0.18;
+}
+
+.menu-documentos-content,
+#menu-documentos-content {
+  margin-top: 220px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 60vh;
+}
+
+.menu-documentos-grid,
+#menu-documentos-grid {
+  display: flex;
+  gap: 150px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+.menu-documentos-card,
+#menu-documentos-card-seguros,
+#menu-documentos-card-docvehiculo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #ff6a00;
+  color: #fff;
+  border-radius: 14px;
+  width: 210px;
+  height: 210px;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+  transition: all 0.3s;
+  font-size: 1.1rem;
+  font-weight: 600;
+  position: relative;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.menu-documentos-card svg {
+  margin-bottom: 12px;
+  font-size: 3.2rem;
+  color: #fff;
+  transition: transform 0.3s;
+}
+
+.menu-documentos-card p {
+  margin-top: 10px;
+  font-size: 1.08rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.menu-documentos-card:hover,
+#menu-documentos-card-seguros:hover,
+#menu-documentos-card-docvehiculo:hover {
+  background: #e65c00;
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 8px 18px rgba(255,106,0,0.18);
+}
+
+@media (max-width: 900px) {
+  .menu-documentos-grid,
+  #menu-documentos-grid {
+    flex-direction: column;
+    gap: 22px;
+    max-width: 100%;
+  }
+  .menu-documentos-card,
+  #menu-documentos-card-seguros,
+  #menu-documentos-card-docvehiculo {
+    width: 90vw;
+    max-width: 320px;
+    height: 170px;
+  }
+}
+
+@media (max-width: 600px) {
+  .menu-documentos-content,
+  #menu-documentos-content {
+    margin-top: 70px;
+    min-height: 50vh;
+  }
+  .menu-documentos-card,
+  #menu-documentos-card-seguros,
+  #menu-documentos-card-docvehiculo {
+    width: 95vw;
+    max-width: 98vw;
+    height: 130px;
+    font-size: 1rem;
+  }
+  .menu-documentos-card svg {
+    font-size: 2.2rem;
+  }
+}

@@ -69,18 +69,20 @@ const Home = () => {
     </Link>
     <Link to="/registro-mantenimiento" className="home-card">
       <FontAwesomeIcon icon={faWrench} size="3x" />
-      <p>Mantenimiento de vehículos</p>
+      <p>Registro de Mantenimientos</p>
     </Link>
+    <Link to="/menu-documentos" className="home-card">
+      <FontAwesomeIcon icon={faIdCard} size="3x" />
+      <p>Gestión de conductores</p>
+    </Link>
+    
+    {/* 6 nuevas cards */}
+    
     <Link to="/reportes" className="home-card">
       <FontAwesomeIcon icon={faChartBar} size="3x" />
       <p>Reportes</p>
     </Link>
 
-    {/* 6 nuevas cards */}
-    <Link to="/conductores" className="home-card">
-      <FontAwesomeIcon icon={faIdCard} size="3x" />
-      <p>Gestión de conductores</p>
-    </Link>
     <Link to="/ver-vehiculos" className="home-card">
     <FontAwesomeIcon icon={faCarBurst} size="3x" />
       <p>Gestión de Vehiculos</p>
