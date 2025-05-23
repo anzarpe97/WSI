@@ -1,13 +1,29 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileContract, faFileInvoice } from '@fortawesome/free-solid-svg-icons';
 import Header from '../header';
 import bgImage from '../../assets/bg-login.jpg';
 import '../../styles/MenuDocumentos.css';
+import { verifyToken } from '../../services/auth';
 
 const MenuDocumentos = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
     document.title = "WSI - Documentos";
+    const check = async () => {
+      try {
+        const result = await verifyToken();
+        if (!result.isValid) {
+          navigate('/login');
+        }
+      } catch {
+        navigate('/login');
+      }
+    };
+    check();
+  }, [navigate]);
 
   return (
     <div className="menu-documentos-wrapper" id="menu-documentos-wrapper">

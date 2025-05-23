@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
+from django.core.mail import EmailMultiAlternatives
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
@@ -8,9 +9,16 @@ from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
 from .models import Usuario, Vehiculo, Mantenimiento, DetalleMantenimiento
-from .serializers import MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer, RegistroUsuarioSerializer
+from .serializers import (
+    MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer,
+    VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer,
+    CustomAuthTokenSerializer, UsuarioSerializer
+)
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+
+from django.core.mail import send_mail
+from django.conf import settings
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -18,12 +26,25 @@ def get_csrf_token(request):
     token = get_token(request)
     return JsonResponse({'csrfToken': token})
 
-@csrf_exempt
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def registrar_usuario(request):
     serializer = RegistroUsuarioSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
+        usuario = serializer.save()
+        # Enviar correo de notificación al usuario registrado
+        try:
+            print("Intentando enviar correo a:", usuario.email)
+            send_mail(
+                subject='Registro exitoso en WSI',
+                message=f'Hola {usuario.nombre}, tu registro en WSI fue exitoso. ¡Bienvenido!',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[usuario.email],
+                fail_silently=False,
+            )
+            print("Correo enviado correctamente.")
+        except Exception as e:
+            print(f"Error enviando correo: {e}")
         return Response({"message": "Empleado registrado exitosamente"}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -97,7 +118,70 @@ class RegistroUsuarioAPIView(APIView):
     def post(self, request):
         serializer = RegistroUsuarioSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            usuario = serializer.save()
+            print("USUARIO CREADO")
+            # Enviar correo de notificación al usuario registrado
+            try:
+                print("Intentando enviar correo a:", usuario.email)
+                subject = 'WSI - Registro Exitoso'
+                from_email = settings.DEFAULT_FROM_EMAIL
+                to_email = [usuario.email]
+                text_content = (
+                    f'Hola {usuario.nombre}, tu registro en WSI fue exitoso.\n'
+                    f'Correo: {usuario.email}\n'
+                    f'Contraseña: {request.data.get("password")}\n'
+                    '¡Bienvenido!'
+                )
+                html_content = f"""
+                                    <html>
+                                    <body style="margin:0;padding:0;background:#f5f5f5;">
+                                        <table width="100%" bgcolor="#f5f5f5" cellpadding="0" cellspacing="0" style="padding:0;margin:0;">
+                                        <tr>
+                                            <td align="center">
+                                            <table width="100%" style="max-width:540px;margin:40px auto;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.10);overflow:hidden;">
+                                                <tr>
+                                                <td style="background:#ff6a00;padding:32px 0;text-align:center;">
+                                                    <h1 style="color:#fff;margin:0;font-size:2.2rem;letter-spacing:2px;">WSI</h1>
+                                                </td>
+                                                </tr>
+                                                <tr>
+                                                <td style="padding:36px 32px 24px 32px;">
+                                                    <h2 style="color:#222;margin-top:0;font-size:1.5rem;">¡Registro exitoso!</h2>
+                                                    <p style="color:#222;font-size:1.12rem;margin-bottom:24px;">
+                                                    Hola <b>{usuario.nombre}</b>,<br>
+                                                    Tu registro en <b>WSI</b> fue exitoso.<br>
+                                                    Aquí tienes tus datos de acceso:
+                                                    </p>
+                                                    <div style="margin: 0 0 28px 0; padding: 20px; background: #fff8f2; border-radius: 12px; border: 2px solid #ff6a00;">
+                                                    <p style="margin:0;color:#222;font-size:1.08rem;">
+                                                        <b style="color:#ff6a00;">Correo:</b> {usuario.email}<br>
+                                                        <b style="color:#ff6a00;">Contraseña:</b> {request.data.get("password")}
+                                                    </p>
+                                                    </div>
+                                                    <p style="color:#222;font-size:1rem;margin-bottom:0;">
+                                                    Te recomendamos cambiar tu contraseña después de iniciar sesión.<br>
+                                                    ¡Bienvenido a <span style="color:#ff6a00;font-weight:bold;">World Service International</span>!
+                                                    </p>
+                                                </td>
+                                                </tr>
+                                                <tr>
+                                                <td style="background:#222;color:#fff;text-align:center;padding:14px 0;font-size:1rem;border-radius:0 0 16px 16px;">
+                                                    © WSI {2025}
+                                                </td>
+                                                </tr>
+                                            </table>
+                                            </td>
+                                        </tr>
+                                        </table>
+                                    </body>
+                                    </html>
+"""
+                msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
+                print("Correo enviado correctamente.")
+            except Exception as e:
+                print(f"Error enviando correo: {e}")
             return Response({"mensaje": "Usuario registrado correctamente"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -120,15 +204,12 @@ class VehiculoDetailView(generics.RetrieveAPIView):
     lookup_field = 'id_vehiculo'
     
 class VehiculoMecanicoComboAPIView(APIView):
-    
     permission_classes = [permissions.IsAuthenticated]  # O AllowAny si no requieres autenticación
 
     def get(self, request):
-        # Vehículos: id_vehicul y placa
         vehiculos = Vehiculo.objects.all()
         vehiculos_data = VehiculoPlacaSerializer(vehiculos, many=True).data
 
-        # Usuarios con rol = 2 (Empleado)
         usuarios = Usuario.objects.filter(rol='2')
         usuarios_data = MecanicoSerializer(usuarios, many=True).data
 
@@ -151,11 +232,8 @@ class BuscarVehiculoPorPlacaAPIView(APIView):
         try:
             vehiculo = Vehiculo.objects.get(placa=placa)
             serializer = PlacaSerializer(vehiculo)
-            print("puto")
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Vehiculo.DoesNotExist:
-            print("reputo")
-            
             return Response({"detail": "Placa no registrada"}, status=status.HTTP_404_NOT_FOUND)
     
 class CrearMantenimientoAPIView(APIView):
@@ -180,9 +258,8 @@ class CrearMantenimientoAPIView(APIView):
                     precio_und=suministro['precio_und'],
                     total=suministro['total']
                 )
-            # Cambiar el estado del vehículo
             vehiculo = Vehiculo.objects.get(pk=data['id_vehiculo'])
-            vehiculo.estado = 'EN_MANTENIMIENTO'  # O el estado que desees
+            vehiculo.estado = 'EN_MANTENIMIENTO'
             vehiculo.save()
 
             return Response({"message": "Mantenimiento y suministros registrados correctamente"}, status=status.HTTP_201_CREATED)
@@ -196,31 +273,4 @@ class MantenimientoListAPIView(ListAPIView):
 class VehiculoUpdateView(RetrieveUpdateAPIView):
     queryset = Vehiculo.objects.all()
     serializer_class = VehiculoSerializer
-    lookup_field = 'id_vehiculo'    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    lookup_field = 'id_vehiculo'

@@ -112,7 +112,7 @@ REST_FRAMEWORK = {
 }
 
 
-# --- CORS ---
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -120,18 +120,22 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
-# --- CSRF ---
+
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
 
 CSRF_COOKIE_NAME = "csrftoken"
-CSRF_COOKIE_SECURE = False        # En producción debe ser True si usas HTTPS
-CSRF_COOKIE_HTTPONLY = False      # Para poder acceder desde JS (si necesario)
-CSRF_COOKIE_SAMESITE = 'Lax'      # Protege CSRF
+CSRF_COOKIE_SECURE = False        
+CSRF_COOKIE_HTTPONLY = False      
+CSRF_COOKIE_SAMESITE = 'Lax' 
 
-
-# --- Otros posibles ajustes (opcional) ---
-# SESSION_COOKIE_SECURE = False    # Igual que CSRF_COOKIE_SECURE
-# SESSION_COOKIE_SAMESITE = 'Lax'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'enviarpruebacorreo1@gmail.com'
+EMAIL_HOST_PASSWORD = 'ppmc jwgm cpjd nbrs'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+DEFAULT_FROM_EMAIL = 'WSI <enviarpruebacorreo1@gmail.com>'

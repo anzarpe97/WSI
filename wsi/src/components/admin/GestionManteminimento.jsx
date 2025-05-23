@@ -113,7 +113,7 @@ const GestionMantenimiento = () => {
         {/* Filtros */}
         <div style={{ marginBottom: 16 }}>
           <label style={{ marginRight: 8 }}>Filtrar por estado:</label>
-          <select value={filtroEstado} onChange={handleFiltroEstado}  className="mantenimiento-filtro-select" >
+          <select value={filtroEstado} onChange={handleFiltroEstado} className="mantenimiento-filtro-select" >
             <option value="">Todos</option>
             <option value="ACTIVO">En Proceso</option>
             <option value="FINALIZADO">Completado</option>
@@ -199,6 +199,16 @@ const GestionMantenimiento = () => {
             <button
               onClick={() => handlePagina(paginaActual - 1)}
               disabled={paginaActual === 1}
+              style={{
+                background: '#fafafa',
+                border: '1.5px solid #222',
+                color: '#ff6a00',
+                borderRadius: 8,
+                padding: '6px 16px',
+                fontWeight: 600,
+                cursor: paginaActual === 1 ? 'not-allowed' : 'pointer',
+                opacity: paginaActual === 1 ? 0.6 : 1
+              }}
             >
               Anterior
             </button>
@@ -207,9 +217,15 @@ const GestionMantenimiento = () => {
                 key={idx + 1}
                 onClick={() => handlePagina(idx + 1)}
                 style={{
-                  fontWeight: paginaActual === idx + 1 ? 'bold' : 'normal',
-                  background: paginaActual === idx + 1 ? '#ff6a00' : undefined,
-                  color: paginaActual === idx + 1 ? '#fff' : undefined
+                  background: '#fafafa',
+                  border: '1.5px solid #222',
+                  color: '#ff6a00',
+                  borderRadius: 8,
+                  padding: '6px 16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: paginaActual === idx + 1 ? '0 0 0 2px #ff6a00' : undefined,
+                  borderColor: paginaActual === idx + 1 ? '#ff6a00' : '#222'
                 }}
               >
                 {idx + 1}
@@ -218,6 +234,16 @@ const GestionMantenimiento = () => {
             <button
               onClick={() => handlePagina(paginaActual + 1)}
               disabled={paginaActual === totalPaginas}
+              style={{
+                background: '#fff',
+                border: '1.5px solid #222',
+                color: '#ff6a00',
+                borderRadius: 8,
+                padding: '6px 16px',
+                fontWeight: 600,
+                cursor: paginaActual === totalPaginas ? 'not-allowed' : 'pointer',
+                opacity: paginaActual === totalPaginas ? 0.6 : 1
+              }}
             >
               Siguiente
             </button>
