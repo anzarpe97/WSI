@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
-from .models import Usuario, Vehiculo, Mantenimiento
+from .models import Usuario, Vehiculo, Mantenimiento, DocumentoChofer
 import re
 
 User = get_user_model()
@@ -277,3 +277,7 @@ class MantenimientoSerializer(serializers.ModelSerializer):
         model = Mantenimiento
         fields = ['id_mantenimiento', 'motivo', 'placa', 'estado', 'fecha_programada']
 
+class DocumentoChoferSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DocumentoChofer
+        fields = '__all__'

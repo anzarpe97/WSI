@@ -72,7 +72,7 @@ DATABASES = {
 }
 
 
-# --- Autenticación ---
+# --- Aución ---
 AUTH_USER_MODEL = 'WSI_API.Usuario'
 
 

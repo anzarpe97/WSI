@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django.urls import path
-from WSI_API.views import VehiculoUpdateView, MantenimientoListAPIView, CrearMantenimientoAPIView,  BuscarVehiculoPorPlacaAPIView, UsuarioListAPIView, VehiculoMecanicoComboAPIView, VehiculoDetailView, VehiculoListView,VehiculoCreateView, CustomLoginView, VerifyTokenView, registrar_usuario, get_csrf_token,RegistroUsuarioAPIView
+from WSI_API.views import BuscarChoferPorCedulaAPIView, DocumentoChoferCreateAPIView, VehiculoUpdateView, MantenimientoListAPIView, CrearMantenimientoAPIView,  BuscarVehiculoPorPlacaAPIView, UsuarioListAPIView, VehiculoMecanicoComboAPIView, VehiculoDetailView, VehiculoListView,VehiculoCreateView, CustomLoginView, VerifyTokenView, registrar_usuario, get_csrf_token,RegistroUsuarioAPIView
 
 urlpatterns = [
+    
     path('admin/', admin.site.urls),
     path('api/login/', CustomLoginView.as_view(), name='custom_login'),
     path('api/verify-token/', VerifyTokenView.as_view(), name='verify-token'),
@@ -17,6 +18,6 @@ urlpatterns = [
     path('api/usuarios/', UsuarioListAPIView.as_view(), name='usuarios-list'),
     path('api/mantenimientos/', MantenimientoListAPIView.as_view(), name='listar-mantenimientos'),
     path('api/mantenimientos/crear/', CrearMantenimientoAPIView.as_view(), name='crear-mantenimiento'),
-
-
+    path('api/documentos-choferes/', DocumentoChoferCreateAPIView.as_view(), name='documentos-choferes-create'),
+     path('api/choferes/', BuscarChoferPorCedulaAPIView.as_view(), name='buscar-chofer-por-cedula'),
 ]

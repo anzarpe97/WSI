@@ -2,6 +2,7 @@ from django.db import models
 from datetime import datetime
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
+
 # USUARIO PERSONALIZADO DJANGO
 class UsuarioManager(BaseUserManager):
     def create_user(self, email, nombre, apellido, tipoCedula, cedula, telefono, rol, password=None):
@@ -164,7 +165,7 @@ class MotivoMantenimiento(models.Model):
         verbose_name_plural = 'Motivos Mantenimiento'
         db_table = 'motivo_mantenimiento'
               
-# MODELO DE DETALLE DE MANTENIMIENTO        
+# MODELO DE DETALLE DE ANTENIMIENTO        
 class DetalleMantenimiento(models.Model):
     
     # ATRIBUTOS MODELO DETALLE MANTENIMIENTO
@@ -183,3 +184,31 @@ class DetalleMantenimiento(models.Model):
         verbose_name = 'Detalle Mantenimiento'
         verbose_name_plural = 'Detalles Mantenimiento'
         db_table = 'detalle_mantenimiento'
+        
+# MODELO DE DOCUMENTO CHOFERES
+class DocumentoChofer(models.Model):
+    TIPO_DOCUMENTO_CHOICES = [
+        ('CEDULA_IDENTIDAD', 'Cédula de Identidad'),
+        ('LICENCIA_CONDUCIR', 'Licencia de Conducir'),
+        ('CARTA_MEDICA', 'Carta Médica'),
+    ]
+    
+    id_documento_chofer = models.AutoField(primary_key=True)
+    chofer = models.ForeignKey('Usuario', on_delete=models.RESTRICT, limit_choices_to={'rol': '2'}, null=False)    
+    tipo_documento = models.CharField(max_length=30, choices=TIPO_DOCUMENTO_CHOICES)
+    numero_documento = models.CharField(max_length=50)
+    fecha_emision = models.DateField()
+    fecha_caducidad = models.DateField()
+    archivo = models.FileField(upload_to='documentos_choferes/')
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.chofer.nombre} {self.chofer.apellido} - {self.tipo_documento} - {self.numero_documento}"
+
+
+
+
+
+
+
+        

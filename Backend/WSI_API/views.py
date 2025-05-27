@@ -9,14 +9,9 @@ from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
 from .models import Usuario, Vehiculo, Mantenimiento, DetalleMantenimiento
-from .serializers import (
-    MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer,
-    VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer,
-    CustomAuthTokenSerializer, UsuarioSerializer
-)
+from .serializers import ( DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -274,3 +269,48 @@ class VehiculoUpdateView(RetrieveUpdateAPIView):
     queryset = Vehiculo.objects.all()
     serializer_class = VehiculoSerializer
     lookup_field = 'id_vehiculo'
+    
+class DocumentoChoferCreateAPIView(APIView):
+    def post(self, request, format=None):
+        serializer = DocumentoChoferSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class BuscarChoferPorCedulaAPIView(APIView):
+    def get(self, request):
+        cedula = request.GET.get('cedula')
+        if not cedula:
+            return Response({'error': 'Debe proporcionar una cédula'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            chofer = Usuario.objects.get(cedula=cedula, rol='2')
+            return Response({
+                'id': chofer.id,
+                'nombre': chofer.nombre,
+                'apellido': chofer.apellido
+            }, status=status.HTTP_200_OK)
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Chofer no encontrado'}, status=status.HTTP_404_NOT_FOUND)    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileContract, faFileInvoice } from '@fortawesome/free-solid-svg-icons';
+import { faTruckMoving, faUserGear } from '@fortawesome/free-solid-svg-icons';
 import Header from '../header';
 import bgImage from '../../assets/bg-login.jpg';
 import '../../styles/MenuDocumentos.css';
@@ -31,12 +31,12 @@ const MenuDocumentos = () => {
       <div className="menu-documentos-content" id="menu-documentos-content">
         <div className="menu-documentos-grid" id="menu-documentos-grid">
           <Link to="/seguros" className="menu-documentos-card" id="menu-documentos-card-seguros">
-            <FontAwesomeIcon icon={faFileContract} size="3x" />
-            <p>Registro Documento Choferes</p>
+            <FontAwesomeIcon icon={faTruckMoving} size="3x" />
+            <p>Registro Documento Vehiculos</p>
           </Link>
-          <Link to="/documentos-vehiculo" className="menu-documentos-card" id="menu-documentos-card-docvehiculo">
-            <FontAwesomeIcon icon={faFileInvoice} size="3x" />
-            <p>Registro Documentos Vehículo</p>
+          <Link to="/registro-documentos-choferes" className="menu-documentos-card" id="menu-documentos-card-docvehiculo">
+            <FontAwesomeIcon icon={faUserGear} size="3x" />
+            <p>Registro Documentos Choferes</p>
           </Link>
         </div>
       </div>
