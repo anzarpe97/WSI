@@ -21,6 +21,7 @@ const RegistroDocumentoChoferes = () => {
   const [fechaError, setFechaError] = useState('');
   const [file, setFile] = useState(null);
   const [fileError, setFileError] = useState('');
+  const [documentosRegistrados, setDocumentosRegistrados] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -65,30 +66,59 @@ const RegistroDocumentoChoferes = () => {
             apellido: data.apellido
           });
           toast.success("Chofer encontrado");
+
+          // Consultar documentos ya registrados por el chofer
+          const docsResponse = await fetch(`http://localhost:8000/api/documentos-choferes-verificar/?chofer=${data.id}`);
+          if (docsResponse.ok) {
+            const docsData = await docsResponse.json();
+            setDocumentosRegistrados(docsData.map(doc => doc.tipo_documento));
+          } else {
+            setDocumentosRegistrados([]);
+          }
         } else {
           setChoferInfo(null);
           setCedulaError("El número de cédula no ha sido registrado");
+          setDocumentosRegistrados([]);
         }
       } else {
         setChoferInfo(null);
         setCedulaError("El número de cédula no ha sido registrado");
+        setDocumentosRegistrados([]);
       }
     } catch {
       setChoferInfo(null);
       setCedulaError("Error al buscar chofer");
+      setDocumentosRegistrados([]);
     } finally {
       setIsSearching(false);
     }
   };
 
-  const validateDates = () => {
-    if (fechaEmision && fechaCaducidad && new Date(fechaCaducidad) < new Date(fechaEmision)) {
-      setFechaError('La caducidad debe ser posterior a la emisión');
-      return false;
-    }
-    setFechaError('');
-    return true;
+  // Calcula la fecha de caducidad automáticamente
+  const calcularFechaCaducidad = (tipo, emision) => {
+    if (!tipo || !emision) return '';
+    const fecha = new Date(emision);
+    let anios = 0;
+    if (tipo === 'CEDULA_IDENTIDAD') anios = 10;
+    if (tipo === 'LICENCIA_CONDUCIR') anios = 5;
+    if (tipo === 'CARTA_MEDICA') anios = 5;
+    fecha.setFullYear(fecha.getFullYear() + anios);
+    return fecha.toISOString().split('T')[0];
   };
+
+  // Actualiza la fecha de caducidad automáticamente y valida vigencia
+  useEffect(() => {
+    if (tipoDocumento && fechaEmision) {
+      const nuevaFechaCaducidad = calcularFechaCaducidad(tipoDocumento, fechaEmision);
+      setFechaCaducidad(nuevaFechaCaducidad);
+
+      if (nuevaFechaCaducidad && new Date(nuevaFechaCaducidad) < new Date()) {
+        toast.error('El documento ya está vencido. Solo se deben registrar documentos vigentes.');
+      }
+    } else {
+      setFechaCaducidad('');
+    }
+  }, [tipoDocumento, fechaEmision]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -108,6 +138,10 @@ const RegistroDocumentoChoferes = () => {
     setFileError('');
   };
 
+  const limpiarTexto = (texto) => {
+  return texto.replace(/[^A-Za-z0-9_]/g, ''); // permite el guion bajo
+};
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -123,22 +157,39 @@ const RegistroDocumentoChoferes = () => {
       toast.error('Número de documento requerido');
       return;
     }
-    if (!validateDates()) return;
+    if (!fechaEmision || !fechaCaducidad) {
+      toast.error('Debe seleccionar la fecha de emisión');
+      return;
+    }
+    if (new Date(fechaCaducidad) < new Date()) {
+      toast.error('No se puede registrar un documento vencido');
+      return;
+    }
     if (!file) {
       toast.error('Debe subir el documento digital');
       return;
     }
 
+    // Limpiar caracteres especiales
+    const cedulaLimpia = limpiarTexto(cedula);
+    const tipoDocumentoLimpio = limpiarTexto(tipoDocumento);
+    const numeroDocumentoLimpio = limpiarTexto(documentNumber);
+
+    // Cambiar el nombre del archivo antes de enviarlo
+    const ext = file.name.split('.').pop();
+    const newFileName = `${cedulaLimpia}_${tipoDocumentoLimpio}.${ext}`;
+    const renamedFile = new File([file], newFileName, { type: file.type });
+
     const formData = new FormData();
-    formData.append('cedula', cedula);
+    formData.append('cedula', cedulaLimpia);
     formData.append('chofer', choferInfo.id);
     formData.append('nombre', choferInfo.nombre);
     formData.append('apellido', choferInfo.apellido);
-    formData.append('tipo_documento', tipoDocumento);
-    formData.append('numero_documento', documentNumber);
+    formData.append('tipo_documento', tipoDocumentoLimpio);
+    formData.append('numero_documento', numeroDocumentoLimpio);
     formData.append('fecha_emision', fechaEmision);
     formData.append('fecha_caducidad', fechaCaducidad);
-    formData.append('archivo', file);
+    formData.append('archivo', renamedFile);
 
     try {
       const response = await fetch('http://localhost:8000/api/documentos-choferes/', {
@@ -155,10 +206,14 @@ const RegistroDocumentoChoferes = () => {
         setFechaEmision('');
         setFechaCaducidad('');
         setFile(null);
+        setDocumentosRegistrados([]);
       } else {
+        const errorData = await response.json();
+        console.log(errorData); // Aquí verás el detalle del error
         toast.error('Error al registrar el documento');
       }
     } catch (error) {
+      console.log(error); // Aquí verás el detalle del error de red
       toast.error('Error de conexión con el servidor');
     }
   };
@@ -241,9 +296,9 @@ const RegistroDocumentoChoferes = () => {
                   aria-required="true"
                 >
                   <option value="">Seleccione un tipo</option>
-                  <option value="CEDULA_IDENTIDAD">Cedula de Identidad</option>
-                  <option value="LICENCIA_CONDUCIR">Licencia De Conducir</option>
-                  <option value="CARTA_MEDICA">Carta Medica</option>
+                  <option value="CEDULA_IDENTIDAD" disabled={documentosRegistrados.includes('CEDULA_IDENTIDAD')}>Cedula de Identidad</option>
+                  <option value="LICENCIA_CONDUCIR" disabled={documentosRegistrados.includes('LICENCIA_CONDUCIR')}>Licencia De Conducir</option>
+                  <option value="CARTA_MEDICA" disabled={documentosRegistrados.includes('CARTA_MEDICA')}>Carta Medica</option>
                 </select>
                 {!tipoDocumento && (
                   <div className="error-message">Campo requerido</div>
@@ -277,9 +332,8 @@ const RegistroDocumentoChoferes = () => {
                   <input
                     type="date"
                     value={fechaCaducidad}
-                    onChange={(e) => setFechaCaducidad(e.target.value)}
-                    placeholder="dd/mm/aaaa"
-                    min={fechaEmision}
+                    readOnly
+                    disabled
                   />
                 </div>
               </div>

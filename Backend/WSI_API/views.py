@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
-from .models import Usuario, Vehiculo, Mantenimiento, DetalleMantenimiento
+from .models import Usuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
 from .serializers import ( DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -292,7 +292,15 @@ class BuscarChoferPorCedulaAPIView(APIView):
             }, status=status.HTTP_200_OK)
         except Usuario.DoesNotExist:
             return Response({'error': 'Chofer no encontrado'}, status=status.HTTP_404_NOT_FOUND)    
-    
+        
+class DocumentosChoferListAPIView(APIView):
+    def get(self, request):
+        chofer_id = request.GET.get('chofer')
+        if not chofer_id:
+            return Response({'error': 'Debe proporcionar el id del chofer'}, status=status.HTTP_400_BAD_REQUEST)
+        documentos = DocumentoChofer.objects.filter(chofer_id=chofer_id)
+        serializer = DocumentoChoferSerializer(documentos, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     
     
