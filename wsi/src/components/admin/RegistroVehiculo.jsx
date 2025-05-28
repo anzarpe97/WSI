@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from '../header';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -6,18 +6,54 @@ import bgImage from '../../assets/camion-login.png';
 import '../../styles/RegistroVehiculo.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { verifyToken } from '../../services/auth';
 
 const RegistroVehiculo = () => {
   const navigate = useNavigate();
+  const inactivityTimer = useRef(null);
 
+  // Verificación de token y temporizador de inactividad
   useEffect(() => {
     document.title = "WSI - Registro Vehículo";
+    const check = async () => {
+      try {
+        const result = await verifyToken();
+        if (!result.isValid) {
+          logout();
+        }
+      } catch (error) {
+        logout();
+      }
+    };
+    check();
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    }
+    // --- Temporizador de inactividad ---
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        toast.info('Sesión cerrada por inactividad');
+        logout(true);
+      }, 300000); // 5 minutos = 300,000 ms
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+    // --- Fin temporizador ---
+    // eslint-disable-next-line
   }, [navigate]);
+
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    navigate('/login', {
+      replace: true,
+      state: isInactivityLogout ? { sessionExpired: true } : undefined
+    });
+  };
 
   const [form, setForm] = useState({
     placaVehiculo: '',

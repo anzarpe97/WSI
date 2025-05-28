@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
@@ -23,20 +23,49 @@ const RegistroDocumentoChoferes = () => {
   const [fileError, setFileError] = useState('');
   const [documentosRegistrados, setDocumentosRegistrados] = useState([]);
   const navigate = useNavigate();
+  const inactivityTimer = useRef(null);
+
+  // --- Logout y temporizador de inactividad ---
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    navigate('/login', {
+      replace: true,
+      state: isInactivityLogout ? { sessionExpired: true } : undefined
+    });
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const result = await verifyToken();
         if (!(result.isValid && result.user)) {
-          navigate('/login', { replace: true });
+          logout();
         }
       } catch (error) {
-        navigate('/login', { replace: true });
+        logout();
       }
     };
     checkAuth();
+
+    // --- Temporizador de inactividad ---
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        toast.info('Sesión cerrada por inactividad');
+        logout(true);
+      }, 300000); // 5 minutos = 300,000 ms
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+    // --- Fin temporizador ---
   }, [navigate]);
+  // --- Fin Logout y temporizador ---
 
   const validarCedula = (cedula) => /^\d{7,8}$/.test(cedula);
 
@@ -139,8 +168,8 @@ const RegistroDocumentoChoferes = () => {
   };
 
   const limpiarTexto = (texto) => {
-  return texto.replace(/[^A-Za-z0-9_]/g, ''); // permite el guion bajo
-};
+    return texto.replace(/[^A-Za-z0-9_]/g, ''); // permite el guion bajo
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();

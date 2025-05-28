@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/GestionMantenimiento.css';
 import { useNavigate } from 'react-router-dom';
 import Header from '../header';
 import bgImage from '../../assets/bg-login.jpg';
+import { toast } from 'react-toastify';
 
 const PAGE_SIZE = 5; // Cambia este valor si quieres más o menos filas por página
 
@@ -13,6 +14,16 @@ const GestionMantenimiento = () => {
   const [filtroEstado, setFiltroEstado] = useState('');
   const [paginaActual, setPaginaActual] = useState(1);
   const navigate = useNavigate();
+  const inactivityTimer = useRef(null);
+
+  // Logout y temporizador de inactividad
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    navigate('/login', {
+      replace: true,
+      state: isInactivityLogout ? { sessionExpired: true } : undefined
+    });
+  };
 
   useEffect(() => {
     const fetchMantenimientos = async () => {
@@ -31,7 +42,25 @@ const GestionMantenimiento = () => {
       }
     };
     fetchMantenimientos();
-  }, []);
+
+    // --- Temporizador de inactividad ---
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        toast.info('Sesión cerrada por inactividad');
+        logout(true);
+      }, 300000); // 5 minutos = 300,000 ms
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+    // --- Fin temporizador ---
+  }, [navigate]);
 
   // Filtro por estado
   const mantenimientosFiltrados = filtroEstado

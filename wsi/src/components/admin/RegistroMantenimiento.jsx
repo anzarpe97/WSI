@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faSearch, faCar, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
@@ -6,8 +6,58 @@ import 'react-toastify/dist/ReactToastify.css';
 import "../../styles/RegistroMantenimiento.css";
 import bgImage from '../../assets/bg-login.jpg';
 import Header from '../header';
+import { useNavigate } from "react-router-dom";
+import { verifyToken } from "../../services/auth";
 
 const RegistroMantenimiento = () => {
+  // --- Manejo de sesión e inactividad ---
+  const navigate = useNavigate();
+  const inactivityTimer = useRef(null);
+
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    navigate('/login', {
+      replace: true,
+      state: isInactivityLogout ? { sessionExpired: true } : undefined
+    });
+  };
+
+  // Verificación de token y temporizador de inactividad
+  useEffect(() => {
+    document.title = "WSI - Registro Mantenimiento";
+    const check = async () => {
+      try {
+        const result = await verifyToken();
+        if (!result.isValid) {
+          logout();
+        }
+      } catch (error) {
+        logout();
+      }
+    };
+    check();
+
+    // --- Temporizador de inactividad ---
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        toast.info('Sesión cerrada por inactividad');
+        logout(true);
+      }, 300000); // 5 minutos = 300,000 ms
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+    // --- Fin temporizador ---
+    // eslint-disable-next-line
+  }, [navigate]);
+  // --- Fin manejo de sesión e inactividad ---
+
   // Estados para suministros
   const [suministros, setSuministros] = useState([{
     detalle: '',

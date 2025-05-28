@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTruckMoving, faUserGear } from '@fortawesome/free-solid-svg-icons';
@@ -6,9 +6,19 @@ import Header from '../header';
 import bgImage from '../../assets/bg-login.jpg';
 import '../../styles/MenuDocumentos.css';
 import { verifyToken } from '../../services/auth';
+import { toast } from 'react-toastify';
 
 const MenuDocumentos = () => {
   const navigate = useNavigate();
+  const inactivityTimer = useRef(null);
+
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    navigate('/login', {
+      replace: true,
+      state: isInactivityLogout ? { sessionExpired: true } : undefined
+    });
+  };
 
   useEffect(() => {
     document.title = "WSI - Documentos";
@@ -16,13 +26,31 @@ const MenuDocumentos = () => {
       try {
         const result = await verifyToken();
         if (!result.isValid) {
-          navigate('/login');
+          logout();
         }
       } catch {
-        navigate('/login');
+        logout();
       }
     };
     check();
+
+    // --- Temporizador de inactividad ---
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        toast.info('Sesión cerrada por inactividad');
+        logout(true);
+      }, 300000); // 5 minutos = 300,000 ms
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+    // --- Fin temporizador ---
   }, [navigate]);
 
   return (

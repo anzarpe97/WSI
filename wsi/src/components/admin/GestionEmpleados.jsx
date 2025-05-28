@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/GestionEmpleados.css';
@@ -16,12 +16,22 @@ const GestionEmpleados = () => {
   const [filtroCedula, setFiltroCedula] = useState('');
   const [paginaActual, setPaginaActual] = useState(1);
   const navigate = useNavigate();
+  const inactivityTimer = useRef(null);
+
+  // Logout y temporizador de inactividad
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    navigate('/login', {
+      replace: true,
+      state: isInactivityLogout ? { sessionExpired: true } : undefined
+    });
+  };
 
   useEffect(() => {
     document.title = "WSI - Empleados";
     const token = localStorage.getItem("token");
     if (!token) {
-      navigate('/login');
+      logout();
       return;
     }
 
@@ -32,7 +42,7 @@ const GestionEmpleados = () => {
     })
       .then(res => {
         if (res.status === 401) {
-          navigate('/login');
+          logout();
           return null;
         }
         return res.json();
@@ -45,6 +55,24 @@ const GestionEmpleados = () => {
       })
       .catch(() => toast.error('No se pudieron cargar los empleados'))
       .finally(() => setLoading(false));
+
+    // --- Temporizador de inactividad ---
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        toast.info('Sesión cerrada por inactividad');
+        logout(true);
+      }, 300000); // 5 minutos = 300,000 ms
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+    // --- Fin temporizador ---
   }, [navigate]);
 
   // Filtro por cédula
@@ -234,6 +262,7 @@ const GestionEmpleados = () => {
           </div>
         )}
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

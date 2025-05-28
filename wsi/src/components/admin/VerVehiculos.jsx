@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/VerVehiculos.css';
@@ -7,6 +7,7 @@ import Header from '../header';
 import bgImage from '../../assets/bg-login.jpg';
 import { verifyToken } from '../../services/auth';
 import { getVehiculos } from '../../services/vehiculos';
+import { toast } from 'react-toastify';
 
 const PAGE_SIZE = 5;
 
@@ -18,6 +19,16 @@ const VerVehiculos = () => {
   const [filtroPlaca, setFiltroPlaca] = useState('');
   const [paginaActual, setPaginaActual] = useState(1);
   const navigate = useNavigate();
+  const inactivityTimer = useRef(null);
+
+  // Logout y temporizador de inactividad
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    navigate('/login', {
+      replace: true,
+      state: isInactivityLogout ? { sessionExpired: true } : undefined
+    });
+  };
 
   useEffect(() => {
     document.title = "WSI - Vehículos";
@@ -25,7 +36,7 @@ const VerVehiculos = () => {
       try {
         const result = await verifyToken();
         if (!result.isValid) {
-          navigate('/login');
+          logout();
           return;
         }
         const data = await getVehiculos();
@@ -37,6 +48,24 @@ const VerVehiculos = () => {
       }
     };
     check();
+
+    // --- Temporizador de inactividad ---
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        toast.info('Sesión cerrada por inactividad');
+        logout(true);
+      }, 300000); // 5 minutos = 300,000 ms
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+    // --- Fin temporizador ---
   }, [navigate]);
 
   // Filtros

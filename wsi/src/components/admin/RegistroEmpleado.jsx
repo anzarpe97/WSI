@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/RegistroEmpleado.css";
 import Header from '../header';
@@ -23,14 +23,24 @@ const RegistroEmpleado = () => {
 
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const inactivityTimer = useRef(null);
 
-  // Verificación de token
+  // Función para cerrar sesión
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem("token");
+    navigate("/login", {
+      replace: true,
+      state: isInactivityLogout ? { sessionExpired: true } : undefined
+    });
+  };
+
+  // Verificación de token y temporizador de inactividad
   useEffect(() => {
     document.title = "WSI - Registro Empleado";
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("Debe iniciar sesión para acceder a esta página");
-      navigate("/login");
+      logout();
       return;
     }
     axios
@@ -40,8 +50,26 @@ const RegistroEmpleado = () => {
       .catch(() => {
         localStorage.removeItem("token");
         toast.error("Sesión expirada, por favor inicie sesión nuevamente");
-        navigate("/login");
+        logout();
       });
+
+    // --- Temporizador de inactividad ---
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        toast.info('Sesión cerrada por inactividad');
+        logout(true);
+      }, 300000); // 5 minutos = 300,000 ms
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+    // --- Fin temporizador ---
   }, [navigate]);
 
   const handleChange = (e) => {
