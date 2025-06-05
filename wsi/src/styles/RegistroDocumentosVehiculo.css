@@ -1,161 +1,314 @@
-/* Reset básico */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* RegistroDocumentosVehiculo.css */
 
-html, body {
-  overflow: visible; /* Cambiado de auto a visible */
-  height: auto; /* Cambiado de 100% a auto */
-}
-
-body {
-  font-family: 'Arial', sans-serif;
-  background-color: #f5f5f5;
-  overflow-x: hidden; /* Evita el scroll horizontal */
-}
-
-/* Header */
-.registro-header {
-  width: 100%;
-  background-color: #ff6a00;
-  padding: 20px 0;
-  text-align: center;
-  position: sticky; /* Mantiene sticky */
-  top: 0;
-  z-index: 2;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.registro-header h1 {
-  margin: 0;
-  color: white; /* Color del texto */
-  font-size: 2rem; /* Tamaño de fuente */
-  font-weight: bold; /* Negrita */
-}
-
-/* Wrapper principal */
+/* Estilos base y layout */
 .registro-documentos-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start; /* Cambiado de center a flex-start */
-  min-height: auto; /* Cambiado de 100vh a auto */
-  padding: 120px 20px; /* Ajustado para evitar que el header cubra el contenido */
-  background-color: #f5f5f5;
-  position: relative;
-  z-index: 1;
+  min-height: 100vh;
+  background: #f5f5f5;
+  overflow-y: visible; /* Cambiado de auto a visible para evitar scroll duplicado */
+  height: auto; /* Ajustar altura automáticamente */
 }
 
-/* Fondo */
-.registro-documentos-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
+.registro-documentos-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Alinear al inicio en vez de centro */
+  position: relative;
+  padding: 80px 20px 40px; /* Reducir padding superior para acercar a la navbar */
+  min-height: auto; /* Cambiado de 100vh a auto para evitar scroll duplicado */
+  overflow-y: visible; /* Permitir que el contenido se desborde verticalmente */
 }
+
+/* Fondo gris */
+.registro-documentos-bg {
+  position: absolute; /* Cambiado de fixed a absolute para permitir scroll */
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  background: #f5f5f5;
+}
+
 
 .registro-documentos-bg img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.2;
+  display: none;
 }
 
 /* Contenedor principal */
 .registro-documentos-container {
-  max-width: 600px;
   width: 100%;
+  max-width: 1000px;
   background: white;
-  border-radius: 15px;
-  padding: 30px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  margin: 20px auto;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  padding: 36px 32px;
+  margin: 0 auto;
 }
 
-/* Título */
-.titulo {
-  text-align: center;
-  font-size: 24px;
-  font-weight: bold;
+.registro-documentos-title {
   color: #333;
-  margin-bottom: 20px;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  text-align: center;
+  letter-spacing: 1px;
 }
 
 /* Formulario */
-.formulario {
+.registro-documentos-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
 }
 
-.fila {
+/* Secciones */
+.registro-documentos-section {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eee;
+}
+
+.registro-documentos-sectionTitle {
+  color: #ff6a00;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+  font-weight: 700;
+}
+
+/* Campos del formulario */
+.registro-documentos-row {
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 10px;
 }
 
-.campo {
-  flex: 1;
+.registro-documentos-field {
+  flex: 1 1 220px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
-.campo label {
-  font-size: 14px;
-  margin-bottom: 5px;
+.registro-documentos-field label {
+  font-size: 0.9rem;
   color: #555;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-weight: 500;
 }
 
-.campo input,
-.campo select {
-  padding: 12px; /* Aumenta el padding para mejor apariencia */
-  border: 1px solid #ccc;
-  border-radius: 25px; /* Bordes redondeados */
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.3s;
-}
-
-.campo input:focus,
-.campo select:focus {
-  border-color: #ff6a00;
-}
-
-/* Botón */
-.boton-registrar {
+.registro-documentos-field input,
+.registro-documentos-field select {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 9px;
+  font-size: 0.95rem;
+  transition: all 0.3s;
   width: 100%;
-  padding: 15px; /* Aumenta el padding para mejor apariencia */
-  background-color: #007bff;
+}
+
+.registro-documentos-field input:focus,
+.registro-documentos-field select:focus {
+  border-color: #ff6a00;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.1);
+}
+
+/* Búsqueda de placa - Estilos mejorados */
+.placa-search-container {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  width: 100%;
+}
+
+.placa-search-container input[type="text"] {
+  flex: 1;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px 0 0 8px;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+  min-width: 200px;
+}
+
+.search-btn {
+  background: #ff6a00;
   color: white;
   border: none;
-  border-radius: 25px; /* Bordes redondeados */
-  font-size: 16px;
-  font-weight: bold;
+  padding: 12px 20px;
+  border-radius: 0 8px 8px 0;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  min-width: 100px;
+  font-weight: 500;
 }
 
-.boton-registrar:hover {
-  background-color: #0056b3;
+.search-btn:hover {
+  background: #e65c00;
 }
 
-/* Media Queries para pantallas más pequeñas */
+.search-btn.searching {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.search-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Mensajes de error */
+.error-message {
+  color: #d32f2f;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.input-error {
+  border-color: #d32f2f !important;
+  background: #fff0f0 !important;
+}
+
+/* Info del vehículo */
+.vehiculo-info-container {
+  margin-top: 10px;
+  background: #fff8f2;
+  border: 1.5px solid #ff6a00;
+  border-radius: 10px;
+  padding: 12px 18px;
+}
+
+.vehiculo-info-details {
+  color: #222;
+  font-size: 1.05rem;
+}
+
+/* Archivo */
+.registro-documentos-field input[type="file"] {
+  padding: 10px;
+  border: 2px dashed #ddd;
+  background: #fafafa;
+}
+
+.file-preview {
+  margin-top: 6px;
+  color: #555;
+  font-size: 0.95rem;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #ff6a00;
+}
+
+/* Botón de enviar */
+.registro-documentos-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.registro-documentos-submitBtn {
+  background: #ff6a00;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-weight: 700;
+  font-size: 1.08rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.registro-documentos-submitBtn:hover {
+  background: #e65c00;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .fila {
-    flex-direction: column; /* Cambia a diseño vertical en pantallas pequeñas */
+  .registro-documentos-container {
+    padding: 25px 20px;
+    width: 95%;
   }
 
-  .registro-documentos-container {
-    padding: 20px; /* Reduce el padding en pantallas pequeñas */
+  .registro-documentos-title {
+    font-size: 1.6rem;
+  }
+
+  .registro-documentos-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .placa-search-container {
+    flex-direction: row;
+  }
+  
+  .search-btn {
+    padding: 12px 15px;
+    min-width: auto;
+  }
+  
+  .search-btn span {
+    display: none;
   }
 }
 
-/* Nueva clase */
+@media (max-width: 480px) {
+  .registro-documentos-content {
+    padding: 80px 10px 20px;
+  }
+
+  .registro-documentos-section {
+    padding: 20px;
+  }
+
+  .placa-search-container input[type="text"] {
+    min-width: 150px;
+  }
+  
+  .search-btn {
+    padding: 12px;
+  }
+}
+
+.registro-documentos-field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
+}
+
+/* Ajustes para el header */
+.header-main {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #ff6a00;
+}
+
+/* Para evitar que el contenido quede debajo del header fijo/sticky */
 .home-wrapper {
-  overflow: visible; /* Cambiado de auto a visible */
-  height: auto; /* Cambiado de 100vh a auto */
+  overflow-x: hidden;
+  overflow-y: auto; /* Permitir scroll vertical */
+  height: 100vh; /* Altura completa de la ventana */
+  display: flex;
+  flex-direction: column;
 }
