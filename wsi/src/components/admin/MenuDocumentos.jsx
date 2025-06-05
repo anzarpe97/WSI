@@ -58,7 +58,7 @@ const MenuDocumentos = () => {
       <Header title="WSI" />
       <div className="menu-documentos-content" id="menu-documentos-content">
         <div className="menu-documentos-grid" id="menu-documentos-grid">
-          <Link to="/seguros" className="menu-documentos-card" id="menu-documentos-card-seguros">
+          <Link to="/registro-documentos-vehiculo" className="menu-documentos-card" id="menu-documentos-card-seguros">
             <FontAwesomeIcon icon={faTruckMoving} size="3x" />
             <p>Registro Documento Vehiculos</p>
           </Link>
