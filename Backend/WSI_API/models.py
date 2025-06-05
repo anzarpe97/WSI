@@ -205,6 +205,53 @@ class DocumentoChofer(models.Model):
     def __str__(self):
         return f"{self.chofer.nombre} {self.chofer.apellido} - {self.tipo_documento} - {self.numero_documento}"
 
+# MODELO DE NOTIFICACIONES
+class NotificacionGlobal(models.Model):
+    TIPO_CHOICES = [
+        ('INFO', 'Información'),
+        ('ALERTA', 'Alerta'),
+        ('SISTEMA', 'Sistema'),
+    ]
+
+    id_notificacion = models.AutoField(primary_key=True)
+    titulo = models.CharField(max_length=100)
+    mensaje = models.TextField()
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default='INFO')
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    rol_destino = models.CharField( max_length=1, blank=True, null=True, help_text="Si se asigna, la notificación será para todos los usuarios de este rol")
+
+    def __str__(self):
+        return f"{self.titulo} - {self.rol_destino if self.rol_destino else 'Individual'}"
+
+    class Meta:
+        verbose_name = 'Notificación Global'
+        verbose_name_plural = 'Notificaciones Globales'
+        db_table = 'notificacion_global'
+        ordering = ['-fecha_creacion']
+
+# MODELO DE NOTIFICACIONES
+class NotificacionUsuario(models.Model):
+    notificacion = models.ForeignKey('NotificacionGlobal', on_delete=models.CASCADE, related_name='usuarios')
+    usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
+    leida = models.BooleanField(default=False)
+    fecha_leida = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.notificacion.titulo} - {self.usuario.email} - {'Leída' if self.leida else 'No leída'}"
+
+    class Meta:
+        verbose_name = 'Notificación Usuario'
+        verbose_name_plural = 'Notificaciones Usuario'
+        db_table = 'notificacion_usuario'
+        unique_together = ('notificacion', 'usuario')
+
+
+
+
+
+
+
+
 
 
 
