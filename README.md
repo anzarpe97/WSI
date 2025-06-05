@@ -18,7 +18,22 @@ Se aplican controles de acceso y validaciones en capa de modelo y vista para gar
 
 El frontend, desarrollado con **React**, proporciona una interfaz de usuario **moderna y responsiva**, conectada al backend mediante llamadas a la API. Sus principales características incluyen:
 
-- **Formularios dinámicos** con validación en el cliente.
-- **Tablas interactivas** para gestión y visualización de registros.
-- **Control de sesión** persistente mediante almacenamiento de tokens.
-- **Rutas protegidas** basadas en la autenticación del usuario.
+## Características principales
+
+- **Gestión de Vehículos:** Registro, edición, visualización y filtrado de vehículos.
+- **Gestión de Empleados:** Registro, edición, visualización y filtrado de empleados.
+- **Gestión de Mantenimientos:** Registro, edición, visualización y filtrado de órdenes de mantenimiento.
+- **Gestión de Documentos:** Registro y consulta de documentos de choferes y vehículos.
+- **Autenticación y Seguridad:** Acceso mediante login y cierre de sesión automático por inactividad (5 minutos).
+- **Notificaciones:** Uso de Toast para mostrar mensajes de éxito y error.
+- **Paginación y Filtros:** Listados paginados y filtrados por distintos criterios.
+- **Interfaz amigable:** Diseño responsivo y moderno con React y CSS.
+
+## Tecnologías utilizadas
+
+- **Frontend:** React, React Router, FontAwesome, React Toastify
+- **Estilos:** CSS personalizado
+- **Backend:** (No incluido en este repositorio, pero se espera una API RESTful en Django, Node.js, etc.)
+- **Consumo de API:** fetch y axios para llamadas HTTP
+
+## Estructura del proyecto

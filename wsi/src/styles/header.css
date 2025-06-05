@@ -91,6 +91,199 @@
   white-space: nowrap;
 }
 
+/* Contenedor para cada icono */
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Indicador de notificaciones no leídas */
+.header-icon.has-unread::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 10px;
+  height: 10px;
+  background-color: #ff3b30;
+  border-radius: 50%;
+  border: 2px solid #ff6a00;
+}
+
+/* Bandeja de notificaciones */
+.notification-tray {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 350px;
+  max-height: 80vh;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(10px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(10px); }
+}
+
+/* Cabecera de notificaciones */
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #ff6a00;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mark-all-read {
+  background: #fefefe;
+  border: none;
+  color: #ff6a00;
+  font-size: 0.65rem;      /* Más pequeño */
+  cursor: pointer;
+  margin-left: 3px;        /* Menor separación */
+  padding: 1px 1px;
+  width: 100px;/* Padding más pequeño */
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border-radius: 3px;      /* Más pequeño */
+}
+
+
+
+.mark-all-read:hover {
+  background-color: #ffefd9;
+  text-decoration: none;
+}
+
+.close-tray {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+
+
+/* Lista de notificaciones */
+.notification-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.notification-item {
+  display: flex;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.2s;
+  align-items: flex-start;
+}
+
+.notification-item.unread {
+  background-color: #f8fbff;
+  border-left: 3px solid #4dabf7;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa;
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-content h4 {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  color: #212529;
+  font-weight: 500;
+}
+
+.notification-content p {
+  margin: 0 0 5px 0;
+  font-size: 0.8rem;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+.notification-time {
+  font-size: 0.7rem;
+  color: #868e96;
+}
+
+.mark-as-read {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #adb5bd;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 8px;
+  transition: color 0.2s;
+  font-size: 0.9rem;
+}
+
+.mark-as-read:hover {
+  color: #ff6a00;
+}
+
+/* Pie de notificaciones */
+.notification-footer {
+  padding: 12px 16px;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.view-all {
+  background: none;
+  border: none;
+  color: #ff6a00;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.view-all:hover {
+  background-color: #ffefd9;
+  text-decoration: none;
+}
+
 /* Media Queries para tamaños responsivos */
 @media (max-width: 1200px) {
   .header-icon,
@@ -116,6 +309,10 @@
   .user-name {
     font-size: 0.9rem;
     padding: 0.4rem 0.8rem;
+  }
+  
+  .notification-tray {
+    width: 320px;
   }
 }
 
@@ -143,6 +340,11 @@
     font-size: 0.8rem;
     padding: 0.3rem 0.6rem;
   }
+  
+  .notification-tray {
+    width: 300px;
+    right: -5px;
+  }
 }
 
 @media (max-width: 576px) {
@@ -166,6 +368,32 @@
   }
   
   .user-name {
-    display: none; /* Ocultar nombre en móviles muy pequeños */
+    display: none;
+  }
+  
+  .notification-tray {
+    width: 280px;
+    right: -10px;
+  }
+  
+  /* Tamaños aún más pequeños para móviles */
+  .mark-all-read {
+    font-size: 0.7rem;
+    padding: 3px 5px;
+  }
+  
+  .view-all {
+    font-size: 0.8rem;
+  }
+  
+  .notification-header h3 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-tray {
+    width: 260px;
+    right: -15px;
   }
 }

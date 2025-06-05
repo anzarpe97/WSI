@@ -3,18 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { toast } from 'react-toastify';
-import {
-  faCar,
-  faUser,
-  faWrench,
-  faChartBar,
-  faIdCardClip,
-  faIdCard,
-  faCarBurst,
-  faPeopleGroup,
-  faScrewdriverWrench,
-  faFileContract,
-  faCog
+import {faCar, faUser, faWrench, faChartPie, faChartBar, faIdCardClip, faIdCard, faCarBurst, faPeopleGroup, faScrewdriverWrench, faFileContract, faCog
 } from '@fortawesome/free-solid-svg-icons';
 import { verifyToken } from '../../services/auth';
 import UserHeader from '../Home-Header';
@@ -142,14 +131,14 @@ const Home = () => {
             <p>Gestión Mantenimiento</p>
           </Link>
           
-          <Link to="/seguros" className="home-card" disabled>
+          <Link to="/gestion-documentos" className="home-card" disabled>
             <FontAwesomeIcon icon={faIdCardClip} size="3x" />
             <p>Gestión Documentos</p>
           </Link>
           
           <Link to="/configuracion" className="home-card">
-            <FontAwesomeIcon icon={faCog} size="3x" />
-            <p>Configuración del sistema</p>
+            <FontAwesomeIcon icon={faChartPie}size="3x" />
+            <p>Visualizar Estadisticas</p>
           </Link>
         </div>
       </div>

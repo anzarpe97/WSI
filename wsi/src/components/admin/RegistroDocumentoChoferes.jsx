@@ -4,7 +4,7 @@ import { faSearch, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "../../styles/RegistroDocumentoChoferes.css";
-import bgImage from '../../assets/bg-login.jpg';
+import bgImage from '../../assets/bg-login.jpg'
 import Header from '../header';
 import { useNavigate } from "react-router-dom";
 import { verifyToken } from "../../services/auth";
@@ -259,7 +259,7 @@ const RegistroDocumentoChoferes = () => {
 
       <div className="registroDocumentoChoferes-content">
         <div className="registroDocumentoChoferes-bg">
-          <img src={bgImage} alt="Fondo de pantalla abstracto" />
+          <img src={bgImage} alt="Fondo Documentos" />
         </div>
 
         <div className="registroDocumentoChoferes-container">

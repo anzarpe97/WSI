@@ -1,12 +1,45 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faBell, 
+  faUserCircle, 
+  faSignOutAlt,
+  faCheckCircle,
+  faTimes
+} from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
-import '../styles/header.css';
+import '../styles/home-header.css'; // Asegúrate de tener este archivo CSS
 
 const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) => {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState(userName);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationRef = useRef(null);
+  
+  // Datos estáticos de notificaciones
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      title: "Nuevo mensaje",
+      content: "Tienes un nuevo mensaje de soporte",
+      time: "Hace 5 minutos",
+      read: false
+    },
+    {
+      id: 2,
+      title: "Actualización del sistema",
+      content: "Nueva versión disponible para revisión",
+      time: "Hace 2 horas",
+      read: false
+    },
+    {
+      id: 3,
+      title: "Reunión programada",
+      content: "Tienes una reunión a las 3:00 PM",
+      time: "Ayer",
+      read: true
+    }
+  ]);
 
   useEffect(() => {
     function handleResize() {
@@ -16,10 +49,41 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
         setDisplayName(`${userName} (Administrador)`);
       }
     }
+    
+    function handleClickOutside(event) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setNotificationsOpen(false);
+      }
+    }
+    
     handleResize();
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    document.addEventListener("mousedown", handleClickOutside);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [userName]);
+
+  const toggleNotifications = () => {
+    setNotificationsOpen(!notificationsOpen);
+  };
+
+  const markAsRead = (id) => {
+    const updatedNotifications = notifications.map(notification => 
+      notification.id === id ? { ...notification, read: true } : notification
+    );
+    setNotifications(updatedNotifications);
+  };
+
+  const markAllAsRead = () => {
+    const updatedNotifications = notifications.map(notification => ({
+      ...notification,
+      read: true
+    }));
+    setNotifications(updatedNotifications);
+  };
 
   return (
     <header className="header">
@@ -33,28 +97,85 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
       
       {showIcons && (
         <div className="header-right">
-          <FontAwesomeIcon 
-            icon={faBell} 
-            className="header-icon" 
-            title="Notificaciones"
-            aria-label="Notificaciones" 
-          />
-          <FontAwesomeIcon 
-            icon={faUserCircle} 
-            className="header-icon" 
-            title="Perfil"
-            aria-label="Perfil de usuario" 
-          />
-          <FontAwesomeIcon
-            icon={faSignOutAlt}
-            className="header-icon"
-            title="Cerrar sesión"
-            aria-label="Cerrar sesión"
-            onClick={() => {
-              localStorage.removeItem('token');
-              navigate('/login');
-            }}
-          />
+          <div className="icon-wrapper" ref={notificationRef}>
+            <FontAwesomeIcon 
+              icon={faBell} 
+              className={`header-icon ${notifications.some(n => !n.read) ? 'has-unread' : ''}`}
+              title="Notificaciones"
+              aria-label="Notificaciones"
+              onClick={toggleNotifications}
+            />
+            {notificationsOpen && (
+              <div className="notification-tray">
+                <div className="notification-header">
+                  <h3>Notificaciones</h3>
+                  <div className="notification-actions">
+                    <button onClick={markAllAsRead} className="mark-all-read">
+                      Marcar todas como leídas
+                    </button>
+                    <button 
+                      className="close-tray"
+                      onClick={toggleNotifications}
+                      aria-label="Cerrar bandeja de notificaciones"
+                    >
+                      <FontAwesomeIcon icon={faTimes} />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="notification-list">
+                  {notifications.map(notification => (
+                    <div 
+                      key={notification.id} 
+                      className={`notification-item ${notification.read ? '' : 'unread'}`}
+                    >
+                      <div className="notification-content">
+                        <h4>{notification.title}</h4>
+                        <p>{notification.content}</p>
+                        <span className="notification-time">{notification.time}</span>
+                      </div>
+                      {!notification.read && (
+                        <button 
+                          className="mark-as-read"
+                          onClick={() => markAsRead(notification.id)}
+                          title="Marcar como leído"
+                          aria-label="Marcar notificación como leída"
+                        >
+                          <FontAwesomeIcon icon={faCheckCircle} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="notification-footer">
+                  <button className="view-all">Ver todas las notificaciones</button>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="icon-wrapper">
+            <FontAwesomeIcon 
+              icon={faUserCircle} 
+              className="header-icon" 
+              title="Perfil"
+              aria-label="Perfil de usuario" 
+            />
+          </div>
+          
+          <div className="icon-wrapper">
+            <FontAwesomeIcon
+              icon={faSignOutAlt}
+              className="header-icon"
+              title="Cerrar sesión"
+              aria-label="Cerrar sesión"
+              onClick={() => {
+                localStorage.removeItem('token');
+                navigate('/login');
+              }}
+            />
+          </div>
         </div>
       )}
     </header>
