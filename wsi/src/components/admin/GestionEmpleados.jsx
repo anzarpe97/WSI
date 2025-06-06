@@ -63,7 +63,7 @@ const GestionEmpleados = () => {
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 300000); // 5 minutos = 300,000 ms
+      }, 1200000); // 20 minutos = 1200000 ms
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();

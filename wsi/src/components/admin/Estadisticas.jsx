@@ -8,7 +8,7 @@ import {
   faGaugeHigh, faCarSide, faGears, faClock, faDollarSign, faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 import { verifyToken } from '../../services/auth';
-import UserHeader from '../Home-Header';
+import Header from '../header';
 import bgImage from '../../assets/bg-login.jpg';
 import '../../styles/Estadisticas.css';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -158,16 +158,11 @@ const Estadisticas = () => {
 
   return (
     <div className="home-wrapper">
-      <UserHeader 
-        userName={`${user.nombre}`} 
-        title="WSI"
-        showIcons={true}
-      />
+     <Header title="WSI" />
 
       <div className="estadisticas-content">
         <div className="estadisticas-header">
           <h1>Análisis y Estadísticas</h1>
-          <p>Visualización de datos clave sobre vehículos y mantenimientos</p>
         </div>
 
         <div className="stats-overview">

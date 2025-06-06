@@ -30,6 +30,42 @@ const EditarVehiculo = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  // --- INACTIVIDAD ---
+  const inactivityTimer = useRef(null);
+  const [showInactivityModal, setShowInactivityModal] = useState(false);
+
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    if (isInactivityLogout) {
+      setShowInactivityModal(true);
+      setTimeout(() => {
+        navigate('/login', {
+          replace: true,
+          state: { sessionExpired: true }
+        });
+      }, 2500);
+    } else {
+      navigate('/login', { replace: true });
+    }
+  };
+
+  useEffect(() => {
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        logout(true);
+      }, 1200000); // 5 minutos
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+  }, [navigate]);
+  // --- FIN INACTIVIDAD ---
+  // Verificar si el usuario está autenticado
   // Cargar datos del vehículo al montar
   useEffect(() => {
     document.title = "WSI - Editar Vehículo";

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Header from '../header';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import bgImage from '../../assets/camion-login.png';
+import bgImage from '../../assets/bg-login.jpg';
 import '../../styles/RegistroVehiculo.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -34,7 +34,7 @@ const RegistroVehiculo = () => {
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 300000); // 5 minutos = 300,000 ms
+      }, 1200000); // 5 minutos = 300,000 ms
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
@@ -244,11 +244,7 @@ const RegistroVehiculo = () => {
       <Header title="WSI" />
 
       <div className="registro-empleado-bg">
-        <img
-          src={bgImage}
-          alt="Fondo Registro Vehículo"
-          onError={(e) => (e.target.style.display = 'none')}
-        />
+       
       </div>
 
       <div className="registro-empleado-container">
