@@ -136,7 +136,7 @@ const Home = () => {
             <p>Gestión Documentos</p>
           </Link>
           
-          <Link to="/configuracion" className="home-card">
+          <Link to="/estadisticas" className="home-card">
             <FontAwesomeIcon icon={faChartPie}size="3x" />
             <p>Visualizar Estadisticas</p>
           </Link>
