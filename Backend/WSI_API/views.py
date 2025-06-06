@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.utils import timezone
 from django.middleware.csrf import get_token
 from django.core.mail import EmailMultiAlternatives
 from rest_framework.decorators import api_view, permission_classes
@@ -8,8 +9,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
-from .models import Usuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
-from .serializers import ( DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
+from .models import Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
+from .serializers import (  NotificacionUsuarioSerializer,DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
@@ -301,6 +302,98 @@ class DocumentosChoferListAPIView(APIView):
         documentos = DocumentoChofer.objects.filter(chofer_id=chofer_id)
         serializer = DocumentoChoferSerializer(documentos, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class NotificacionesUsuarioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        notificaciones = NotificacionUsuario.objects.filter(usuario=request.user).order_by('-notificacion__fecha_creacion')
+        serializer = NotificacionUsuarioSerializer(notificaciones, many=True)
+        return Response(serializer.data)
+    
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from .models import NotificacionUsuario
+
+class MarcarNotificacionLeidaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            notificacion_usuario = NotificacionUsuario.objects.get(pk=pk, usuario=request.user)
+            notificacion_usuario.leida = True
+            notificacion_usuario.fecha_leida = timezone.now()  # <-- Actualiza la fecha de lectura
+            notificacion_usuario.save()
+            return Response({'success': True})
+        except NotificacionUsuario.DoesNotExist:
+            return Response({'error': 'Notificación no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    
+class MarcarTodasNotificacionesLeidasView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        from django.utils import timezone
+        NotificacionUsuario.objects.filter(usuario=request.user, leida=False).update(
+            leida=True,
+            fecha_leida=timezone.now() 
+        )
+        return Response({'success': True})
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     

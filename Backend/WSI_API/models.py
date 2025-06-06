@@ -45,7 +45,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     apellido = models.CharField('apellido', max_length=30, null=False)
     tipoCedula = models.CharField('tipo de cédula', max_length=1, null=False)
     cedula = models.CharField('cédula', max_length=8, unique=True, null=False)
-    telefono = models.CharField('teléfono', max_length=10, null=False)
+    telefono = models.CharField('teléfono', max_length=11, null=False)
     fechaRegistro = models.DateTimeField('fecha de registro', auto_now_add=True)
     rol = models.CharField('rol', max_length=1, null=False)
 
@@ -207,16 +207,21 @@ class DocumentoChofer(models.Model):
 
 # MODELO DE NOTIFICACIONES
 class NotificacionGlobal(models.Model):
+    
     TIPO_CHOICES = [
-        ('INFO', 'Información'),
-        ('ALERTA', 'Alerta'),
-        ('SISTEMA', 'Sistema'),
-    ]
+    ('DOCUMENTO_CHOFER', 'Documento Chofer'),
+    ('DOCUMENTO_VEHICULOS', 'Documento Vehiculos'),
+    ('MANTENIMIENTO', 'Mantenimiento Vehículo'),
+    ('DETALLE_MANTENIMIENTO', 'Detalle de Mantenimiento'),
+    ('MOTIVO_MANTENIMIENTO', 'Motivo de Mantenimiento'),
+    ('VEHICULO', 'Vehículo'),
+    ('USUARIO', 'Usuario'),
+    ('GENERAL', 'General'),]
 
     id_notificacion = models.AutoField(primary_key=True)
     titulo = models.CharField(max_length=100)
     mensaje = models.TextField()
-    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default='INFO')
+    tipo = models.CharField(max_length=25, choices=TIPO_CHOICES, default='INFO')
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     rol_destino = models.CharField( max_length=1, blank=True, null=True, help_text="Si se asigna, la notificación será para todos los usuarios de este rol")
 

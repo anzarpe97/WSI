@@ -15,31 +15,27 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
   const [displayName, setDisplayName] = useState(userName);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationRef = useRef(null);
-  
-  // Datos estáticos de notificaciones
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "Nuevo mensaje",
-      content: "Tienes un nuevo mensaje de soporte",
-      time: "Hace 5 minutos",
-      read: false
-    },
-    {
-      id: 2,
-      title: "Actualización del sistema",
-      content: "Nueva versión disponible para revisión",
-      time: "Hace 2 horas",
-      read: false
-    },
-    {
-      id: 3,
-      title: "Reunión programada",
-      content: "Tienes una reunión a las 3:00 PM",
-      time: "Ayer",
-      read: true
-    }
-  ]);
+
+  const [notifications, setNotifications] = useState([]);
+
+  // Obtener notificaciones del backend
+  useEffect(() => {
+    fetch('http://localhost:8000/api/notificaciones/', {
+      headers: {
+        'Authorization': `Token ${localStorage.getItem('token')}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setNotifications(data.map(n => ({
+          id: n.id,
+          title: n.notificacion.titulo,
+          content: n.notificacion.mensaje,
+          time: new Date(n.notificacion.fecha_creacion).toLocaleString(),
+          read: n.leida
+        })));
+      });
+  }, []);
 
   useEffect(() => {
     function handleResize() {
@@ -70,19 +66,35 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
     setNotificationsOpen(!notificationsOpen);
   };
 
-  const markAsRead = (id) => {
-    const updatedNotifications = notifications.map(notification => 
-      notification.id === id ? { ...notification, read: true } : notification
-    );
-    setNotifications(updatedNotifications);
+    const markAsRead = (id) => {
+    fetch(`http://localhost:8000/api/notificaciones/${id}/marcar-leida/`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Token ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(res => {
+      if (res.ok) {
+        // Elimina la notificación del estado para que desaparezca del listado
+        setNotifications(prev => prev.filter(notification => notification.id !== id));
+      }
+    });
   };
 
   const markAllAsRead = () => {
-    const updatedNotifications = notifications.map(notification => ({
-      ...notification,
-      read: true
-    }));
-    setNotifications(updatedNotifications);
+    fetch('http://localhost:8000/api/notificaciones/marcar-todas-leidas/', {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Token ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(res => {
+      if (res.ok) {
+        setNotifications([]);
+      }
+    });
   };
 
   return (
@@ -124,29 +136,29 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
                 </div>
                 
                 <div className="notification-list">
-                  {notifications.map(notification => (
+                {notifications
+                  .filter(notification => !notification.read)
+                  .map(notification => (
                     <div 
                       key={notification.id} 
-                      className={`notification-item ${notification.read ? '' : 'unread'}`}
+                      className="notification-item unread"
                     >
                       <div className="notification-content">
                         <h4>{notification.title}</h4>
                         <p>{notification.content}</p>
                         <span className="notification-time">{notification.time}</span>
                       </div>
-                      {!notification.read && (
-                        <button 
-                          className="mark-as-read"
-                          onClick={() => markAsRead(notification.id)}
-                          title="Marcar como leído"
-                          aria-label="Marcar notificación como leída"
-                        >
-                          <FontAwesomeIcon icon={faCheckCircle} />
-                        </button>
-                      )}
+                      <button 
+                        className="mark-as-read"
+                        onClick={() => markAsRead(notification.id)}
+                        title="Marcar como leído"
+                        aria-label="Marcar notificación como leída"
+                      >
+                        <FontAwesomeIcon icon={faCheckCircle} />
+                      </button>
                     </div>
-                  ))}
-                </div>
+                ))}
+              </div>
                 
                 <div className="notification-footer">
                   <button className="view-all">Ver todas las notificaciones</button>
