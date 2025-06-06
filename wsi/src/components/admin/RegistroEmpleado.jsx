@@ -22,6 +22,7 @@ const RegistroEmpleado = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false); // Estado para bloquear el botón
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
@@ -60,7 +61,7 @@ const RegistroEmpleado = () => {
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 1200000); // 5 minutos = 300,000 ms
+      }, 1200000); // 20 minutos = 1,200,000 ms
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
@@ -145,6 +146,8 @@ const RegistroEmpleado = () => {
       return;
     }
 
+    setLoading(true); // Bloquea el botón
+
     try {
       const token = localStorage.getItem("token");
       await axios.post(
@@ -177,6 +180,8 @@ const RegistroEmpleado = () => {
       } else {
         toast.error("Error al registrar empleado. Por favor intente nuevamente.");
       }
+    } finally {
+      setLoading(false); // Desbloquea el botón
     }
   };
 
@@ -324,8 +329,8 @@ const RegistroEmpleado = () => {
             </div>
           </div>
 
-          <button type="submit" className="boton-registrar">
-            Registrar Empleado
+          <button type="submit" className="boton-registrar" disabled={loading}>
+            {loading ? "Registrando..." : "Registrar Empleado"}
           </button>
         </form>
       </div>

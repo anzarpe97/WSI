@@ -131,7 +131,7 @@ const Home = () => {
             <p>Gestión Mantenimiento</p>
           </Link>
           
-          <Link to="/gestion-documentos" className="home-card" disabled>
+          <Link to="/menu-gestion-documentos" className="home-card" disabled>
             <FontAwesomeIcon icon={faIdCardClip} size="3x" />
             <p>Gestión Documentos</p>
           </Link>
