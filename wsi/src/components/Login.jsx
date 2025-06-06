@@ -43,7 +43,7 @@ const Login = () => {
                 navigate('/adminHome', { replace: true });
                 break;
               case 1:
-                navigate('/supervisor-dashboard', { replace: true });
+                navigate('/supervisorHome', { replace: true });
                 break;
               case 2:
                 navigate('/employee-dashboard', { replace: true });

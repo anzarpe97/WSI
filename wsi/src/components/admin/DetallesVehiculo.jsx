@@ -6,6 +6,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import '../../styles/DetalleVehiculo.css';
 import Header from '../header';
+import { verifyToken } from '../../services/auth';
 
 const DetalleVehiculo = () => {
   const { id } = useParams();
@@ -34,13 +35,41 @@ const DetalleVehiculo = () => {
     }
   };
 
+  // Verificar rol del usuario al montar
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const result = await verifyToken();
+        if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
+          }
+        } else {
+          logout();
+        }
+      } catch (error) {
+        logout();
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+  // --- FIN VERIFICACIÓN ROL ---
+
   useEffect(() => {
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
     const resetTimer = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
       inactivityTimer.current = setTimeout(() => {
         logout(true);
-      }, 1200000); // 5 minutos
+      }, 1200000); // 20 minutos
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();

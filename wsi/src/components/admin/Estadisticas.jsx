@@ -44,6 +44,17 @@ const Estadisticas = () => {
         const result = await verifyToken();
         
         if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              navigate('/login', { replace: true });
+            }
+            return;
+          }
           setUser({
             nombre: result.user.nombre,
             apellido: result.user.apellido

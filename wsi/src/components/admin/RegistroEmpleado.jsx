@@ -1,59 +1,64 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import "../../styles/RegistroEmpleado.css";
-import Header from '../header';
-import bgImage from "../../assets/bg-login.jpg";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBell, faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
-import axios from "axios";
+import { faSearch, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import "../../styles/RegistroDocumentoChoferes.css";
+import bgImage from '../../assets/bg-login.jpg'
+import Header from '../header';
+import { useNavigate } from "react-router-dom";
+import { verifyToken } from "../../services/auth";
 
-const RegistroEmpleado = () => {
-  const [formData, setFormData] = useState({
-    nombre: "",
-    apellido: "",
-    tipoCedula: "V",
-    cedula: "",
-    telefono: "",
-    rol: "",
-    email: "",
-    password: "",
-  });
-
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false); // Estado para bloquear el botón
+const RegistroDocumentoChoferes = () => {
+  const [cedula, setCedula] = useState('');
+  const [choferInfo, setChoferInfo] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [cedulaError, setCedulaError] = useState('');
+  const [tipoDocumento, setTipoDocumento] = useState('');
+  const [documentNumber, setDocumentNumber] = useState('');
+  const [fechaEmision, setFechaEmision] = useState('');
+  const [fechaCaducidad, setFechaCaducidad] = useState('');
+  const [fechaError, setFechaError] = useState('');
+  const [file, setFile] = useState(null);
+  const [fileError, setFileError] = useState('');
+  const [documentosRegistrados, setDocumentosRegistrados] = useState([]);
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
-  // Función para cerrar sesión
+  // --- Logout y temporizador de inactividad ---
   const logout = (isInactivityLogout = false) => {
-    localStorage.removeItem("token");
-    navigate("/login", {
+    localStorage.removeItem('token');
+    navigate('/login', {
       replace: true,
       state: isInactivityLogout ? { sessionExpired: true } : undefined
     });
   };
 
-  // Verificación de token y temporizador de inactividad
   useEffect(() => {
-    document.title = "WSI - Registro Empleado";
-    const token = localStorage.getItem("token");
-    if (!token) {
-      toast.error("Debe iniciar sesión para acceder a esta página");
-      logout();
-      return;
-    }
-    axios
-      .get("http://localhost:8000/api/verify-token/", {
-        headers: { Authorization: `Token ${token}` },
-      })
-      .catch(() => {
-        localStorage.removeItem("token");
-        toast.error("Sesión expirada, por favor inicie sesión nuevamente");
+    const checkAuth = async () => {
+      try {
+        const result = await verifyToken();
+        if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
+          }
+        } else {
+          logout();
+        }
+      } catch (error) {
         logout();
-      });
-
+      }
+    };
+    checkAuth();
     // --- Temporizador de inactividad ---
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
     const resetTimer = () => {
@@ -61,7 +66,7 @@ const RegistroEmpleado = () => {
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 1200000); // 20 minutos = 1,200,000 ms
+      }, 1200000); // 20 minutos
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
@@ -72,270 +77,350 @@ const RegistroEmpleado = () => {
     };
     // --- Fin temporizador ---
   }, [navigate]);
+  // --- Fin Logout y temporizador ---
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: "" });
+  const validarCedula = (cedula) => /^\d{7,8}$/.test(cedula);
+
+  document.title = "WSI - Registro Documentos Choferes";
+
+  const handleCedulaSearch = async () => {
+    if (!cedula.trim()) {
+      setCedulaError('Por favor ingrese una cédula');
+      return;
+    }
+    if (!validarCedula(cedula)) {
+      setCedulaError('Formato inválido (debe contener entre 7 - 8 dígitos numéricos)');
+      return;
+    }
+
+    setCedulaError('');
+    setIsSearching(true);
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/choferes/?cedula=${cedula}&rol=2`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.id && data.nombre && data.apellido) {
+          setChoferInfo({
+            id: data.id,
+            nombre: data.nombre,
+            apellido: data.apellido
+          });
+          toast.success("Chofer encontrado");
+
+          // Consultar documentos ya registrados por el chofer
+          const docsResponse = await fetch(`http://localhost:8000/api/documentos-choferes-verificar/?chofer=${data.id}`);
+          if (docsResponse.ok) {
+            const docsData = await docsResponse.json();
+            setDocumentosRegistrados(docsData.map(doc => doc.tipo_documento));
+          } else {
+            setDocumentosRegistrados([]);
+          }
+        } else {
+          setChoferInfo(null);
+          setCedulaError("El número de cédula no ha sido registrado");
+          setDocumentosRegistrados([]);
+        }
+      } else {
+        setChoferInfo(null);
+        setCedulaError("El número de cédula no ha sido registrado");
+        setDocumentosRegistrados([]);
+      }
+    } catch {
+      setChoferInfo(null);
+      setCedulaError("Error al buscar chofer");
+      setDocumentosRegistrados([]);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
+  // Calcula la fecha de caducidad automáticamente
+  const calcularFechaCaducidad = (tipo, emision) => {
+    if (!tipo || !emision) return '';
+    const fecha = new Date(emision);
+    let anios = 0;
+    if (tipo === 'CEDULA_IDENTIDAD') anios = 10;
+    if (tipo === 'LICENCIA_CONDUCIR') anios = 5;
+    if (tipo === 'CARTA_MEDICA') anios = 5;
+    fecha.setFullYear(fecha.getFullYear() + anios);
+    return fecha.toISOString().split('T')[0];
+  };
 
-    // Validación de nombre
-    if (!formData.nombre.trim()) {
-      newErrors.nombre = "El nombre es requerido";
-    } else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(formData.nombre)) {
-      newErrors.nombre = "El nombre solo puede contener letras y espacios";
-    } else if (formData.nombre.length > 30) {
-      newErrors.nombre = "El nombre no puede tener más de 30 caracteres";
-    }
+  // Actualiza la fecha de caducidad automáticamente y valida vigencia
+  useEffect(() => {
+    if (tipoDocumento && fechaEmision) {
+      const nuevaFechaCaducidad = calcularFechaCaducidad(tipoDocumento, fechaEmision);
+      setFechaCaducidad(nuevaFechaCaducidad);
 
-    // Validación de apellido
-    if (!formData.apellido.trim()) {
-      newErrors.apellido = "El apellido es requerido";
-    } else if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(formData.apellido)) {
-      newErrors.apellido = "El apellido solo puede contener letras y espacios";
-    } else if (formData.apellido.length > 30) {
-      newErrors.apellido = "El apellido no puede tener más de 30 caracteres";
-    }
-
-    // Validación de cédula
-    if (!/^\d+$/.test(formData.cedula)) {
-      newErrors.cedula = "La cédula solo debe contener números";
-    } else if (formData.cedula.length < 7 || formData.cedula.length > 8) {
-      newErrors.cedula = "La cédula debe tener entre 7 y 8 números";
-    }
-
-    if (!/^\d{10}$/.test(formData.telefono)) {
-      newErrors.telefono = "El teléfono debe tener 10 números";
-    }
-
-    if (!["0", "1", "2"].includes(formData.rol)) {
-      newErrors.rol = "Selecciona un rol válido";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "El correo es requerido";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Correo inválido";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "La contraseña es requerida";
-    } else {
-      if (formData.password.length < 8) {
-        newErrors.password = "Mínimo 8 caracteres";
-      } else if (!/[A-Z]/.test(formData.password)) {
-        newErrors.password = "Debe tener al menos una mayúscula";
-      } else if (!/[0-9]/.test(formData.password)) {
-        newErrors.password = "Debe tener al menos un número";
-      } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password)) {
-        newErrors.password = "Debe tener al menos un carácter especial";
+      if (nuevaFechaCaducidad && new Date(nuevaFechaCaducidad) < new Date()) {
+        toast.error('El documento ya está vencido. Solo se deben registrar documentos vigentes.');
       }
+    } else {
+      setFechaCaducidad('');
+    }
+  }, [tipoDocumento, fechaEmision]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'application/pdf'].includes(file.type)) {
+      setFileError('Formato no válido (solo PDF/JPG/PNG)');
+      return;
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError('El archivo no debe exceder 5MB');
+      return;
+    }
+
+    setFile(file);
+    setFileError('');
+  };
+
+  const limpiarTexto = (texto) => {
+    return texto.replace(/[^A-Za-z0-9_]/g, ''); // permite el guion bajo
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormSubmitted(true);
 
-    if (!validateForm()) {
-      toast.error("Por favor corrija los errores en el formulario");
+    if (!choferInfo) {
+      toast.error('Debe buscar y seleccionar un chofer');
+      return;
+    }
+    if (!tipoDocumento) {
+      toast.error('Tipo de documento requerido');
+      return;
+    }
+    if (!documentNumber.trim()) {
+      toast.error('Número de documento requerido');
+      return;
+    }
+    if (!fechaEmision || !fechaCaducidad) {
+      toast.error('Debe seleccionar la fecha de emisión');
+      return;
+    }
+    if (new Date(fechaCaducidad) < new Date()) {
+      toast.error('No se puede registrar un documento vencido');
+      return;
+    }
+    if (!file) {
+      toast.error('Debe subir el documento digital');
       return;
     }
 
-    setLoading(true); // Bloquea el botón
+    const cedulaLimpia = limpiarTexto(cedula);
+    const tipoDocumentoLimpio = limpiarTexto(tipoDocumento);
+    const numeroDocumentoLimpio = limpiarTexto(documentNumber);
+    const ext = file.name.split('.').pop();
+    const newFileName = `${cedulaLimpia}_${tipoDocumentoLimpio}.${ext}`;
+    const renamedFile = new File([file], newFileName, { type: file.type });
+
+    const formData = new FormData();
+    formData.append('cedula', cedulaLimpia);
+    formData.append('chofer', choferInfo.id);
+    formData.append('nombre', choferInfo.nombre);
+    formData.append('apellido', choferInfo.apellido);
+    formData.append('tipo_documento', tipoDocumentoLimpio);
+    formData.append('numero_documento', numeroDocumentoLimpio);
+    formData.append('fecha_emision', fechaEmision);
+    formData.append('fecha_caducidad', fechaCaducidad);
+    formData.append('archivo', renamedFile);
 
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:8000/api/registro/",
-        formData,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        }
-      );
-      toast.success("Empleado registrado exitosamente");
-      setFormData({
-        nombre: "",
-        apellido: "",
-        tipoCedula: "V",
-        cedula: "",
-        telefono: "",
-        rol: "",
-        email: "",
-        password: "",
+      const response = await fetch('http://localhost:8000/api/documentos-choferes/', {
+        method: 'POST',
+        body: formData,
       });
-      setErrors({});
-    } catch (error) {
-      if (error.response?.data) {
-        // Mostrar errores del servidor
-        Object.values(error.response.data).forEach(errorMsg => {
-          toast.error(Array.isArray(errorMsg) ? errorMsg[0] : errorMsg);
-        });
+
+      if (response.ok) {
+        toast.success('Documento registrado exitosamente');
+        setCedula('');
+        setChoferInfo(null);
+        setTipoDocumento('');
+        setDocumentNumber('');
+        setFechaEmision('');
+        setFechaCaducidad('');
+        setFile(null);
+        setDocumentosRegistrados([]);
+        setFormSubmitted(false);
       } else {
-        toast.error("Error al registrar empleado. Por favor intente nuevamente.");
+        const errorData = await response.json();
+        console.log(errorData);
+        toast.error('Error al registrar el documento');
       }
-    } finally {
-      setLoading(false); // Desbloquea el botón
+    } catch (error) {
+      console.log(error);
+      toast.error('Error de conexión con el servidor');
     }
   };
 
   return (
-    <div className="registro-empleado-wrapper">
+    <div className="registroDocumentoChoferes-wrapper">
       <Header title="WSI" />
-      
-      {/* Toast container */}
       <ToastContainer 
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
+        position="top-right" 
+        autoClose={3000}
+        theme="colored"
+        pauseOnHover={false}
       />
-      
-      <div className="registro-empleado-bg">
-        <img
-          src={bgImage}
-          alt="Fondo Registro Empleado"
-          onError={(e) => {
-            e.target.style.display = "none";
-            toast.warn("No se pudo cargar la imagen de fondo");
-          }}
-        />
-      </div>
 
-      <div className="registro-empleado-container">
-        <h1 className="titulo">Registro Empleado</h1>
-        <form className="formulario" onSubmit={handleSubmit} noValidate>
-          <div className="fila">
-            <div className="campo">
-              <label htmlFor="nombre">Nombre</label>
-              <input
-                type="text"
-                id="nombre"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                placeholder="Ingrese el nombre"
-              />
-              {errors.nombre && <small className="error">{errors.nombre}</small>}
-            </div>
-            <div className="campo">
-              <label htmlFor="apellido">Apellido</label>
-              <input
-                type="text"
-                id="apellido"
-                name="apellido"
-                value={formData.apellido}
-                onChange={handleChange}
-                placeholder="Ingrese el apellido"
-              />
-              {errors.apellido && <small className="error">{errors.apellido}</small>}
-            </div>
-          </div>
+      <div className="registroDocumentoChoferes-content">
+        <div className="registroDocumentoChoferes-bg">
+          <img src={bgImage} alt="Fondo" />
+        </div>
 
-          <div className="fila">
-            <div className="campo">
-              <label htmlFor="tipoCedula">Cédula</label>
-              <select
-                id="tipoCedula"
-                name="tipoCedula"
-                value={formData.tipoCedula}
-                onChange={handleChange}
+        <div className="registroDocumentoChoferes-container">
+          <h1 className="registroDocumentoChoferes-title">
+            Registro de Documentos de Choferes
+          </h1>
+
+          <form onSubmit={handleSubmit} className="registroDocumentoChoferes-form">
+            
+            <section className="registroDocumentoChoferes-section">
+              <h2 className="registroDocumentoChoferes-sectionTitle">Datos del Chofer</h2>
+              
+              <div className="registroDocumentoChoferes-field">
+                <label>Cédula del Chofer</label>
+                <div className="cedula-search-container">
+                  <input
+                    type="text"
+                    value={cedula}
+                    onChange={(e) => setCedula(e.target.value)}
+                    placeholder="Ej: 12345678"
+                    className={cedulaError ? 'input-error' : ''}
+                    aria-describedby="cedula-error"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCedulaSearch}
+                    className={`search-btn ${isSearching ? 'searching' : ''}`}
+                    disabled={isSearching || !cedula}
+                  >
+                    {isSearching ? (
+                      <FontAwesomeIcon icon={faSpinner} spin />
+                    ) : (
+                      <FontAwesomeIcon icon={faSearch} />
+                    )}
+                    <span>Buscar</span>
+                  </button>
+                </div>
+                {cedulaError && (
+                  <div id="cedula-error" className="error-message">
+                    {cedulaError}
+                  </div>
+                )}
+              </div>
+
+              {choferInfo && (
+                <div className="chofer-info-container">
+                  <div className="chofer-info-details">
+                    <div><strong>Nombre:</strong> {choferInfo.nombre} {choferInfo.apellido}</div>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <section className="registroDocumentoChoferes-section">
+              <h2 className="registroDocumentoChoferes-sectionTitle">Información del Documento</h2>
+              
+              <div className="registroDocumentoChoferes-field">
+                <label>Tipo de Documento</label>
+                <select
+                  value={tipoDocumento}
+                  onChange={(e) => setTipoDocumento(e.target.value)}
+                  className={(!tipoDocumento && formSubmitted) ? 'input-error' : ''}
+                  aria-required="true"
+                >
+                  <option value="">Seleccione un tipo</option>
+                  <option value="CEDULA_IDENTIDAD" disabled={documentosRegistrados.includes('CEDULA_IDENTIDAD')}>Cedula de Identidad</option>
+                  <option value="LICENCIA_CONDUCIR" disabled={documentosRegistrados.includes('LICENCIA_CONDUCIR')}>Licencia De Conducir</option>
+                  <option value="CARTA_MEDICA" disabled={documentosRegistrados.includes('CARTA_MEDICA')}>Carta Medica</option>
+                </select>
+                {!tipoDocumento && (
+                  <div className="error-message">Campo requerido</div>
+                )}
+              </div>
+
+              <div className="registroDocumentoChoferes-field">
+                <label>Número de Documento</label>
+                <input
+                  type="text"
+                  value={documentNumber}
+                  onChange={(e) => setDocumentNumber(e.target.value)}
+                  placeholder="Ej: ABC-123456"
+                  aria-required="true"
+                />
+              </div>
+
+              <div className="registroDocumentoChoferes-row">
+                <div className="registroDocumentoChoferes-field">
+                  <label>Fecha de Emisión</label>
+                  <input
+                    type="date"
+                    value={fechaEmision}
+                    onChange={(e) => setFechaEmision(e.target.value)}
+                    placeholder="dd/mm/aaaa"
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div className="registroDocumentoChoferes-field">
+                  <label>Fecha de Caducidad</label>
+                  <input
+                    type="date"
+                    value={fechaCaducidad}
+                    readOnly
+                    disabled
+                  />
+                </div>
+              </div>
+              {fechaError && (
+                <div className="error-message">
+                  {fechaError}
+                </div>
+              )}
+            </section>
+
+            <section className="registroDocumentoChoferes-section">
+              <h2 className="registroDocumentoChoferes-sectionTitle">Documento Digital</h2>
+              
+              <div className="registroDocumentoChoferes-field">
+                <label>Subir Documento (PDF/JPG/PNG)</label>
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className={fileError ? 'input-error' : ''}
+                />
+                {file && (
+                  <div className="file-preview">
+                    {file.name}
+                  </div>
+                )}
+                {fileError && (
+                  <div className="error-message">
+                    {fileError}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <div className="registroDocumentoChoferes-actions">
+              <button 
+                type="submit" 
+                className="registroDocumentoChoferes-submitBtn"
               >
-                <option value="V">V</option>
-                <option value="E">E</option>
-              </select>
+                Registrar Documento
+              </button>
             </div>
-            <div className="campo">
-              <label htmlFor="cedula">Número de Cédula</label>
-              <input
-                type="text"
-                id="cedula"
-                name="cedula"
-                value={formData.cedula}
-                onChange={handleChange}
-                maxLength={8}
-                placeholder="Ej: 12345678"
-              />
-              {errors.cedula && <small className="error">{errors.cedula}</small>}
-            </div>
-          </div>
-
-          <div className="fila">
-            <div className="campo">
-              <label htmlFor="rol">Cargo</label>
-              <select
-                id="rol"
-                name="rol"
-                value={formData.rol}
-                onChange={handleChange}
-              >
-                <option value="">Seleccione</option>
-                <option value="0">Administrador</option>
-                <option value="1">Supervisor</option>
-                <option value="2">Empleado</option>
-              </select>
-              {errors.rol && <small className="error">{errors.rol}</small>}
-            </div>
-            <div className="campo">
-              <label htmlFor="telefono">Teléfono</label>
-              <input
-                type="tel"
-                id="telefono"
-                name="telefono"
-                value={formData.telefono}
-                onChange={handleChange}
-                maxLength={10}
-                placeholder="Ej: 04121234567"
-              />
-              {errors.telefono && <small className="error">{errors.telefono}</small>}
-            </div>
-          </div>
-
-          <div className="fila">
-            <div className="campo">
-              <label htmlFor="email">Correo electrónico</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Ej: usuario@empresa.com"
-              />
-              {errors.email && <small className="error">{errors.email}</small>}
-            </div>
-            <div className="campo">
-              <label htmlFor="password">Contraseña</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Mínimo 8 caracteres"
-              />
-              {errors.password && <small className="error">{errors.password}</small>}
-            </div>
-          </div>
-
-          <button type="submit" className="boton-registrar" disabled={loading}>
-            {loading ? "Registrando..." : "Registrar Empleado"}
-          </button>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
 };
 
-export default RegistroEmpleado;
+export default RegistroDocumentoChoferes;

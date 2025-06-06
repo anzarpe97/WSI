@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from '../header';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -6,6 +6,7 @@ import bgImage from '../../assets/camion-login.png';
 import '../../styles/RegistroVehiculo.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { verifyToken } from '../../services/auth';
 
 const EditarVehiculo = () => {
   const navigate = useNavigate();
@@ -49,13 +50,41 @@ const EditarVehiculo = () => {
     }
   };
 
+  // Verificar rol del usuario al montar
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const result = await verifyToken();
+        if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
+          }
+        } else {
+          logout();
+        }
+      } catch (error) {
+        logout();
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+  // --- FIN VERIFICACIÓN ROL ---
+
   useEffect(() => {
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
     const resetTimer = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
       inactivityTimer.current = setTimeout(() => {
         logout(true);
-      }, 1200000); // 5 minutos
+      }, 1200000); // 20 minutos
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
@@ -65,7 +94,7 @@ const EditarVehiculo = () => {
     };
   }, [navigate]);
   // --- FIN INACTIVIDAD ---
-  // Verificar si el usuario está autenticado
+
   // Cargar datos del vehículo al montar
   useEffect(() => {
     document.title = "WSI - Editar Vehículo";
@@ -481,6 +510,17 @@ const EditarVehiculo = () => {
         </form>
       </div>
       <ToastContainer position="top-right" autoClose={6000} />
+
+      {/* MODAL DE INACTIVIDAD */}
+      {showInactivityModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Sesión cerrada</h2>
+            <p>Tu sesión se ha cerrado por inactividad.<br />Serás redirigido al inicio de sesión.</p>
+            <div className="modal-loader"></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

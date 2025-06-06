@@ -22,7 +22,7 @@ const RegistroDocumentoChoferes = () => {
   const [file, setFile] = useState(null);
   const [fileError, setFileError] = useState('');
   const [documentosRegistrados, setDocumentosRegistrados] = useState([]);
-  const [formSubmitted, setFormSubmitted] = useState(false); // <-- ARREGLADO
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
@@ -39,7 +39,19 @@ const RegistroDocumentoChoferes = () => {
     const checkAuth = async () => {
       try {
         const result = await verifyToken();
-        if (!(result.isValid && result.user)) {
+        if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
+          }
+        } else {
           logout();
         }
       } catch (error) {
@@ -54,7 +66,7 @@ const RegistroDocumentoChoferes = () => {
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 1200000); // 5 minutos = 300,000 ms
+      }, 1200000); // 20 minutos
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
@@ -173,7 +185,7 @@ const RegistroDocumentoChoferes = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormSubmitted(true); // <--- se activa validación visual
+    setFormSubmitted(true);
 
     if (!choferInfo) {
       toast.error('Debe buscar y seleccionar un chofer');
@@ -234,7 +246,7 @@ const RegistroDocumentoChoferes = () => {
         setFechaCaducidad('');
         setFile(null);
         setDocumentosRegistrados([]);
-        setFormSubmitted(false); // <-- resetea validación visual
+        setFormSubmitted(false);
       } else {
         const errorData = await response.json();
         console.log(errorData);
@@ -411,4 +423,4 @@ const RegistroDocumentoChoferes = () => {
   );
 };
 
-export default RegistroDocumentoChoferes;
+export default RegistroDocumentoChoferes; 

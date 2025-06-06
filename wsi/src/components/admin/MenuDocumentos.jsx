@@ -25,7 +25,19 @@ const MenuDocumentos = () => {
     const check = async () => {
       try {
         const result = await verifyToken();
-        if (!result.isValid) {
+        if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
+          }
+        } else {
           logout();
         }
       } catch {
@@ -41,7 +53,7 @@ const MenuDocumentos = () => {
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 1200000); // 5 minutos = 300,000 ms
+      }, 1200000); // 20 minutos
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
