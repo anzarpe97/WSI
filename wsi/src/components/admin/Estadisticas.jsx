@@ -8,7 +8,7 @@ import {
   faGaugeHigh, faCarSide, faGears, faClock, faDollarSign, faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 import { verifyToken } from '../../services/auth';
-import UserHeader from '../Home-Header';
+import Header from '../header';
 import bgImage from '../../assets/bg-login.jpg';
 import '../../styles/Estadisticas.css';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -44,6 +44,17 @@ const Estadisticas = () => {
         const result = await verifyToken();
         
         if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              navigate('/login', { replace: true });
+            }
+            return;
+          }
           setUser({
             nombre: result.user.nombre,
             apellido: result.user.apellido
@@ -158,16 +169,11 @@ const Estadisticas = () => {
 
   return (
     <div className="home-wrapper">
-      <UserHeader 
-        userName={`${user.nombre}`} 
-        title="WSI"
-        showIcons={true}
-      />
+     <Header title="WSI" />
 
       <div className="estadisticas-content">
         <div className="estadisticas-header">
           <h1>Análisis y Estadísticas</h1>
-          <p>Visualización de datos clave sobre vehículos y mantenimientos</p>
         </div>
 
         <div className="stats-overview">

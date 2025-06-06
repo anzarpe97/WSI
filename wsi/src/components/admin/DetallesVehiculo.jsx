@@ -1,28 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faArrowLeft, 
-  faEdit, 
-  faPrint, 
-  faGasPump, 
-  faWeightHanging, 
-  faGauge, 
-  faMoneyBill, 
-  faWeight, 
-  faCalendarAlt, 
-  faDollarSign,
-  faCar,
-  faIdCard,
-  faPalette,
-  faCalendar,
-  faCogs,
-  faChartLine
-} from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faEdit, faPrint, faGasPump, faWeightHanging, faGauge, faMoneyBill, faWeight, faCalendarAlt, faDollarSign,faCar,faIdCard,faPalette,faCalendar,faCogs,faChartLine} from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import '../../styles/DetalleVehiculo.css';
 import Header from '../header';
+import { verifyToken } from '../../services/auth';
 
 const DetalleVehiculo = () => {
   const { id } = useParams();
@@ -31,6 +15,70 @@ const DetalleVehiculo = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const reportRef = useRef();
+
+  // --- INACTIVIDAD ---
+  const inactivityTimer = useRef(null);
+  const [showInactivityModal, setShowInactivityModal] = useState(false);
+
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    if (isInactivityLogout) {
+      setShowInactivityModal(true);
+      setTimeout(() => {
+        navigate('/login', {
+          replace: true,
+          state: { sessionExpired: true }
+        });
+      }, 2500);
+    } else {
+      navigate('/login', { replace: true });
+    }
+  };
+
+  // Verificar rol del usuario al montar
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const result = await verifyToken();
+        if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
+          }
+        } else {
+          logout();
+        }
+      } catch (error) {
+        logout();
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+  // --- FIN VERIFICACIÓN ROL ---
+
+  useEffect(() => {
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        logout(true);
+      }, 1200000); // 20 minutos
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+  }, [navigate]);
+  // --- FIN INACTIVIDAD ---
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -94,54 +142,53 @@ const DetalleVehiculo = () => {
     doc.text(`Estado: ${formatEstado(vehiculo.estado)}`, 20, 70);
 
     // Tabla de especificaciones
-   autoTable(doc, {
-  startY: 80,
-  head: [['Especificación', 'Detalle']],
-  body: [
-    ['Tipología', vehiculo.tipologia || 'N/A'],
-    ['Motor', vehiculo.motor || 'N/A'],
-    ['Capacidad de carga', vehiculo.capacidad_carga ? `${vehiculo.capacidad_carga} kg` : 'N/A'],
-    ['Combustible', vehiculo.tipo_combustible && vehiculo.capacidad_combustible 
-      ? `${vehiculo.tipo_combustible} (${vehiculo.capacidad_combustible} L)` 
-      : 'N/A'],
-    ['Kilometraje', vehiculo.kilometraje 
-      ? `${vehiculo.kilometraje.toLocaleString()} km` 
-      : 'N/A'],
-    ['Costo', vehiculo.costo 
-      ? `$${vehiculo.costo.toLocaleString('es-ES')}` 
-      : 'N/A'],
-    ['Fecha de creación', formatFecha(vehiculo.fecha_creado) || 'N/A']
-  ],
-  theme: 'grid',
-  styles: {
-    font: 'helvetica',
-    fontSize: 10,
-    cellPadding: 6,
-    valign: 'middle',
-    lineColor: [220, 220, 220],
-    lineWidth: 0.5
-  },
-  headStyles: {
-    fillColor: [52, 152, 219], // azul moderno
-    textColor: 255,
-    fontStyle: 'bold',
-    fontSize: 11
-  },
-  bodyStyles: {
-    textColor: [33, 37, 41]
-  },
-  alternateRowStyles: {
-    fillColor: [248, 249, 250] // gris claro moderno
-  },
-  margin: { top: 85 },
-  tableLineColor: [230, 230, 230],
-  tableLineWidth: 0.3,
-  columnStyles: {
-    0: { cellWidth: 70, fontStyle: 'bold', textColor: [44, 62, 80] }, // columna izquierda
-    1: { cellWidth: 120 } // columna derecha
-  }
-});
-
+    autoTable(doc, {
+      startY: 80,
+      head: [['Especificación', 'Detalle']],
+      body: [
+        ['Tipología', vehiculo.tipologia || 'N/A'],
+        ['Motor', vehiculo.motor || 'N/A'],
+        ['Capacidad de carga', vehiculo.capacidad_carga ? `${vehiculo.capacidad_carga} kg` : 'N/A'],
+        ['Combustible', vehiculo.tipo_combustible && vehiculo.capacidad_combustible 
+          ? `${vehiculo.tipo_combustible} (${vehiculo.capacidad_combustible} L)` 
+          : 'N/A'],
+        ['Kilometraje', vehiculo.kilometraje 
+          ? `${vehiculo.kilometraje.toLocaleString()} km` 
+          : 'N/A'],
+        ['Costo', vehiculo.costo 
+          ? `$${vehiculo.costo.toLocaleString('es-ES')}` 
+          : 'N/A'],
+        ['Fecha de creación', formatFecha(vehiculo.fecha_creado) || 'N/A']
+      ],
+      theme: 'grid',
+      styles: {
+        font: 'helvetica',
+        fontSize: 10,
+        cellPadding: 6,
+        valign: 'middle',
+        lineColor: [220, 220, 220],
+        lineWidth: 0.5
+      },
+      headStyles: {
+        fillColor: [52, 152, 219],
+        textColor: 255,
+        fontStyle: 'bold',
+        fontSize: 11
+      },
+      bodyStyles: {
+        textColor: [33, 37, 41]
+      },
+      alternateRowStyles: {
+        fillColor: [248, 249, 250]
+      },
+      margin: { top: 85 },
+      tableLineColor: [230, 230, 230],
+      tableLineWidth: 0.3,
+      columnStyles: {
+        0: { cellWidth: 70, fontStyle: 'bold', textColor: [44, 62, 80] },
+        1: { cellWidth: 120 }
+      }
+    });
 
     // Pie de página
     doc.setFontSize(10);
@@ -294,6 +341,17 @@ const DetalleVehiculo = () => {
           </div>
         </div>
       </div>
+
+      {/* MODAL DE INACTIVIDAD */}
+      {showInactivityModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Sesión cerrada</h2>
+            <p>Tu sesión se ha cerrado por inactividad.<br />Serás redirigido al inicio de sesión.</p>
+            <div className="modal-loader"></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

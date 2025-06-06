@@ -22,13 +22,25 @@ const RegistroMantenimiento = () => {
     });
   };
 
-  // Verificación de token y temporizador de inactividad
+  // Verificación de token, rol y temporizador de inactividad
   useEffect(() => {
     document.title = "WSI - Registro Mantenimiento";
     const check = async () => {
       try {
         const result = await verifyToken();
-        if (!result.isValid) {
+        if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
+          }
+        } else {
           logout();
         }
       } catch (error) {
@@ -44,7 +56,7 @@ const RegistroMantenimiento = () => {
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 300000); // 5 minutos = 300,000 ms
+      }, 1200000); // 20 minutos
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
@@ -84,6 +96,26 @@ const RegistroMantenimiento = () => {
 
   // Estado para mecánicos
   const [mecanicos, setMecanicos] = useState([]);
+
+  // Estado para motivos de mantenimiento
+  const [motivos, setMotivos] = useState([]);
+
+  // Obtener motivos de mantenimiento desde la API
+  useEffect(() => {
+    const fetchMotivos = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:8000/api/motivos/', {
+          headers: { Authorization: `Token ${token}` }
+        });
+        const data = await response.json();
+        setMotivos(Array.isArray(data) ? data : []);
+      } catch {
+        setMotivos([]);
+      }
+    };
+    fetchMotivos();
+  }, []);
 
   // Obtener fecha actual en formato YYYY-MM-DD
   const getCurrentDate = () => {
@@ -337,34 +369,11 @@ const RegistroMantenimiento = () => {
                     style={{ maxWidth: '320px', width: '100%' }}
                   >
                     <option value="">Seleccione motivo...</option>
-                    <option value="1">Cambio de Aceite y Filtros</option>
-                    <option value="2">Cambio de Correa del motor</option>
-                    <option value="3">Cambio de Correa del compresor de aire</option>
-                    <option value="4">Cambio de Correa del alternador</option>
-                    <option value="5">Cambio de Correa multicanal del motor</option>
-                    <option value="6">Cambio de Filtro de purificador de Aire</option>
-                    <option value="7">Reemplazo o Servicio de Inyectores</option>
-                    <option value="8">Reemplazo o Servicio a Bomba de Inyección</option>
-                    <option value="9">Engrase de puntos de lubricación</option>
-                    <option value="10">Sustitución de Bujías</option>
-                    <option value="11">Cambio de Pastillas y Discos de Freno</option>
-                    <option value="12">Reparación o Sustitución del Alternador</option>
-                    <option value="13">Cambio de Amortiguadores</option>
-                    <option value="14">Revisión o Cambio de la empacadura de la cámara de compresión</option>
-                    <option value="15">Cambio del Embrague</option>
-                    <option value="16">Sustitución del Termostato</option>
-                    <option value="17">Cambio de Líquido de Frenos</option>
-                    <option value="18">Reparación o Cambio del Turbo</option>
-                    <option value="19">Cambio de Filtro de Combustible</option>
-                    <option value="20">Sustitución o reparación del Sistema de Escape</option>
-                    <option value="21">Reparación de la Transmisión</option>
-                    <option value="22">Cambio de Neumáticos</option>
-                    <option value="23">Reparación de Neumáticos</option>
-                    <option value="24">Cambio del Filtro de Partículas</option>
-                    <option value="25">Reparación del Sistema de Dirección</option>
-                    <option value="26">Cambio de Rodamientos de artillerías</option>
-                    <option value="27">Cambio de la Empacadura del Cárter</option>
-                    <option value="28">Alineación del tren delantero</option>
+                    {motivos.map(m => (
+                      <option key={m.id_motivo} value={m.id_motivo}>
+                        {m.motivo}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="registroMantenimiento-field">

@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { toast } from 'react-toastify';
 import {faCar, faUser, faWrench, faChartPie, faChartBar, faIdCardClip, faIdCard, faCarBurst, faPeopleGroup, faScrewdriverWrench, faFileContract, faCog
@@ -12,7 +11,7 @@ import '../../styles/home.css';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({ nombre: '', apellido: '' });
+  const [user, setUser] = useState({ nombre: '', apellido: '', rol: 0 });
   const [loading, setLoading] = useState(true);
   const inactivityTimer = useRef(null);
 
@@ -33,9 +32,21 @@ const Home = () => {
         const result = await verifyToken();
         
         if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
+          }
           setUser({
             nombre: result.user.nombre,
-            apellido: result.user.apellido
+            apellido: result.user.apellido,
+            rol: result.user.rol
           });
         } else {
           logout();
@@ -60,7 +71,7 @@ const Home = () => {
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 300000); // 5 minutos = 300,000 ms
+      }, 1200000); // 20 minutos = 1200000 ms
     };
 
     events.forEach(event => window.addEventListener(event, resetTimer));
@@ -131,7 +142,7 @@ const Home = () => {
             <p>Gestión Mantenimiento</p>
           </Link>
           
-          <Link to="/gestion-documentos" className="home-card" disabled>
+          <Link to="/menu-gestion-documentos" className="home-card" disabled>
             <FontAwesomeIcon icon={faIdCardClip} size="3x" />
             <p>Gestión Documentos</p>
           </Link>

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
-from .models import Usuario, Vehiculo, Mantenimiento, DocumentoChofer, NotificacionUsuario, NotificacionGlobal
+from .models import MotivoMantenimiento, Usuario, Vehiculo, Mantenimiento, DocumentoChofer, NotificacionUsuario, NotificacionGlobal
 import re
 
 User = get_user_model()
@@ -293,3 +293,8 @@ class NotificacionUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificacionUsuario
         fields = ['id', 'notificacion', 'leida', 'fecha_leida']
+        
+class MotivoMantenimientoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MotivoMantenimiento
+        fields = ['id_motivo', 'motivo']
