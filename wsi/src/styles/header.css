@@ -125,7 +125,6 @@
   z-index: 1001;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   transform: translateY(10px);
   animation: fadeIn 0.3s ease;
 }

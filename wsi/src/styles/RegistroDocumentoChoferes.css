@@ -1,306 +1,360 @@
-/* RegistroDocumentoChoferes.css */
+/* ESTILOS BASE Y RESET */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto; /* Habilita scroll vertical */
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+}
 
-/* Estilos base y layout */
+/* FONDO */
+.registroDocumentoChoferes-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: linear-gradient(120deg, #fff 0%, #ffe5d0 100%),
+                url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop') center 60% / cover no-repeat;
+    opacity: 0.15;
+}
+
+/* ESTRUCTURA PRINCIPAL */
 .registroDocumentoChoferes-wrapper {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
 }
 
 .registroDocumentoChoferes-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  padding: 80px 20px 40px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 80px 20px 40px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
-/* Fondo igual al Home */
-.registroDocumentoChoferes-bg {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    linear-gradient(120deg, #fff 0%, #ffe5d0 100%),
-    url('../assets/bg-login.png') center 60% / cover no-repeat;
-}
-
-.registroDocumentoChoferes-bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  background: inherit;
-  opacity: 0.18;
-  filter: blur(1px);
-  z-index: 1;
-  pointer-events: none;
-}
-
-.registroDocumentoChoferes-bg img {
-  display: none;
-}
-
-/* Contenedor principal */
 .registroDocumentoChoferes-container {
-  width: 100%;
-  max-width: 1000px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
-  padding: 36px 32px;
-  margin: 0 auto;
+    width: 100%;
+    max-width: 1000px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 36px 32px;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
+/* SCROLLBAR PERSONALIZADO */
+.scroll-container {
+    scrollbar-width: thin;
+    scrollbar-color: #ff9e6d #f1f1f1;
+    overflow-y: auto;
+}
+
+.scroll-container::-webkit-scrollbar {
+    width: 10px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 12px;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ff9e6d 0%, #ff6a00 100%);
+    border-radius: 12px;
+    border: 2px solid #f1f1f1;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ff6a00 0%, #e65c00 100%);
+}
+
+/* TÍTULO */
 .registroDocumentoChoferes-title {
-  color: #333;
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 24px;
-  text-align: center;
-  letter-spacing: 1px;
+    color: #333;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+    letter-spacing: 1px;
+    position: sticky;
+    top: 0;
+    background: white;
+    padding: 10px 0 20px;
+    z-index: 10;
+    margin-top: 0;
 }
 
-/* Formulario */
+/* FORMULARIO */
 .registroDocumentoChoferes-form {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
 }
 
-/* Secciones */
+/* SECCIONES */
 .registroDocumentoChoferes-section {
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 25px;
-  margin-bottom: 25px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border: 1px solid #eee;
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
 }
 
 .registroDocumentoChoferes-sectionTitle {
-  color: #ff6a00;
-  margin-bottom: 20px;
-  font-size: 1.2rem;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #f0f0f0;
-  font-weight: 700;
+    color: #ff6a00;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+    font-weight: 700;
 }
 
-/* Campos del formulario */
+/* CAMPOS */
 .registroDocumentoChoferes-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 10px;
 }
 
 .registroDocumentoChoferes-field {
-  flex: 1 1 220px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+    flex: 1 1 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .registroDocumentoChoferes-field label {
-  font-size: 0.9rem;
-  color: #555;
-  margin-top: 8px;
-  margin-bottom: 8px;
-  font-weight: 500;
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    font-weight: 500;
 }
 
 .registroDocumentoChoferes-field input,
 .registroDocumentoChoferes-field select {
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  border-radius: 9px;
-  font-size: 0.95rem;
-  transition: all 0.3s;
-  width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .registroDocumentoChoferes-field input:focus {
-  border-color: #ff6a00;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.1);
+    border-color: #ff6a00;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.1);
 }
 
-/* Búsqueda de cédula - Estilos mejorados */
+/* CAMPO CÉDULA */
 .cedula-search-container {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  position: relative;
-  width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+    width: 100%;
 }
 
 .cedula-search-container input[type="text"] {
-  flex: 1;
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  border-radius: 8px 0 0 8px;
-  font-size: 0.95rem;
-  transition: all 0.3s;
-  min-width: 200px;
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px 0 0 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    min-width: 200px;
+    height: 48px;
+    box-sizing: border-box;
 }
 
+/* BOTÓN BUSCAR */
 .search-btn {
-  background: #ff6a00;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 0 8px 8px 0;
-  cursor: pointer;
-  transition: all 0.3s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 100%;
-  min-width: 100px;
-  font-weight: 500;
+    background: #ff6a00;
+    color: white;
+    border: none;
+    padding: 0 20px;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    min-width: 100px;
+    font-weight: 500;
+    box-sizing: border-box;
 }
 
 .search-btn:hover {
-  background: #e65c00;
+    background: #e65c00;
 }
 
 .search-btn.searching {
-  background: #6c757d;
-  cursor: not-allowed;
+    background: #6c757d;
+    cursor: not-allowed;
 }
 
 .search-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
-/* Mensajes de error */
+/* ERRORES */
 .error-message {
-  color: #d32f2f;
-  font-size: 0.85rem;
-  margin-top: 4px;
+    color: #d32f2f;
+    font-size: 0.85rem;
+    margin-top: 4px;
 }
 
 .input-error {
-  border-color: #d32f2f !important;
-  background: #fff0f0 !important;
+    border-color: #d32f2f !important;
+    background: #fff0f0 !important;
 }
 
-/* Info chofer */
+/* INFO CHOFER */
 .chofer-info-container {
-  margin-top: 10px;
-  background: #fff8f2;
-  border: 1.5px solid #ff6a00;
-  border-radius: 10px;
-  padding: 12px 18px;
+    margin-top: 10px;
+    background: #fff8f2;
+    border: 1.5px solid #ff6a00;
+    border-radius: 10px;
+    padding: 12px 18px;
 }
 
 .chofer-info-details {
-  color: #222;
-  font-size: 1.05rem;
+    color: #222;
+    font-size: 1.05rem;
+    margin: 5px 0;
 }
 
-/* Archivo */
+/* ARCHIVO */
 .registroDocumentoChoferes-field input[type="file"] {
-  padding: 10px;
-  border: 2px dashed #ddd;
-  background: #fafafa;
+    padding: 10px;
+    border: 2px dashed #ddd;
+    background: #fafafa;
+    height: auto;
 }
 
 .file-preview {
-  margin-top: 6px;
-  color: #555;
-  font-size: 0.95rem;
-  padding: 8px;
-  background: #f8f9fa;
-  border-radius: 6px;
-  border-left: 4px solid #ff6a00;
+    margin-top: 6px;
+    color: #555;
+    font-size: 0.95rem;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #ff6a00;
 }
 
-/* Botón de enviar */
+/* BOTÓN SUBMIT */
 .registroDocumentoChoferes-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 15px 0 5px;
+    z-index: 10;
 }
 
 .registroDocumentoChoferes-submitBtn {
-  background: #ff6a00;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 28px;
-  font-weight: 700;
-  font-size: 1.08rem;
-  cursor: pointer;
-  transition: background 0.2s;
+    background: #ff6a00;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-weight: 700;
+    font-size: 1.08rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 3px 10px rgba(255, 106, 0, 0.3);
 }
 
 .registroDocumentoChoferes-submitBtn:hover {
-  background: #e65c00;
+    background: #e65c00;
+    transform: translateY(-2px);
 }
 
-/* Responsive */
+/* SELECT CUSTOM */
+.registroDocumentoChoferes-field select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}
+
+/* RESPONSIVE */
 @media (max-width: 768px) {
-  .registroDocumentoChoferes-container {
-    padding: 25px 20px;
-    width: 95%;
-  }
+    .registroDocumentoChoferes-container {
+        padding: 25px 20px;
+        width: 95%;
+    }
 
-  .registroDocumentoChoferes-title {
-    font-size: 1.6rem;
-  }
+    .registroDocumentoChoferes-title {
+        font-size: 1.6rem;
+        padding: 10px 0 15px;
+    }
 
-  .registroDocumentoChoferes-row {
-    flex-direction: column;
-    gap: 12px;
-  }
+    .registroDocumentoChoferes-row {
+        flex-direction: column;
+        gap: 12px;
+    }
 
-  .cedula-search-container {
-    flex-direction: row;
-  }
-  
-  .search-btn {
-    padding: 12px 15px;
-    min-width: auto;
-  }
-  
-  .search-btn span {
-    display: none;
-  }
+    .cedula-search-container {
+        flex-direction: row;
+    }
+
+    .search-btn {
+        padding: 12px 15px;
+        min-width: auto;
+    }
+
+    .search-btn span {
+        display: none;
+    }
+
+    .scroll-container {
+        max-height: 60vh;
+    }
 }
 
 @media (max-width: 480px) {
-  .registroDocumentoChoferes-content {
-    padding: 80px 10px 20px;
-  }
+    .registroDocumentoChoferes-content {
+        padding: 70px 10px 20px;
+    }
 
-  .registroDocumentoChoferes-section {
-    padding: 20px;
-  }
+    .registroDocumentoChoferes-section {
+        padding: 20px 15px;
+    }
 
-  .cedula-search-container input[type="text"] {
-    min-width: 150px;
-  }
-  
-  .search-btn {
-    padding: 12px;
-  }
-}
+    .cedula-search-container input[type="text"] {
+        min-width: 150px;
+        height: 44px;
+    }
 
-.registroDocumentoChoferes-field select {
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1em;
-  padding-right: 2.5rem;
+    .search-btn {
+        padding: 12px;
+        height: 44px;
+    }
+
+    .scroll-container {
+        max-height: 55vh;
+    }
 }
