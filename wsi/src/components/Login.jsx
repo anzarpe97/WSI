@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -7,6 +7,7 @@ import bg from '../assets/bg-login.jpg';
 import camion from '../assets/camion-login.png';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { verifyToken } from '../services/auth';
 
 const Login = () => {
   document.title = 'WSI - Login';
@@ -15,7 +16,91 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const navigate = useNavigate();
+
+  // 🔑 SOLUCIÓN 1: Verificación Simple al Cargar el Login
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      try {
+        // Verificar si hay token almacenado
+        const token = localStorage.getItem('token');
+        
+        if (token) {
+          console.log('🔍 Token encontrado, verificando validez...');
+          
+          // Verificar si el token es válido con el backend
+          const result = await verifyToken();
+          
+          if (result.isValid && result.user) {
+            // ✅ Sesión válida encontrada - Redirigir según el rol
+            const userRole = parseInt(result.user.rol);
+            
+            console.log('🔄 Sesión activa detectada, redirigiendo...', result.user);
+            
+            switch (userRole) {
+              case 0:
+                navigate('/adminHome', { replace: true });
+                break;
+              case 1:
+                navigate('/supervisor-dashboard', { replace: true });
+                break;
+              case 2:
+                navigate('/employee-dashboard', { replace: true });
+                break;
+              default:
+                // Rol no reconocido, limpiar token
+                console.warn('⚠️ Rol no reconocido:', userRole);
+                localStorage.removeItem('token');
+            }
+            return; // Salir temprano si hay redirección
+          } else {
+            // Token inválido, limpiar
+            console.log('❌ Token inválido, limpiando...');
+            localStorage.removeItem('token');
+          }
+        }
+        
+        // Si llegamos aquí, no hay sesión válida
+        console.log('ℹ️ No hay sesión activa, mostrando login');
+        
+      } catch (error) {
+        // Error al verificar sesión, limpiar por seguridad
+        console.error('❌ Error verificando sesión:', error);
+        localStorage.removeItem('token');
+      } finally {
+        // Permitir que se muestre el login
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkExistingSession();
+  }, [navigate]);
+
+  // Mostrar spinner mientras verifica si hay sesión activa
+  if (isCheckingAuth) {
+    return (
+      <div className="login-wrapper" style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        backgroundColor: '#f8f9fa'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="loader"></div>
+          <p style={{ 
+            marginTop: '20px', 
+            color: '#666', 
+            fontSize: '16px',
+            fontFamily: 'Arial, sans-serif'
+          }}>
+            🔍 Verificando sesión existente...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const validateForm = () => {
     const errors = {};
@@ -41,18 +126,16 @@ const Login = () => {
 
     if (!validateForm()) return;
 
-    setIsLoading(true);
-
-    try {
+    setIsLoading(true);    try {
       // 1. Solicita token CSRF desde backend
-      const csrfResponse = await fetch('http://127.0.0.1:8000/api/csrf/', {
+      const csrfResponse = await fetch('http://localhost:8000/api/csrf/', {
         credentials: 'include',
       });
       const csrfData = await csrfResponse.json();
       const csrftoken = csrfData.csrfToken;
 
       // 2. Envía login con token CSRF recibido
-      const response = await fetch('http://127.0.0.1:8000/api/login/', {
+      const response = await fetch('http://localhost:8000/api/login/', {
         method: 'POST',
         credentials: 'include',
         headers: {
