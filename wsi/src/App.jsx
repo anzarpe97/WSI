@@ -16,6 +16,7 @@ import MenuDocumentos from './components/admin/MenuDocumentos';
 import RegistroDocumentoChoferes from './components/admin/RegistroDocumentoChoferes';
 import RegistroDocumentosVehiculos from './components/admin/RegistroDocumentosVehiculos,';
 import HomeSupervisor from './components/supervisor/HomeSupervisor';
+import Estadisticas from './components/admin/Estadisticas';
 
 const App = () => {
   return (
@@ -41,7 +42,9 @@ const App = () => {
         {/* RUTAS MANTENIMIENTO ADMINISTRADOR*/}        
         <Route path="/registro-mantenimiento" element={<RegistroMantenimiento />} />
         <Route path="/gestion-mantenimiento" element={<GestionMantenimiento />} />
-              
+        {/* RUTAS MANTENIMIENTO ADMINISTRADOR*/}        
+        <Route path="/estadisticas" element={<Estadisticas />} />
+        {/* RUTAS DOCUMENTOS VEHICULOS ADMINISTRADOR*/}      
         {/* RUTAS SUPERVISOR*/}     
         <Route path="/supervisorHome" element={<HomeSupervisor />} />
         {/* RUTAS USUARIO*/}

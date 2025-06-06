@@ -22,6 +22,7 @@ const RegistroDocumentoChoferes = () => {
   const [file, setFile] = useState(null);
   const [fileError, setFileError] = useState('');
   const [documentosRegistrados, setDocumentosRegistrados] = useState([]);
+  const [formSubmitted, setFormSubmitted] = useState(false); // <-- ARREGLADO
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
@@ -46,7 +47,6 @@ const RegistroDocumentoChoferes = () => {
       }
     };
     checkAuth();
-
     // --- Temporizador de inactividad ---
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
     const resetTimer = () => {
@@ -172,80 +172,79 @@ const RegistroDocumentoChoferes = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setFormSubmitted(true); // <--- se activa validación visual
+    e.preventDefault();
+    setFormSubmitted(true); // <--- se activa validación visual
 
-  if (!choferInfo) {
-    toast.error('Debe buscar y seleccionar un chofer');
-    return;
-  }
-  if (!tipoDocumento) {
-    toast.error('Tipo de documento requerido');
-    return;
-  }
-  if (!documentNumber.trim()) {
-    toast.error('Número de documento requerido');
-    return;
-  }
-  if (!fechaEmision || !fechaCaducidad) {
-    toast.error('Debe seleccionar la fecha de emisión');
-    return;
-  }
-  if (new Date(fechaCaducidad) < new Date()) {
-    toast.error('No se puede registrar un documento vencido');
-    return;
-  }
-  if (!file) {
-    toast.error('Debe subir el documento digital');
-    return;
-  }
-
-  const cedulaLimpia = limpiarTexto(cedula);
-  const tipoDocumentoLimpio = limpiarTexto(tipoDocumento);
-  const numeroDocumentoLimpio = limpiarTexto(documentNumber);
-  const ext = file.name.split('.').pop();
-  const newFileName = `${cedulaLimpia}_${tipoDocumentoLimpio}.${ext}`;
-  const renamedFile = new File([file], newFileName, { type: file.type });
-
-  const formData = new FormData();
-  formData.append('cedula', cedulaLimpia);
-  formData.append('chofer', choferInfo.id);
-  formData.append('nombre', choferInfo.nombre);
-  formData.append('apellido', choferInfo.apellido);
-  formData.append('tipo_documento', tipoDocumentoLimpio);
-  formData.append('numero_documento', numeroDocumentoLimpio);
-  formData.append('fecha_emision', fechaEmision);
-  formData.append('fecha_caducidad', fechaCaducidad);
-  formData.append('archivo', renamedFile);
-
-  try {
-    const response = await fetch('http://localhost:8000/api/documentos-choferes/', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (response.ok) {
-      toast.success('Documento registrado exitosamente');
-      setCedula('');
-      setChoferInfo(null);
-      setTipoDocumento('');
-      setDocumentNumber('');
-      setFechaEmision('');
-      setFechaCaducidad('');
-      setFile(null);
-      setDocumentosRegistrados([]);
-      setFormSubmitted(false); // <-- resetea validación visual
-    } else {
-      const errorData = await response.json();
-      console.log(errorData);
-      toast.error('Error al registrar el documento');
+    if (!choferInfo) {
+      toast.error('Debe buscar y seleccionar un chofer');
+      return;
     }
-  } catch (error) {
-    console.log(error);
-    toast.error('Error de conexión con el servidor');
-  }
-};
+    if (!tipoDocumento) {
+      toast.error('Tipo de documento requerido');
+      return;
+    }
+    if (!documentNumber.trim()) {
+      toast.error('Número de documento requerido');
+      return;
+    }
+    if (!fechaEmision || !fechaCaducidad) {
+      toast.error('Debe seleccionar la fecha de emisión');
+      return;
+    }
+    if (new Date(fechaCaducidad) < new Date()) {
+      toast.error('No se puede registrar un documento vencido');
+      return;
+    }
+    if (!file) {
+      toast.error('Debe subir el documento digital');
+      return;
+    }
 
+    const cedulaLimpia = limpiarTexto(cedula);
+    const tipoDocumentoLimpio = limpiarTexto(tipoDocumento);
+    const numeroDocumentoLimpio = limpiarTexto(documentNumber);
+    const ext = file.name.split('.').pop();
+    const newFileName = `${cedulaLimpia}_${tipoDocumentoLimpio}.${ext}`;
+    const renamedFile = new File([file], newFileName, { type: file.type });
+
+    const formData = new FormData();
+    formData.append('cedula', cedulaLimpia);
+    formData.append('chofer', choferInfo.id);
+    formData.append('nombre', choferInfo.nombre);
+    formData.append('apellido', choferInfo.apellido);
+    formData.append('tipo_documento', tipoDocumentoLimpio);
+    formData.append('numero_documento', numeroDocumentoLimpio);
+    formData.append('fecha_emision', fechaEmision);
+    formData.append('fecha_caducidad', fechaCaducidad);
+    formData.append('archivo', renamedFile);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/documentos-choferes/', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        toast.success('Documento registrado exitosamente');
+        setCedula('');
+        setChoferInfo(null);
+        setTipoDocumento('');
+        setDocumentNumber('');
+        setFechaEmision('');
+        setFechaCaducidad('');
+        setFile(null);
+        setDocumentosRegistrados([]);
+        setFormSubmitted(false); // <-- resetea validación visual
+      } else {
+        const errorData = await response.json();
+        console.log(errorData);
+        toast.error('Error al registrar el documento');
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error('Error de conexión con el servidor');
+    }
+  };
 
   return (
     <div className="registroDocumentoChoferes-wrapper">
@@ -259,7 +258,7 @@ const RegistroDocumentoChoferes = () => {
 
       <div className="registroDocumentoChoferes-content">
         <div className="registroDocumentoChoferes-bg">
-          <img src={bgImage} alt="Fondo Documentos" />
+          <img src={bgImage} alt="Fondo" />
         </div>
 
         <div className="registroDocumentoChoferes-container">
@@ -319,11 +318,11 @@ const RegistroDocumentoChoferes = () => {
               <div className="registroDocumentoChoferes-field">
                 <label>Tipo de Documento</label>
                 <select
-                    value={tipoDocumento}
-                    onChange={(e) => setTipoDocumento(e.target.value)}
-                    className={(!tipoDocumento && formSubmitted) ? 'input-error' : ''}
-                    aria-required="true"
-                  >
+                  value={tipoDocumento}
+                  onChange={(e) => setTipoDocumento(e.target.value)}
+                  className={(!tipoDocumento && formSubmitted) ? 'input-error' : ''}
+                  aria-required="true"
+                >
                   <option value="">Seleccione un tipo</option>
                   <option value="CEDULA_IDENTIDAD" disabled={documentosRegistrados.includes('CEDULA_IDENTIDAD')}>Cedula de Identidad</option>
                   <option value="LICENCIA_CONDUCIR" disabled={documentosRegistrados.includes('LICENCIA_CONDUCIR')}>Licencia De Conducir</option>
