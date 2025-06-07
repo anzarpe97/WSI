@@ -107,6 +107,7 @@ const GestionMantenimiento = () => {
     navigate('/registro-mantenimiento');
   };
 
+  // Envía el id del mantenimiento seleccionado a la ruta de detalles
   const handleVerDetalles = (id) => {
     navigate(`/detalle-mantenimiento/${id}`);
   };
@@ -124,7 +125,9 @@ const GestionMantenimiento = () => {
       'EN_PROCESO': 'EN PROCESO',
       'COMPLETADO': 'COMPLETADO',
       'PENDIENTE': 'PENDIENTE',
-      'CANCELADO': 'CANCELADO'
+      'CANCELADO': 'CANCELADO',
+      'ACTIVO': 'En Proceso',
+      'FINALIZADO': 'Completado'
     };
     return estados[estado] || estado;
   };

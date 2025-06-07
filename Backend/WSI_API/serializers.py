@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
-from .models import MotivoMantenimiento, Usuario, Vehiculo, Mantenimiento, DocumentoChofer, NotificacionUsuario, NotificacionGlobal
+from .models import DetalleMantenimiento, MotivoMantenimiento, Usuario, Vehiculo, Mantenimiento, DocumentoChofer, NotificacionUsuario, NotificacionGlobal
 import re
 
 User = get_user_model()
@@ -277,6 +277,11 @@ class MantenimientoSerializer(serializers.ModelSerializer):
         model = Mantenimiento
         fields = ['id_mantenimiento', 'motivo', 'placa', 'estado', 'fecha_programada']
 
+class VehiculoSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vehiculo
+        fields = ['placa', 'marca', 'modelo', 'anio']
+
 class DocumentoChoferSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentoChofer
@@ -298,3 +303,47 @@ class MotivoMantenimientoSerializer(serializers.ModelSerializer):
     class Meta:
         model = MotivoMantenimiento
         fields = ['id_motivo', 'motivo']
+        
+class DetalleSuministroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DetalleMantenimiento
+        fields = ['motivo', 'cantidad', 'precio_und', 'total']      
+        
+class DetalleMantenimientoSerializer(serializers.ModelSerializer):
+    vehiculo = VehiculoSimpleSerializer(source='id_vehiculo', read_only=True)
+    motivo = serializers.CharField(source='id_motivo.motivo', read_only=True)
+    mecanico = MecanicoSerializer(source='id_mecanico', read_only=True)
+    suministros = DetalleSuministroSerializer(source='detallemantenimiento_set', many=True, read_only=True)
+
+    class Meta:
+        model = Mantenimiento
+        fields = [
+            'id_mantenimiento',
+            'vehiculo',
+            'motivo',
+            'mecanico',
+            'estado',
+            'fecha_programada',
+            'fecha_finalizado',
+            'tipo_mantenimiento',
+            'observaciones',
+            'suministros'
+        ]        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
