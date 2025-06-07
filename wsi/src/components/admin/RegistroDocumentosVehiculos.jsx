@@ -424,5 +424,4 @@ const RegistroDocumentosVehiculos = () => {
     </div>
   );
 };
-
 export default RegistroDocumentosVehiculos;
