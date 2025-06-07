@@ -173,7 +173,6 @@ const Estadisticas = () => {
 
       <div className="estadisticas-content">
         <div className="estadisticas-header">
-          <h1>Análisis y Estadísticas</h1>
         </div>
 
         <div className="stats-overview">

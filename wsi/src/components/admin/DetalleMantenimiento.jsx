@@ -238,8 +238,7 @@ const DetalleMantenimiento = () => {
       <Header title="WSI" />
       <ToastContainer position="top-right" autoClose={3000} />
 
-      <div className="detalle-mantenimiento-content">
-        <div className="detalle-mantenimiento-bg">
+      <div className="detalle-mantenimiento-bg">
           <img
             src={bgImage}
             alt="Fondo Detalle Mantenimiento"
@@ -247,15 +246,12 @@ const DetalleMantenimiento = () => {
           />
         </div>
 
+      <div className="detalle-mantenimiento-content">
+        
+
         <div className="detalle-mantenimiento-container">
           <div className="detalle-mantenimiento-header">
             <h1 className="detalle-mantenimiento-title">Detalle de Mantenimiento</h1>
-            <button 
-              className="detalle-mantenimiento-edit-button"
-              onClick={() => navigate(`/editar-mantenimiento/${id}`)}
-            >
-              <FontAwesomeIcon icon={faEdit} /> Editar
-            </button>
           </div>
 
           <div className="detalle-mantenimiento-form">
@@ -325,7 +321,7 @@ const DetalleMantenimiento = () => {
 
             {/* Sección de suministros existentes */}
             <div className="detalle-mantenimiento-section">
-              <h3 className="detalle-mantenimiento-section-title">Suministros Existentes</h3>
+              <h3 className="detalle-mantenimiento-section-title">Suministros</h3>
 
               {maintenance.suministros && maintenance.suministros.length > 0 ? (
                 <div className="detalle-mantenimiento-supplies">

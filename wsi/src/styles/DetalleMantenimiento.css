@@ -21,16 +21,20 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 .detalle-mantenimiento-bg img {
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   object-fit: cover;
-  opacity: 0.15;
+  opacity: 0.18; /* Puedes ajustar la opacidad */
+  pointer-events: none;
+  user-select: none;
 }
 
 /* Contenedor del detalle */

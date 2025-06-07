@@ -341,14 +341,12 @@ const RegistroMantenimiento = () => {
       <Header title="WSI" />
       <ToastContainer position="top-right" autoClose={3000} />
 
+      <div className="registroMantenimiento-bg">
+        <img src={bgImage} alt="Fondo" />
+      </div>
+
       <div className="registroMantenimiento-content">
-        <div className="registroMantenimiento-bg">
-          <img
-            src={bgImage}
-            alt="Fondo Registro Mantenimiento"
-            onError={(e) => (e.target.style.display = 'none')}
-          />
-        </div>
+        
 
         <div className="registroMantenimiento-container">
           <h1 className="registroMantenimiento-title">Registro Orden de Mantenimiento</h1>

@@ -256,7 +256,11 @@ const RegistroVehiculo = () => {
       <Header title="WSI" />
 
       <div className="registro-empleado-bg">
-       
+        <img
+                   src={bgImage}
+                   alt="Fondo Detalle Mantenimiento"
+                   onError={(e) => (e.target.style.display = 'none')}
+                 />
       </div>
 
       <div className="registro-empleado-container">
