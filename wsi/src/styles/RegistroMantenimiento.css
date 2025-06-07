@@ -42,42 +42,36 @@ body {
 
 /* Contenedor principal */
 .registroMantenimiento-wrapper {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.registroMantenimiento-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   position: relative;
-  padding-top: 80px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}   
+
+  .registroMantenimiento-content {
+  position: relative;
+  z-index: 1; /* Asegura que esté sobre el fondo */
+  flex: 1;
+  padding-top: 80px; /* Ajusta según la altura de tu header */
   padding-bottom: 40px;
 }
 
+
 /* Fondo */
 .registroMantenimiento-bg {
-    position: fixed;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: -1;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 1;
+  z-index: -1; /* Importante: debe estar detrás de todo */
 }
 
 .registroMantenimiento-bg img {
- width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  opacity: 0.15;
-  pointer-events: none;
+  opacity: 0.15; /* Ajusta la opacidad según necesites */
 }
 
 .registroMantenimiento-content,
@@ -86,16 +80,16 @@ body {
   z-index: 1;
 }
 
-/* Contenedor del formulario */
+/* Mantener el fondo blanco del contenedor pero con transparencia */
 .registroMantenimiento-container {
   width: 90%;
   max-width: 1000px;
-  background: white;
+  background: rgba(255, 255, 255, 0.85); /* Fondo semi-transparente */
   border-radius: 15px;
   padding: 30px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   margin: 20px auto;
-}
+}  
 
 .registroMantenimiento-title {
   text-align: center;

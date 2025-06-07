@@ -13,11 +13,12 @@ import GestionMantenimiento from './components/admin/GestionManteminimento';
 import EditarVehiculo from './components/admin/EditarVehiculo';
 import MenuDocumentos from './components/admin/MenuDocumentos';
 import RegistroDocumentoChoferes from './components/admin/RegistroDocumentoChoferes';
-import RegistroDocumentosVehiculos from './components/admin/RegistroDocumentosVehiculos,';
+import RegistroDocumentosVehiculos from './components/admin/RegistroDocumentosVehiculos';
 import HomeSupervisor from './components/supervisor/HomeSupervisor';
 import Estadisticas from './components/admin/Estadisticas';
 import MenuGestionDocumentos from './components/admin/MenuGestionDocumentos';
 import DetalleMantenimiento from './components/admin/DetalleMantenimiento';
+import DetalleEmpleado from './components/admin/DetalleEmpleados';
 const App = () => {
   return (
     <Router>
@@ -30,6 +31,7 @@ const App = () => {
         {/* RUTAS EMPLEADOS ADMINISTRADOR*/}
         <Route path="/registro-empleado" element={<RegistroEmpleado />} />
         <Route path="/gestion-empleados" element={<GestionEmpleados />} />
+        <Route path="/detalle-empleado/:id" element={<DetalleEmpleado />} />
         {/* RUTAS DOCUMENTOS ADMINISTRADOR*/}
         <Route path="/menu-documentos" element={<MenuDocumentos />} />
         <Route path="/menu-gestion-documentos" element={<MenuGestionDocumentos />} />

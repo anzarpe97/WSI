@@ -341,10 +341,10 @@ const RegistroMantenimiento = () => {
       <Header title="WSI" />
       <ToastContainer position="top-right" autoClose={3000} />
 
-      <div className="registroMantenimiento-bg">
+    <div className="registroMantenimiento-bg">
         <img src={bgImage} alt="Fondo" />
       </div>
-
+      
       <div className="registroMantenimiento-content">
         
 

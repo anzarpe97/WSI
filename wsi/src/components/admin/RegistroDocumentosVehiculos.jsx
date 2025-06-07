@@ -3,17 +3,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import "../../styles/RegistroDocumentoChoferes.css";
+import "../../styles/RegistroDocumentosVehiculos.css";
 import bgImage from '../../assets/bg-login.jpg'
 import Header from '../header';
 import { useNavigate } from "react-router-dom";
 import { verifyToken } from "../../services/auth";
 
-const RegistroDocumentoChoferes = () => {
-  const [cedula, setCedula] = useState('');
-  const [choferInfo, setChoferInfo] = useState(null);
+const RegistroDocumentosVehiculos = () => {
+  const [placa, setPlaca] = useState('');
+  const [vehiculoInfo, setVehiculoInfo] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
-  const [cedulaError, setCedulaError] = useState('');
+  const [placaError, setPlacaError] = useState('');
   const [tipoDocumento, setTipoDocumento] = useState('');
   const [documentNumber, setDocumentNumber] = useState('');
   const [fechaEmision, setFechaEmision] = useState('');
@@ -79,37 +79,38 @@ const RegistroDocumentoChoferes = () => {
   }, [navigate]);
   // --- Fin Logout y temporizador ---
 
-  const validarCedula = (cedula) => /^\d{7,8}$/.test(cedula);
+  const validarPlaca = (placa) => /^[A-Za-z]{2,3}\d{3,4}$/.test(placa);
 
-  document.title = "WSI - Registro Documentos Choferes";
+  document.title = "WSI - Registro Documentos Vehículos";
 
-  const handleCedulaSearch = async () => {
-    if (!cedula.trim()) {
-      setCedulaError('Por favor ingrese una cédula');
+  const handlePlacaSearch = async () => {
+    if (!placa.trim()) {
+      setPlacaError('Por favor ingrese una placa');
       return;
     }
-    if (!validarCedula(cedula)) {
-      setCedulaError('Formato inválido (debe contener entre 7 - 8 dígitos numéricos)');
+    if (!validarPlaca(placa)) {
+      setPlacaError('Formato inválido (ejemplo: ABC123 o AB1234)');
       return;
     }
 
-    setCedulaError('');
+    setPlacaError('');
     setIsSearching(true);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/choferes/?cedula=${cedula}&rol=2`);
+      const response = await fetch(`http://localhost:8000/api/vehiculos/?placa=${placa}`);
       if (response.ok) {
         const data = await response.json();
-        if (data && data.id && data.nombre && data.apellido) {
-          setChoferInfo({
+        if (data && data.id && data.marca && data.modelo) {
+          setVehiculoInfo({
             id: data.id,
-            nombre: data.nombre,
-            apellido: data.apellido
+            marca: data.marca,
+            modelo: data.modelo,
+            año: data.año
           });
-          toast.success("Chofer encontrado");
+          toast.success("Vehículo encontrado");
 
-          // Consultar documentos ya registrados por el chofer
-          const docsResponse = await fetch(`http://localhost:8000/api/documentos-choferes-verificar/?chofer=${data.id}`);
+          // Consultar documentos ya registrados por el vehículo
+          const docsResponse = await fetch(`http://localhost:8000/api/documentos-vehiculos-verificar/?vehiculo=${data.id}`);
           if (docsResponse.ok) {
             const docsData = await docsResponse.json();
             setDocumentosRegistrados(docsData.map(doc => doc.tipo_documento));
@@ -117,18 +118,18 @@ const RegistroDocumentoChoferes = () => {
             setDocumentosRegistrados([]);
           }
         } else {
-          setChoferInfo(null);
-          setCedulaError("El número de cédula no ha sido registrado");
+          setVehiculoInfo(null);
+          setPlacaError("La placa no ha sido registrada");
           setDocumentosRegistrados([]);
         }
       } else {
-        setChoferInfo(null);
-        setCedulaError("El número de cédula no ha sido registrado");
+        setVehiculoInfo(null);
+        setPlacaError("La placa no ha sido registrada");
         setDocumentosRegistrados([]);
       }
     } catch {
-      setChoferInfo(null);
-      setCedulaError("Error al buscar chofer");
+      setVehiculoInfo(null);
+      setPlacaError("Error al buscar vehículo");
       setDocumentosRegistrados([]);
     } finally {
       setIsSearching(false);
@@ -140,9 +141,10 @@ const RegistroDocumentoChoferes = () => {
     if (!tipo || !emision) return '';
     const fecha = new Date(emision);
     let anios = 0;
-    if (tipo === 'CEDULA_IDENTIDAD') anios = 10;
-    if (tipo === 'LICENCIA_CONDUCIR') anios = 5;
-    if (tipo === 'CARTA_MEDICA') anios = 5;
+    if (tipo === 'TARJETA_PROPIEDAD') anios = 10;
+    if (tipo === 'SOAT') anios = 1;
+    if (tipo === 'TECNOMECANICA') anios = 1;
+    if (tipo === 'SEGURO') anios = 1;
     fecha.setFullYear(fecha.getFullYear() + anios);
     return fecha.toISOString().split('T')[0];
   };
@@ -187,8 +189,8 @@ const RegistroDocumentoChoferes = () => {
     e.preventDefault();
     setFormSubmitted(true);
 
-    if (!choferInfo) {
-      toast.error('Debe buscar y seleccionar un chofer');
+    if (!vehiculoInfo) {
+      toast.error('Debe buscar y seleccionar un vehículo');
       return;
     }
     if (!tipoDocumento) {
@@ -212,18 +214,19 @@ const RegistroDocumentoChoferes = () => {
       return;
     }
 
-    const cedulaLimpia = limpiarTexto(cedula);
+    const placaLimpia = limpiarTexto(placa);
     const tipoDocumentoLimpio = limpiarTexto(tipoDocumento);
     const numeroDocumentoLimpio = limpiarTexto(documentNumber);
     const ext = file.name.split('.').pop();
-    const newFileName = `${cedulaLimpia}_${tipoDocumentoLimpio}.${ext}`;
+    const newFileName = `${placaLimpia}_${tipoDocumentoLimpio}.${ext}`;
     const renamedFile = new File([file], newFileName, { type: file.type });
 
     const formData = new FormData();
-    formData.append('cedula', cedulaLimpia);
-    formData.append('chofer', choferInfo.id);
-    formData.append('nombre', choferInfo.nombre);
-    formData.append('apellido', choferInfo.apellido);
+    formData.append('placa', placaLimpia);
+    formData.append('vehiculo', vehiculoInfo.id);
+    formData.append('marca', vehiculoInfo.marca);
+    formData.append('modelo', vehiculoInfo.modelo);
+    formData.append('año', vehiculoInfo.año);
     formData.append('tipo_documento', tipoDocumentoLimpio);
     formData.append('numero_documento', numeroDocumentoLimpio);
     formData.append('fecha_emision', fechaEmision);
@@ -231,15 +234,15 @@ const RegistroDocumentoChoferes = () => {
     formData.append('archivo', renamedFile);
 
     try {
-      const response = await fetch('http://localhost:8000/api/documentos-choferes/', {
+      const response = await fetch('http://localhost:8000/api/documentos-vehiculos/', {
         method: 'POST',
         body: formData,
       });
 
       if (response.ok) {
         toast.success('Documento registrado exitosamente');
-        setCedula('');
-        setChoferInfo(null);
+        setPlaca('');
+        setVehiculoInfo(null);
         setTipoDocumento('');
         setDocumentNumber('');
         setFechaEmision('');
@@ -259,7 +262,7 @@ const RegistroDocumentoChoferes = () => {
   };
 
   return (
-    <div className="registroDocumentoChoferes-wrapper">
+    <div className="registroDocumentosVehiculos-wrapper">
       <Header title="WSI" />
       <ToastContainer 
         position="top-right" 
@@ -267,38 +270,36 @@ const RegistroDocumentoChoferes = () => {
         theme="colored"
         pauseOnHover={false}
       />
-    <div className="registroDocumentoChoferes-bg">
-              <img src={bgImage} alt="Fondo" />
-            </div>
-      <div className="registroDocumentoChoferes-content">
-        
-
-        <div className="registroDocumentoChoferes-container">
-          <h1 className="registroDocumentoChoferes-title">
-            Registro de Documentos de Choferes
+      <div className="registroDocumentosVehiculos-bg">
+        <img src={bgImage} alt="Fondo" />
+      </div>
+      <div className="registroDocumentosVehiculos-content">
+        <div className="registroDocumentosVehiculos-container">
+          <h1 className="registroDocumentosVehiculos-title">
+            Registro de Documentos de Vehículos
           </h1>
 
-          <form onSubmit={handleSubmit} className="registroDocumentoChoferes-form">
+          <form onSubmit={handleSubmit} className="registroDocumentosVehiculos-form">
             
-            <section className="registroDocumentoChoferes-section">
-              <h2 className="registroDocumentoChoferes-sectionTitle">Datos del Chofer</h2>
+            <section className="registroDocumentosVehiculos-section">
+              <h2 className="registroDocumentosVehiculos-sectionTitle">Datos del Vehículo</h2>
               
-              <div className="registroDocumentoChoferes-field">
-                <label>Cédula del Chofer</label>
-                <div className="cedula-search-container">
+              <div className="registroDocumentosVehiculos-field">
+                <label>Placa del Vehículo</label>
+                <div className="placa-search-container">
                   <input
                     type="text"
-                    value={cedula}
-                    onChange={(e) => setCedula(e.target.value)}
-                    placeholder="Ej: 12345678"
-                    className={cedulaError ? 'input-error' : ''}
-                    aria-describedby="cedula-error"
+                    value={placa}
+                    onChange={(e) => setPlaca(e.target.value)}
+                    placeholder="Ej: ABC123"
+                    className={placaError ? 'input-error' : ''}
+                    aria-describedby="placa-error"
                   />
                   <button
                     type="button"
-                    onClick={handleCedulaSearch}
+                    onClick={handlePlacaSearch}
                     className={`search-btn ${isSearching ? 'searching' : ''}`}
-                    disabled={isSearching || !cedula}
+                    disabled={isSearching || !placa}
                   >
                     {isSearching ? (
                       <FontAwesomeIcon icon={faSpinner} spin />
@@ -308,26 +309,26 @@ const RegistroDocumentoChoferes = () => {
                     <span>Buscar</span>
                   </button>
                 </div>
-                {cedulaError && (
-                  <div id="cedula-error" className="error-message">
-                    {cedulaError}
+                {placaError && (
+                  <div id="placa-error" className="error-message">
+                    {placaError}
                   </div>
                 )}
               </div>
 
-              {choferInfo && (
-                <div className="chofer-info-container">
-                  <div className="chofer-info-details">
-                    <div><strong>Nombre:</strong> {choferInfo.nombre} {choferInfo.apellido}</div>
+              {vehiculoInfo && (
+                <div className="vehiculo-info-container">
+                  <div className="vehiculo-info-details">
+                    <div><strong>Vehículo:</strong> {vehiculoInfo.marca} {vehiculoInfo.modelo} ({vehiculoInfo.año})</div>
                   </div>
                 </div>
               )}
             </section>
 
-            <section className="registroDocumentoChoferes-section">
-              <h2 className="registroDocumentoChoferes-sectionTitle">Información del Documento</h2>
+            <section className="registroDocumentosVehiculos-section">
+              <h2 className="registroDocumentosVehiculos-sectionTitle">Información del Documento</h2>
               
-              <div className="registroDocumentoChoferes-field">
+              <div className="registroDocumentosVehiculos-field">
                 <label>Tipo de Documento</label>
                 <select
                   value={tipoDocumento}
@@ -336,28 +337,29 @@ const RegistroDocumentoChoferes = () => {
                   aria-required="true"
                 >
                   <option value="">Seleccione un tipo</option>
-                  <option value="CEDULA_IDENTIDAD" disabled={documentosRegistrados.includes('CEDULA_IDENTIDAD')}>Cedula de Identidad</option>
-                  <option value="LICENCIA_CONDUCIR" disabled={documentosRegistrados.includes('LICENCIA_CONDUCIR')}>Licencia De Conducir</option>
-                  <option value="CARTA_MEDICA" disabled={documentosRegistrados.includes('CARTA_MEDICA')}>Carta Medica</option>
+                  <option value="TARJETA_PROPIEDAD" disabled={documentosRegistrados.includes('TARJETA_PROPIEDAD')}>Tarjeta de Propiedad</option>
+                  <option value="SOAT" disabled={documentosRegistrados.includes('SOAT')}>SOAT</option>
+                  <option value="TECNOMECANICA" disabled={documentosRegistrados.includes('TECNOMECANICA')}>Tecnomecánica</option>
+                  <option value="SEGURO" disabled={documentosRegistrados.includes('SEGURO')}>Seguro</option>
                 </select>
                 {!tipoDocumento && (
                   <div className="error-message">Campo requerido</div>
                 )}
               </div>
 
-              <div className="registroDocumentoChoferes-field">
+              <div className="registroDocumentosVehiculos-field">
                 <label>Número de Documento</label>
                 <input
                   type="text"
                   value={documentNumber}
                   onChange={(e) => setDocumentNumber(e.target.value)}
-                  placeholder="Ej: ABC-123456"
+                  placeholder="Ej: TP-123456789"
                   aria-required="true"
                 />
               </div>
 
-              <div className="registroDocumentoChoferes-row">
-                <div className="registroDocumentoChoferes-field">
+              <div className="registroDocumentosVehiculos-row">
+                <div className="registroDocumentosVehiculos-field">
                   <label>Fecha de Emisión</label>
                   <input
                     type="date"
@@ -367,7 +369,7 @@ const RegistroDocumentoChoferes = () => {
                     max={new Date().toISOString().split('T')[0]}
                   />
                 </div>
-                <div className="registroDocumentoChoferes-field">
+                <div className="registroDocumentosVehiculos-field">
                   <label>Fecha de Caducidad</label>
                   <input
                     type="date"
@@ -384,10 +386,10 @@ const RegistroDocumentoChoferes = () => {
               )}
             </section>
 
-            <section className="registroDocumentoChoferes-section">
-              <h2 className="registroDocumentoChoferes-sectionTitle">Documento Digital</h2>
+            <section className="registroDocumentosVehiculos-section">
+              <h2 className="registroDocumentosVehiculos-sectionTitle">Documento Digital</h2>
               
-              <div className="registroDocumentoChoferes-field">
+              <div className="registroDocumentosVehiculos-field">
                 <label>Subir Documento (PDF/JPG/PNG)</label>
                 <input
                   type="file"
@@ -408,10 +410,10 @@ const RegistroDocumentoChoferes = () => {
               </div>
             </section>
 
-            <div className="registroDocumentoChoferes-actions">
+            <div className="registroDocumentosVehiculos-actions">
               <button 
                 type="submit" 
-                className="registroDocumentoChoferes-submitBtn"
+                className="registroDocumentosVehiculos-submitBtn"
               >
                 Registrar Documento
               </button>
@@ -423,4 +425,4 @@ const RegistroDocumentoChoferes = () => {
   );
 };
 
-export default RegistroDocumentoChoferes; 
+export default RegistroDocumentosVehiculos;

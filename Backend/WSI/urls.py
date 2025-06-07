@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from WSI_API.views import MantenimientoDetailAPIView, MotivoMantenimientoListAPIView, MarcarTodasNotificacionesLeidasView, DocumentosChoferListAPIView, MarcarNotificacionLeidaView, NotificacionesUsuarioView, BuscarChoferPorCedulaAPIView, DocumentoChoferCreateAPIView, VehiculoUpdateView, MantenimientoListAPIView, CrearMantenimientoAPIView,  BuscarVehiculoPorPlacaAPIView, UsuarioListAPIView, VehiculoMecanicoComboAPIView, VehiculoDetailView, VehiculoListView,VehiculoCreateView, CustomLoginView, VerifyTokenView, registrar_usuario, get_csrf_token,RegistroUsuarioAPIView
+from WSI_API.views import UsuarioDetailAPIView, MantenimientoDetailAPIView, MotivoMantenimientoListAPIView, MarcarTodasNotificacionesLeidasView, DocumentosChoferListAPIView, MarcarNotificacionLeidaView, NotificacionesUsuarioView, BuscarChoferPorCedulaAPIView, DocumentoChoferCreateAPIView, VehiculoUpdateView, MantenimientoListAPIView, CrearMantenimientoAPIView,  BuscarVehiculoPorPlacaAPIView, UsuarioListAPIView, VehiculoMecanicoComboAPIView, VehiculoDetailView, VehiculoListView,VehiculoCreateView, CustomLoginView, VerifyTokenView, registrar_usuario, get_csrf_token,RegistroUsuarioAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,7 +24,7 @@ urlpatterns = [
     path('api/choferes/', BuscarChoferPorCedulaAPIView.as_view(), name='buscar-chofer-por-cedula'),
     path('api/documentos-choferes-verificar/', DocumentosChoferListAPIView.as_view(), name='documentos-choferes-list'),
     path('api/motivos/', MotivoMantenimientoListAPIView.as_view(), name='motivo-mantenimiento-list'),
-    
+    path('api/detalle-usuarios/<int:id>/', UsuarioDetailAPIView.as_view(), name='usuario-detail'),
     # NOTIFICACIONES
     path('api/notificaciones/', NotificacionesUsuarioView.as_view(), name='notificaciones-usuario'),
     path('api/notificaciones/<int:pk>/marcar-leida/', MarcarNotificacionLeidaView.as_view(), name='marcar-notificacion-leida'),

@@ -79,7 +79,6 @@ const GestionEmpleados = () => {
       .then(data => {
         if (data) {
           setEmpleados(data);
-          toast.success('Empleados cargados correctamente');
         }
       })
       .catch(() => toast.error('No se pudieron cargar los empleados'))
@@ -104,9 +103,12 @@ const GestionEmpleados = () => {
     // --- Fin temporizador ---
   }, [navigate]);
 
-  // Filtro por cédula
-  const empleadosFiltrados = empleados.filter(e =>
-    filtroCedula ? e.cedula.toLowerCase().includes(filtroCedula.toLowerCase()) : true
+const empleadosFiltradosRol = empleados.filter(e => 
+  e.rol == 1 || e.rol == 2 || 
+  e.rol === '1' || e.rol === '2'  
+);
+  const empleadosFiltrados = empleadosFiltradosRol.filter(e =>
+  filtroCedula ? e.cedula.toLowerCase().includes(filtroCedula.toLowerCase()) : true
   );
 
   // Paginación
@@ -130,8 +132,8 @@ const GestionEmpleados = () => {
   };
 
   const getRolNombre = (rol) => {
-    if (rol === '1') return 'Supervisor';
-    if (rol === '2') return 'Empleado';
+     if (rol == 1 || rol === '1') return 'Supervisor';
+      if (rol == 2 || rol === '2') return 'Empleado';
     return rol;
   };
 
@@ -155,7 +157,7 @@ const GestionEmpleados = () => {
       {/* Header */}
       <Header title="WSI" />
 
-      {/* Contenedor principal */}
+      
       <div className="gestion-empleados-container">
         <div className="empleados-titulo-container">
           <h2 className="empleados-titulo">Empleados Registrados</h2>
@@ -290,9 +292,9 @@ const GestionEmpleados = () => {
             </button>
           </div>
         )}
+        </div>
+        <ToastContainer position="top-right" autoClose={3000} />
       </div>
-      <ToastContainer position="top-right" autoClose={3000} />
-    </div>
   );
 };
 
