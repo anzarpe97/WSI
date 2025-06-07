@@ -5,7 +5,6 @@ import RecuperarContraseña from './components/RecuperarContraseña';
 import Home from './components/admin/Home';
 import RegistroEmpleado from './components/admin/RegistroEmpleado';
 import RegistroVehiculo from './components/admin/RegistroVehiculo';
-import RegistroDocumentosVehiculo from './components/admin/RegistroDocumentosVehiculo';
 import VerVehiculos from './components/admin/VerVehiculos';
 import DetalleVehiculo from './components/admin/DetallesVehiculo';
 import RegistroMantenimiento from './components/admin/RegistroMantenimiento';
@@ -14,7 +13,7 @@ import GestionMantenimiento from './components/admin/GestionManteminimento';
 import EditarVehiculo from './components/admin/EditarVehiculo';
 import MenuDocumentos from './components/admin/MenuDocumentos';
 import RegistroDocumentoChoferes from './components/admin/RegistroDocumentoChoferes';
-import RegistroDocumentosVehiculos from './components/admin/RegistroDocumentosVehiculos,';
+import RegistroDocumentosVehiculos from './components/admin/RegistroDocumentosVehiculos';
 import HomeSupervisor from './components/supervisor/HomeSupervisor';
 import Estadisticas from './components/admin/Estadisticas';
 
