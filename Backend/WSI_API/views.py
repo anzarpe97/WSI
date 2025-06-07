@@ -9,8 +9,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
-from .models import Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
-from .serializers import (  NotificacionUsuarioSerializer,DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
+from .models import MotivoMantenimiento, Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
+from .serializers import (DetalleMantenimientoSerializer, MotivoMantenimientoSerializer, NotificacionUsuarioSerializer,DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
@@ -218,7 +218,7 @@ class UsuarioListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        usuarios = Usuario.objects.filter(rol__in=['1', '2'])
+        usuarios = Usuario.objects.filter(rol='2')
         serializer = EmpleadoSerializer(usuarios, many=True)
         return Response(serializer.data)
     
@@ -311,12 +311,6 @@ class NotificacionesUsuarioView(APIView):
         serializer = NotificacionUsuarioSerializer(notificaciones, many=True)
         return Response(serializer.data)
     
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from .models import NotificacionUsuario
-
 class MarcarNotificacionLeidaView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -341,11 +335,22 @@ class MarcarTodasNotificacionesLeidasView(APIView):
         )
         return Response({'success': True})
     
+class MotivoMantenimientoListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        motivos = MotivoMantenimiento.objects.all()
+        serializer = MotivoMantenimientoSerializer(motivos, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)   
     
-    
-    
-    
-    
+class MantenimientoDetailAPIView(APIView):
+    def get(self, request, pk):
+        try:
+            mantenimiento = Mantenimiento.objects.get(pk=pk)
+            serializer = DetalleMantenimientoSerializer(mantenimiento)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Mantenimiento.DoesNotExist:
+            return Response({'error': 'Mantenimiento no encontrado'}, status=status.HTTP_404_NOT_FOUND)
     
     
     

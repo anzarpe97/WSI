@@ -182,6 +182,18 @@ const RegistroEmpleado = () => {
 
   return (
     <div className="registro-empleado-wrapper">
+      
+      <div className="registro-empleado-bg">
+        <img
+          src={bgImage}
+          alt="Fondo Registro Empleado"
+          onError={(e) => {
+            e.target.style.display = "none";
+            toast.warn("No se pudo cargar la imagen de fondo");
+          }}
+        />
+      </div>
+      
       <Header title="WSI" />
       
       {/* Toast container */}
@@ -196,17 +208,7 @@ const RegistroEmpleado = () => {
         draggable
         pauseOnHover
       />
-      
-      <div className="registro-empleado-bg">
-        <img
-          src={bgImage}
-          alt="Fondo Registro Empleado"
-          onError={(e) => {
-            e.target.style.display = "none";
-            toast.warn("No se pudo cargar la imagen de fondo");
-          }}
-        />
-      </div>
+
 
       <div className="registro-empleado-container">
         <h1 className="titulo">Registro Empleado</h1>

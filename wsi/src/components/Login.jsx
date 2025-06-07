@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import '../styles/login.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
@@ -17,67 +17,54 @@ const Login = () => {
   const [formErrors, setFormErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [showInactivityModal, setShowInactivityModal] = useState(false); // NUEVO
   const navigate = useNavigate();
+  const location = useLocation(); // NUEVO
 
-  // 🔑 SOLUCIÓN 1: Verificación Simple al Cargar el Login
+  useEffect(() => {
+    // Mostrar modal si la sesión expiró por inactividad
+    if (location.state && location.state.sessionExpired) {
+      setShowInactivityModal(true);
+      // Limpia el estado para que no se muestre siempre
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
+
   useEffect(() => {
     const checkExistingSession = async () => {
       try {
-        // Verificar si hay token almacenado
         const token = localStorage.getItem('token');
-        
         if (token) {
-          console.log('🔍 Token encontrado, verificando validez...');
-          
-          // Verificar si el token es válido con el backend
           const result = await verifyToken();
-          
           if (result.isValid && result.user) {
-            // ✅ Sesión válida encontrada - Redirigir según el rol
             const userRole = parseInt(result.user.rol);
-            
-            console.log('🔄 Sesión activa detectada, redirigiendo...', result.user);
-            
             switch (userRole) {
               case 0:
                 navigate('/adminHome', { replace: true });
                 break;
               case 1:
-                navigate('/supervisor-dashboard', { replace: true });
+                navigate('/supervisorHome', { replace: true });
                 break;
               case 2:
                 navigate('/employee-dashboard', { replace: true });
                 break;
               default:
-                // Rol no reconocido, limpiar token
-                console.warn('⚠️ Rol no reconocido:', userRole);
                 localStorage.removeItem('token');
             }
-            return; // Salir temprano si hay redirección
+            return;
           } else {
-            // Token inválido, limpiar
-            console.log('❌ Token inválido, limpiando...');
             localStorage.removeItem('token');
           }
         }
-        
-        // Si llegamos aquí, no hay sesión válida
-        console.log('ℹ️ No hay sesión activa, mostrando login');
-        
       } catch (error) {
-        // Error al verificar sesión, limpiar por seguridad
-        console.error('❌ Error verificando sesión:', error);
         localStorage.removeItem('token');
       } finally {
-        // Permitir que se muestre el login
         setIsCheckingAuth(false);
       }
     };
-
     checkExistingSession();
   }, [navigate]);
 
-  // Mostrar spinner mientras verifica si hay sesión activa
   if (isCheckingAuth) {
     return (
       <div className="login-wrapper" style={{ 
@@ -105,15 +92,11 @@ const Login = () => {
   const validateForm = () => {
     const errors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (!email) errors.email = 'El correo es obligatorio.';
     else if (!emailRegex.test(email)) errors.email = 'El correo no tiene un formato válido.';
-
     if (!password) errors.password = 'La contraseña es obligatoria.';
     else if (password.length < 8) errors.password = 'La contraseña debe tener al menos 8 caracteres.';
-
     setFormErrors(errors);
-
     if (Object.keys(errors).length > 0) {
       toast.error(Object.values(errors).join(' '));
       return false;
@@ -123,18 +106,14 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
-
-    setIsLoading(true);    try {
-      // 1. Solicita token CSRF desde backend
+    setIsLoading(true);
+    try {
       const csrfResponse = await fetch('http://localhost:8000/api/csrf/', {
         credentials: 'include',
       });
       const csrfData = await csrfResponse.json();
       const csrftoken = csrfData.csrfToken;
-
-      // 2. Envía login con token CSRF recibido
       const response = await fetch('http://localhost:8000/api/login/', {
         method: 'POST',
         credentials: 'include',
@@ -144,13 +123,10 @@ const Login = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('token', data.token);
-
         toast.success('Inicio de sesión exitoso');
-
         setTimeout(() => {
           switch (parseInt(data.user.rol)) {
             case 0:
@@ -245,6 +221,35 @@ const Login = () => {
           onError={(e) => (e.target.style.display = 'none')}
         />
       </div>
+
+      {showInactivityModal && (
+  <div className="modal-overlay">
+    <div className="modal-container">
+      <div className="modal-header">
+        <h2>Sesión expirada</h2>
+      </div>
+      <div className="modal-body">
+        <div className="modal-icon">
+          <div className="modal-icon-inner">
+            <svg viewBox="0 0 24 24">
+              <path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M13,17h-2v-2h2V17z M13,13h-2V7h2V13z"/>
+            </svg>
+          </div>
+        </div>
+        <p>Tu sesión se ha cerrado por inactividad.</p>
+        <p>Inicie sesión nuevamente.</p>
+      </div>
+      <div className="modal-footer">
+        <button 
+          className="modal-button"
+          onClick={() => setShowInactivityModal(false)}
+        >
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       <ToastContainer position="top-right" autoClose={3000} />
     </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Header from '../header';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import bgImage from '../../assets/camion-login.png';
+import bgImage from '../../assets/bg-login.jpg';
 import '../../styles/RegistroVehiculo.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -12,13 +12,25 @@ const RegistroVehiculo = () => {
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
-  // Verificación de token y temporizador de inactividad
+  // Verificación de token, rol y temporizador de inactividad
   useEffect(() => {
     document.title = "WSI - Registro Vehículo";
     const check = async () => {
       try {
         const result = await verifyToken();
-        if (!result.isValid) {
+        if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
+          }
+        } else {
           logout();
         }
       } catch (error) {
@@ -34,7 +46,7 @@ const RegistroVehiculo = () => {
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 300000); // 5 minutos = 300,000 ms
+      }, 1200000); // 20 minutos
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
@@ -245,10 +257,10 @@ const RegistroVehiculo = () => {
 
       <div className="registro-empleado-bg">
         <img
-          src={bgImage}
-          alt="Fondo Registro Vehículo"
-          onError={(e) => (e.target.style.display = 'none')}
-        />
+                   src={bgImage}
+                   alt="Fondo Detalle Mantenimiento"
+                   onError={(e) => (e.target.style.display = 'none')}
+                 />
       </div>
 
       <div className="registro-empleado-container">
