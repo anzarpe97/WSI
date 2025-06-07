@@ -5,7 +5,6 @@ import RecuperarContraseña from './components/RecuperarContraseña';
 import Home from './components/admin/Home';
 import RegistroEmpleado from './components/admin/RegistroEmpleado';
 import RegistroVehiculo from './components/admin/RegistroVehiculo';
-import RegistroDocumentosVehiculo from './components/admin/RegistroDocumentosVehiculo';
 import VerVehiculos from './components/admin/VerVehiculos';
 import DetalleVehiculo from './components/admin/DetallesVehiculo';
 import RegistroMantenimiento from './components/admin/RegistroMantenimiento';
@@ -18,7 +17,7 @@ import RegistroDocumentosVehiculos from './components/admin/RegistroDocumentosVe
 import HomeSupervisor from './components/supervisor/HomeSupervisor';
 import Estadisticas from './components/admin/Estadisticas';
 import MenuGestionDocumentos from './components/admin/MenuGestionDocumentos';
-
+import DetalleMantenimiento from './components/admin/DetalleMantenimiento';
 const App = () => {
   return (
     <Router>
@@ -44,6 +43,7 @@ const App = () => {
         {/* RUTAS MANTENIMIENTO ADMINISTRADOR*/}        
         <Route path="/registro-mantenimiento" element={<RegistroMantenimiento />} />
         <Route path="/gestion-mantenimiento" element={<GestionMantenimiento />} />
+        <Route path="/detalle-mantenimiento/:id" element={<DetalleMantenimiento />} />
         {/* RUTAS MANTENIMIENTO ADMINISTRADOR*/}        
         <Route path="/estadisticas" element={<Estadisticas />} />
         {/* RUTAS DOCUMENTOS VEHICULOS ADMINISTRADOR*/}      
