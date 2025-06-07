@@ -18,6 +18,7 @@ import HomeSupervisor from './components/supervisor/HomeSupervisor';
 import Estadisticas from './components/admin/Estadisticas';
 import MenuGestionDocumentos from './components/admin/MenuGestionDocumentos';
 import DetalleMantenimiento from './components/admin/DetalleMantenimiento';
+import DetalleEmpleado from './components/admin/DetalleEmpleados';
 const App = () => {
   return (
     <Router>
@@ -30,6 +31,7 @@ const App = () => {
         {/* RUTAS EMPLEADOS ADMINISTRADOR*/}
         <Route path="/registro-empleado" element={<RegistroEmpleado />} />
         <Route path="/gestion-empleados" element={<GestionEmpleados />} />
+        <Route path="/detalle-empleado/:id" element={<DetalleEmpleado />} />
         {/* RUTAS DOCUMENTOS ADMINISTRADOR*/}
         <Route path="/menu-documentos" element={<MenuDocumentos />} />
         <Route path="/menu-gestion-documentos" element={<MenuGestionDocumentos />} />

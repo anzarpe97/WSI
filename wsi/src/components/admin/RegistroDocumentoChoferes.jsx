@@ -267,11 +267,11 @@ const RegistroDocumentoChoferes = () => {
         theme="colored"
         pauseOnHover={false}
       />
-
+    <div className="registroDocumentoChoferes-bg">
+              <img src={bgImage} alt="Fondo" />
+            </div>
       <div className="registroDocumentoChoferes-content">
-        <div className="registroDocumentoChoferes-bg">
-          <img src={bgImage} alt="Fondo" />
-        </div>
+        
 
         <div className="registroDocumentoChoferes-container">
           <h1 className="registroDocumentoChoferes-title">

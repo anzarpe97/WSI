@@ -1,187 +1,427 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import "../../styles/RegistroDocumentosVehiculos.css";
+import bgImage from '../../assets/bg-login.jpg'
 import Header from '../header';
-import '../../styles/RegistroDocumentosVehiculo.css'; // Archivo CSS para los estilos
-import bgImage from '../../assets/bg-login.jpg'; 
+import { useNavigate } from "react-router-dom";
+import { verifyToken } from "../../services/auth";
 
 const RegistroDocumentosVehiculos = () => {
-  console.log('🔸 RegistroDocumentosVehiculos renderizado'); // Log para indicar que el componente fue renderizado
+  const [placa, setPlaca] = useState('');
+  const [vehiculoInfo, setVehiculoInfo] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [placaError, setPlacaError] = useState('');
+  const [tipoDocumento, setTipoDocumento] = useState('');
+  const [documentNumber, setDocumentNumber] = useState('');
+  const [fechaEmision, setFechaEmision] = useState('');
+  const [fechaCaducidad, setFechaCaducidad] = useState('');
+  const [fechaError, setFechaError] = useState('');
+  const [file, setFile] = useState(null);
+  const [fileError, setFileError] = useState('');
+  const [documentosRegistrados, setDocumentosRegistrados] = useState([]);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const navigate = useNavigate();
+  const inactivityTimer = useRef(null);
 
-
-  const [form, setForm] = useState({
-    placa: '',
-    soatNum: '',
-    soatVenc: '',
-    rtNum: '',
-    rtVenc: '',
-    polizaNum: '',
-    polizaCompania: '',
-    polizaVenc: '',
-  });
-
-  // Manejar cambios en los campos del formulario
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prevForm) => ({
-      ...prevForm,
-      [name]: value,
-    }));
+  // --- Logout y temporizador de inactividad ---
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    navigate('/login', {
+      replace: true,
+      state: isInactivityLogout ? { sessionExpired: true } : undefined
+    });
   };
 
-  // Manejar el envío del formulario
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Evita que la página se recargue
-    console.log('Formulario enviado:', form);
-    // lógica para enviar datos
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const result = await verifyToken();
+        if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
+          if (String(result.user.rol) !== "0") {
+            if (String(result.user.rol) === "1") {
+              navigate('/supervisorHome', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
+          }
+        } else {
+          logout();
+        }
+      } catch (error) {
+        logout();
+      }
+    };
+    checkAuth();
+    // --- Temporizador de inactividad ---
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        toast.info('Sesión cerrada por inactividad');
+        logout(true);
+      }, 1200000); // 20 minutos
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+    // --- Fin temporizador ---
+  }, [navigate]);
+  // --- Fin Logout y temporizador ---
+
+  const validarPlaca = (placa) => /^[A-Za-z]{2,3}\d{3,4}$/.test(placa);
+
+  document.title = "WSI - Registro Documentos Vehículos";
+
+  const handlePlacaSearch = async () => {
+    if (!placa.trim()) {
+      setPlacaError('Por favor ingrese una placa');
+      return;
+    }
+    if (!validarPlaca(placa)) {
+      setPlacaError('Formato inválido (ejemplo: ABC123 o AB1234)');
+      return;
+    }
+
+    setPlacaError('');
+    setIsSearching(true);
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/vehiculos/?placa=${placa}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.id && data.marca && data.modelo) {
+          setVehiculoInfo({
+            id: data.id,
+            marca: data.marca,
+            modelo: data.modelo,
+            año: data.año
+          });
+          toast.success("Vehículo encontrado");
+
+          // Consultar documentos ya registrados por el vehículo
+          const docsResponse = await fetch(`http://localhost:8000/api/documentos-vehiculos-verificar/?vehiculo=${data.id}`);
+          if (docsResponse.ok) {
+            const docsData = await docsResponse.json();
+            setDocumentosRegistrados(docsData.map(doc => doc.tipo_documento));
+          } else {
+            setDocumentosRegistrados([]);
+          }
+        } else {
+          setVehiculoInfo(null);
+          setPlacaError("La placa no ha sido registrada");
+          setDocumentosRegistrados([]);
+        }
+      } else {
+        setVehiculoInfo(null);
+        setPlacaError("La placa no ha sido registrada");
+        setDocumentosRegistrados([]);
+      }
+    } catch {
+      setVehiculoInfo(null);
+      setPlacaError("Error al buscar vehículo");
+      setDocumentosRegistrados([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Calcula la fecha de caducidad automáticamente
+  const calcularFechaCaducidad = (tipo, emision) => {
+    if (!tipo || !emision) return '';
+    const fecha = new Date(emision);
+    let anios = 0;
+    if (tipo === 'TARJETA_PROPIEDAD') anios = 10;
+    if (tipo === 'SOAT') anios = 1;
+    if (tipo === 'TECNOMECANICA') anios = 1;
+    if (tipo === 'SEGURO') anios = 1;
+    fecha.setFullYear(fecha.getFullYear() + anios);
+    return fecha.toISOString().split('T')[0];
+  };
+
+  // Actualiza la fecha de caducidad automáticamente y valida vigencia
+  useEffect(() => {
+    if (tipoDocumento && fechaEmision) {
+      const nuevaFechaCaducidad = calcularFechaCaducidad(tipoDocumento, fechaEmision);
+      setFechaCaducidad(nuevaFechaCaducidad);
+
+      if (nuevaFechaCaducidad && new Date(nuevaFechaCaducidad) < new Date()) {
+        toast.error('El documento ya está vencido. Solo se deben registrar documentos vigentes.');
+      }
+    } else {
+      setFechaCaducidad('');
+    }
+  }, [tipoDocumento, fechaEmision]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'application/pdf'].includes(file.type)) {
+      setFileError('Formato no válido (solo PDF/JPG/PNG)');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError('El archivo no debe exceder 5MB');
+      return;
+    }
+
+    setFile(file);
+    setFileError('');
+  };
+
+  const limpiarTexto = (texto) => {
+    return texto.replace(/[^A-Za-z0-9_]/g, ''); // permite el guion bajo
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormSubmitted(true);
+
+    if (!vehiculoInfo) {
+      toast.error('Debe buscar y seleccionar un vehículo');
+      return;
+    }
+    if (!tipoDocumento) {
+      toast.error('Tipo de documento requerido');
+      return;
+    }
+    if (!documentNumber.trim()) {
+      toast.error('Número de documento requerido');
+      return;
+    }
+    if (!fechaEmision || !fechaCaducidad) {
+      toast.error('Debe seleccionar la fecha de emisión');
+      return;
+    }
+    if (new Date(fechaCaducidad) < new Date()) {
+      toast.error('No se puede registrar un documento vencido');
+      return;
+    }
+    if (!file) {
+      toast.error('Debe subir el documento digital');
+      return;
+    }
+
+    const placaLimpia = limpiarTexto(placa);
+    const tipoDocumentoLimpio = limpiarTexto(tipoDocumento);
+    const numeroDocumentoLimpio = limpiarTexto(documentNumber);
+    const ext = file.name.split('.').pop();
+    const newFileName = `${placaLimpia}_${tipoDocumentoLimpio}.${ext}`;
+    const renamedFile = new File([file], newFileName, { type: file.type });
+
+    const formData = new FormData();
+    formData.append('placa', placaLimpia);
+    formData.append('vehiculo', vehiculoInfo.id);
+    formData.append('marca', vehiculoInfo.marca);
+    formData.append('modelo', vehiculoInfo.modelo);
+    formData.append('año', vehiculoInfo.año);
+    formData.append('tipo_documento', tipoDocumentoLimpio);
+    formData.append('numero_documento', numeroDocumentoLimpio);
+    formData.append('fecha_emision', fechaEmision);
+    formData.append('fecha_caducidad', fechaCaducidad);
+    formData.append('archivo', renamedFile);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/documentos-vehiculos/', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        toast.success('Documento registrado exitosamente');
+        setPlaca('');
+        setVehiculoInfo(null);
+        setTipoDocumento('');
+        setDocumentNumber('');
+        setFechaEmision('');
+        setFechaCaducidad('');
+        setFile(null);
+        setDocumentosRegistrados([]);
+        setFormSubmitted(false);
+      } else {
+        const errorData = await response.json();
+        console.log(errorData);
+        toast.error('Error al registrar el documento');
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error('Error de conexión con el servidor');
+    }
   };
 
   return (
-    <div className="home-wrapper">
+    <div className="registroDocumentosVehiculos-wrapper">
+      <Header title="WSI" />
+      <ToastContainer 
+        position="top-right" 
+        autoClose={3000}
+        theme="colored"
+        pauseOnHover={false}
+      />
+      <div className="registroDocumentosVehiculos-bg">
+        <img src={bgImage} alt="Fondo" />
+      </div>
+      <div className="registroDocumentosVehiculos-content">
+        <div className="registroDocumentosVehiculos-container">
+          <h1 className="registroDocumentosVehiculos-title">
+            Registro de Documentos de Vehículos
+          </h1>
 
-            <Header title="WSI" />
-
-
-      <div className="registro-documentos-wrapper">
-        <div className="registro-documentos-content">
-          <div className="registro-documentos-bg">
-            <img
-              src={bgImage}
-              alt="Fondo Registro Documentos Vehículo"
-              onError={(e) => (e.target.style.display = 'none')}
-            />
-          </div>
-
-          <div className="registro-documentos-container">
-            <h1 className="registro-documentos-title">Registro Documentos Vehículo</h1>
-            <form className="registro-documentos-form" onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="registroDocumentosVehiculos-form">
+            
+            <section className="registroDocumentosVehiculos-section">
+              <h2 className="registroDocumentosVehiculos-sectionTitle">Datos del Vehículo</h2>
               
-              <section className="registro-documentos-section">
-                <h2 className="registro-documentos-sectionTitle">Datos del Vehículo</h2>
-                
-                <div className="registro-documentos-field">
-                  <label htmlFor="placa">Placa</label>
-                  <div className="placa-search-container">
-                    <input
-                      type="text"
-                      id="placa"
-                      name="placa"
-                      placeholder="Placa vehículo"
-                      value={form.placa}
-                      onChange={handleChange}
-                      required
-                    />
-                    {/* Aquí se podría agregar un botón de búsqueda si es necesario */}
-                  </div>
+              <div className="registroDocumentosVehiculos-field">
+                <label>Placa del Vehículo</label>
+                <div className="placa-search-container">
+                  <input
+                    type="text"
+                    value={placa}
+                    onChange={(e) => setPlaca(e.target.value)}
+                    placeholder="Ej: ABC123"
+                    className={placaError ? 'input-error' : ''}
+                    aria-describedby="placa-error"
+                  />
+                  <button
+                    type="button"
+                    onClick={handlePlacaSearch}
+                    className={`search-btn ${isSearching ? 'searching' : ''}`}
+                    disabled={isSearching || !placa}
+                  >
+                    {isSearching ? (
+                      <FontAwesomeIcon icon={faSpinner} spin />
+                    ) : (
+                      <FontAwesomeIcon icon={faSearch} />
+                    )}
+                    <span>Buscar</span>
+                  </button>
                 </div>
-              </section>
-
-              <section className="registro-documentos-section">
-                <h2 className="registro-documentos-sectionTitle">Información de Documentos</h2>
-                
-                <div className="registro-documentos-row">
-                  <div className="registro-documentos-field">
-                    <label htmlFor="soatNum">SOAT N°</label>
-                    <input
-                      type="text"
-                      id="soatNum"
-                      name="soatNum"
-                      placeholder="SOAT N°"
-                      value={form.soatNum}
-                      onChange={handleChange}
-                      required
-                    />
+                {placaError && (
+                  <div id="placa-error" className="error-message">
+                    {placaError}
                   </div>
-                  <div className="registro-documentos-field">
-                    <label htmlFor="soatVenc">Vencimiento SOAT</label>
-                    <input
-                      type="date"
-                      id="soatVenc"
-                      name="soatVenc"
-                      value={form.soatVenc}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="registro-documentos-row">
-                  <div className="registro-documentos-field">
-                    <label htmlFor="rtNum">R.T. N°</label>
-                    <input
-                      type="text"
-                      id="rtNum"
-                      name="rtNum"
-                      placeholder="R.T. N°"
-                      value={form.rtNum}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="registro-documentos-field">
-                    <label htmlFor="rtVenc">Vencimiento R.T.</label>
-                    <input
-                      type="date"
-                      id="rtVenc"
-                      name="rtVenc"
-                      value={form.rtVenc}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="registro-documentos-row">
-                  <div className="registro-documentos-field">
-                    <label htmlFor="polizaNum">Póliza seguro N°</label>
-                    <input
-                      type="text"
-                      id="polizaNum"
-                      name="polizaNum"
-                      placeholder="Póliza seguro N°"
-                      value={form.polizaNum}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="registro-documentos-field">
-                    <label htmlFor="polizaCompania">Compañía seguro</label>
-                    <input
-                      type="text"
-                      id="polizaCompania"
-                      name="polizaCompania"
-                      placeholder="Compañía seguro"
-                      value={form.polizaCompania}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="registro-documentos-row">
-                  <div className="registro-documentos-field">
-                    <label htmlFor="polizaVenc">Vencimiento Póliza</label>
-                    <input
-                      type="date"
-                      id="polizaVenc"
-                      name="polizaVenc"
-                      value={form.polizaVenc}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-              </section>
-
-              <div className="registro-documentos-actions">
-                <button type="submit" className="registro-documentos-submitBtn">
-                  Guardar documentos
-                </button>
+                )}
               </div>
-            </form>
-          </div>
+
+              {vehiculoInfo && (
+                <div className="vehiculo-info-container">
+                  <div className="vehiculo-info-details">
+                    <div><strong>Vehículo:</strong> {vehiculoInfo.marca} {vehiculoInfo.modelo} ({vehiculoInfo.año})</div>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <section className="registroDocumentosVehiculos-section">
+              <h2 className="registroDocumentosVehiculos-sectionTitle">Información del Documento</h2>
+              
+              <div className="registroDocumentosVehiculos-field">
+                <label>Tipo de Documento</label>
+                <select
+                  value={tipoDocumento}
+                  onChange={(e) => setTipoDocumento(e.target.value)}
+                  className={(!tipoDocumento && formSubmitted) ? 'input-error' : ''}
+                  aria-required="true"
+                >
+                  <option value="">Seleccione un tipo</option>
+                  <option value="TARJETA_PROPIEDAD" disabled={documentosRegistrados.includes('TARJETA_PROPIEDAD')}>Tarjeta de Propiedad</option>
+                  <option value="SOAT" disabled={documentosRegistrados.includes('SOAT')}>SOAT</option>
+                  <option value="TECNOMECANICA" disabled={documentosRegistrados.includes('TECNOMECANICA')}>Tecnomecánica</option>
+                  <option value="SEGURO" disabled={documentosRegistrados.includes('SEGURO')}>Seguro</option>
+                </select>
+                {!tipoDocumento && (
+                  <div className="error-message">Campo requerido</div>
+                )}
+              </div>
+
+              <div className="registroDocumentosVehiculos-field">
+                <label>Número de Documento</label>
+                <input
+                  type="text"
+                  value={documentNumber}
+                  onChange={(e) => setDocumentNumber(e.target.value)}
+                  placeholder="Ej: TP-123456789"
+                  aria-required="true"
+                />
+              </div>
+
+              <div className="registroDocumentosVehiculos-row">
+                <div className="registroDocumentosVehiculos-field">
+                  <label>Fecha de Emisión</label>
+                  <input
+                    type="date"
+                    value={fechaEmision}
+                    onChange={(e) => setFechaEmision(e.target.value)}
+                    placeholder="dd/mm/aaaa"
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div className="registroDocumentosVehiculos-field">
+                  <label>Fecha de Caducidad</label>
+                  <input
+                    type="date"
+                    value={fechaCaducidad}
+                    readOnly
+                    disabled
+                  />
+                </div>
+              </div>
+              {fechaError && (
+                <div className="error-message">
+                  {fechaError}
+                </div>
+              )}
+            </section>
+
+            <section className="registroDocumentosVehiculos-section">
+              <h2 className="registroDocumentosVehiculos-sectionTitle">Documento Digital</h2>
+              
+              <div className="registroDocumentosVehiculos-field">
+                <label>Subir Documento (PDF/JPG/PNG)</label>
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className={fileError ? 'input-error' : ''}
+                />
+                {file && (
+                  <div className="file-preview">
+                    {file.name}
+                  </div>
+                )}
+                {fileError && (
+                  <div className="error-message">
+                    {fileError}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <div className="registroDocumentosVehiculos-actions">
+              <button 
+                type="submit" 
+                className="registroDocumentosVehiculos-submitBtn"
+              >
+                Registrar Documento
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
   );
 };
-
 export default RegistroDocumentosVehiculos;

@@ -12,6 +12,7 @@ from rest_framework.authtoken.models import Token
 from .models import MotivoMantenimiento, Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
 from .serializers import (DetalleMantenimientoSerializer, MotivoMantenimientoSerializer, NotificacionUsuarioSerializer,DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
 from django.utils.decorators import method_decorator
+from rest_framework.generics import RetrieveAPIView
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.conf import settings
@@ -218,7 +219,7 @@ class UsuarioListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        usuarios = Usuario.objects.filter(rol='2')
+        usuarios = Usuario.objects.filter(rol__in=['1', '2'])
         serializer = EmpleadoSerializer(usuarios, many=True)
         return Response(serializer.data)
     
@@ -352,6 +353,11 @@ class MantenimientoDetailAPIView(APIView):
         except Mantenimiento.DoesNotExist:
             return Response({'error': 'Mantenimiento no encontrado'}, status=status.HTTP_404_NOT_FOUND)
     
+class UsuarioDetailAPIView(RetrieveAPIView):
+    queryset = Usuario.objects.all()
+    serializer_class = EmpleadoSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'    
     
     
     
