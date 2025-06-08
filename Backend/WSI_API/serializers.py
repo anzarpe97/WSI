@@ -208,7 +208,13 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
 class VehiculoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehiculo
-        fields = '__all__'
+        fields = [
+            'id_vehiculo', 'placa', 'marca', 'modelo', 'anio', 'color', 
+            'tipologia', 'motor', 'capacidad_carga', 'tipo_combustible', 
+            'capacidad_combustible', 'kilometraje', 'costo', 'estado', 
+            'fecha_creado', 'borrado', 'motivo_borrado' # Removed fecha_actualizado
+        ]
+        read_only_fields = ['id_vehiculo', 'fecha_creado'] # Removed fecha_actualizado
 
     def validate_placa(self, value):
         if not value:
@@ -257,12 +263,13 @@ class MecanicoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
+        
         fields = ['id', 'nombre', 'apellido']
         
 class EmpleadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ['id', 'nombre', 'apellido', 'cedula', 'email', 'rol']
+        fields = ['id', 'nombre', 'apellido', 'cedula', 'telefono', 'email', 'rol']
 
 class PlacaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -328,22 +335,21 @@ class DetalleMantenimientoSerializer(serializers.ModelSerializer):
             'tipo_mantenimiento',
             'observaciones',
             'suministros'
-        ]        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

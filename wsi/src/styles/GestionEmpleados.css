@@ -7,7 +7,6 @@
 
 body {
   font-family: 'Arial', sans-serif;
-  background-color: #f5f5f5;
   overflow-x: hidden;
 }
 
@@ -48,16 +47,23 @@ body {
   width: 100vw;
   height: 100vh;
   z-index: 0;
-
 }
 
 .empleados-bg img {
   width: 100vw;
   height: 100vh;
   object-fit: cover;
-  opacity: 0.18;
   pointer-events: none;
+  opacity: 1;
   user-select: none;
+}
+
+.empleados-bg-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
 }
 
 /* Contenedor de gestión de empleados */

@@ -60,11 +60,11 @@ const MenuGestionDocumentos = () => {
         <div className="menu-documentos-grid" id="menu-documentos-grid">
           <Link to="/registro-documentos-vehiculo" className="menu-documentos-card" id="menu-documentos-card-seguros">
             <FontAwesomeIcon icon={faTruckMoving} size="3x" />
-            <p>Gestionar Documento Vehiculos</p>
+            <p>Gestión Documentos Vehículos</p>
           </Link>
           <Link to="/registro-documentos-choferes" className="menu-documentos-card" id="menu-documentos-card-docvehiculo">
             <FontAwesomeIcon icon={faUserGear} size="3x" />
-            <p>Gestionar Documentos Choferes</p>
+            <p>Gestión Documentos Choferes</p>
           </Link>
         </div>
       </div>
