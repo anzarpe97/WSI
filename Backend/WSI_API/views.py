@@ -194,12 +194,18 @@ class VehiculoListView(APIView):
         serializer = VehiculoSerializer(vehiculos, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-class VehiculoDetailView(generics.RetrieveAPIView):
+class VehiculoDetailView(generics.RetrieveUpdateAPIView): # Changed from RetrieveAPIView to RetrieveUpdateAPIView
     queryset = Vehiculo.objects.all()
     serializer_class = VehiculoSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'id_vehiculo'
+    permission_classes = [IsAuthenticated] # Ensure IsAuthenticated or appropriate permission
+    lookup_field = 'id_vehiculo' # Corrected lookup_field to id_vehiculo
     
+class VehiculoUpdateView(RetrieveUpdateAPIView): # This might be the view you intended for the URL
+    queryset = Vehiculo.objects.all()
+    serializer_class = VehiculoSerializer
+    lookup_field = 'id_vehiculo' # Corrected lookup_field to id_vehiculo
+    permission_classes = [IsAuthenticated]
+
 class VehiculoMecanicoComboAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]  # O AllowAny si no requieres autenticación
 
@@ -357,72 +363,71 @@ class UsuarioDetailAPIView(RetrieveAPIView):
     queryset = Usuario.objects.all()
     serializer_class = EmpleadoSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = 'id'    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    lookup_field = 'id'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

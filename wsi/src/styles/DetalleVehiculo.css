@@ -9,7 +9,7 @@
 .detalle-vehiculo-container {
   position: relative;
   z-index: 2;
-  max-width: 900px; /* Contenedor más estrecho */
+  max-width: 900px;
   width: 95%;
   margin: 100px auto 30px auto;
   padding: 0 15px;
@@ -90,12 +90,12 @@
 }
 
 .detalle-vehiculo-boton-imprimir {
-  background-color: #ff6a00;
+  background-color: #17a2b8;
   color: white;
 }
 
 .detalle-vehiculo-boton-imprimir:hover {
-  background-color: #ff6a00;
+  background-color: #138496;
   transform: translateY(-3px);
   box-shadow: 0 4px 12px rgba(23, 162, 184, 0.25);
 }
@@ -137,7 +137,7 @@
 
 .detalle-vehiculo-info-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 columnas en lugar de 4 */
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
   margin-bottom: 40px;
 }
@@ -269,19 +269,20 @@
   font-size: 15px;
 }
 
-.mantenimientos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 18px;
+.mantenimientos-container {
+  display: flex;
+  justify-content: center;
 }
 
 .mantenimiento-card {
   background: white;
   border-radius: 12px;
-  padding: 18px;
+  padding: 25px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   transition: all 0.3s ease;
   border-left: 4px solid #ff6a00;
+  max-width: 600px;
+  width: 100%;
 }
 
 .mantenimiento-card:hover {
@@ -292,42 +293,44 @@
 .mantenimiento-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
   border-bottom: 1px solid #f0f0f0;
 }
 
 .mantenimiento-fecha {
-  font-size: 13px;
+  font-size: 14px;
   color: #6c757d;
 }
 
 .mantenimiento-estado {
-  padding: 3px 8px;
+  padding: 5px 12px;
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .mantenimiento-titulo {
-  font-size: 16px;
+  font-size: 18px;
   color: #333;
-  margin: 0 0 8px 0;
+  margin: 0 0 15px 0;
 }
 
 .mantenimiento-descripcion {
-  font-size: 13px;
+  font-size: 14px;
   color: #666;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
   line-height: 1.5;
 }
 
 .mantenimiento-footer {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #333;
+  border-top: 1px dashed #eaeaea;
+  padding-top: 15px;
 }
 
 .mantenimiento-costo {
@@ -399,10 +402,6 @@
     font-size: 16px;
   }
   
-  .mantenimientos-grid {
-    grid-template-columns: 1fr;
-  }
-  
   .detalle-vehiculo-titulo {
     font-size: 20px;
   }
@@ -413,6 +412,10 @@
   
   .section-title {
     font-size: 18px;
+  }
+  
+  .mantenimiento-card {
+    padding: 20px;
   }
 }
 

@@ -311,3 +311,103 @@ body {
   background: white;
 }
 
+/* Modal de Confirmación de Eliminación */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it's on top */
+}
+
+.modal-content {
+  background: white;
+  padding: 25px 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 450px; /* Max width for the modal */
+  text-align: left; /* Align text to the left by default */
+}
+
+.modal-content h2 {
+  font-size: 20px; /* Consistent with .titulo */
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+  text-align: center; /* Center the title */
+}
+
+.modal-content p {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.modal-content .form-group {
+  margin-bottom: 20px;
+}
+
+.modal-content label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.modal-content textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: 'Arial', sans-serif;
+  resize: vertical; /* Allow vertical resize, disable horizontal */
+  min-height: 80px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: 12px; /* Space between buttons */
+  margin-top: 25px;
+}
+
+.modal-actions .btn {
+  border: none;
+  border-radius: 20px; /* Consistent with .boton-crear-vehiculo */
+  padding: 10px 20px; /* Consistent padding */
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.modal-actions .btn-confirmar {
+  background-color: #ff6a00; /* Primary action color */
+  color: white;
+}
+
+.modal-actions .btn-confirmar:hover {
+  background-color: #e65500; /* Darker shade on hover */
+  transform: translateY(-1px);
+}
+
+.modal-actions .btn-cancelar {
+  background-color: #f0f0f0; /* Light grey for cancel */
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.modal-actions .btn-cancelar:hover {
+  background-color: #e0e0e0; /* Darker grey on hover */
+  transform: translateY(-1px);
+}
+

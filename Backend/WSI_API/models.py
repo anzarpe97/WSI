@@ -102,6 +102,8 @@ class Vehiculo(models.Model):
     costo = models.DecimalField( max_digits=10, decimal_places=2, null=False, verbose_name="Costo del vehículo")
     tipo_combustible = models.CharField(max_length=10, choices = TIPOS_COMBUSTIBLE, default='GASOLINA', null=False, blank=False, verbose_name='Tipo de Combustible')
     fecha_creado = models.DateTimeField(auto_now_add=True,verbose_name='Fecha de creación')
+    borrado = models.BooleanField(null=True, blank=True, default=None, verbose_name="Borrado")
+    motivo_borrado = models.TextField(null=True, blank=True, verbose_name="Motivo de borrado")
 
     def __str__(self):
         

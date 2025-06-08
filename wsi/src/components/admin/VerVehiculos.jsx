@@ -18,6 +18,9 @@ const VerVehiculos = () => {
   const [filtroEstado, setFiltroEstado] = useState('');
   const [filtroPlaca, setFiltroPlaca] = useState('');
   const [paginaActual, setPaginaActual] = useState(1);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [vehicleToDelete, setVehicleToDelete] = useState(null);
+  const [deleteReason, setDeleteReason] = useState('');
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
@@ -84,7 +87,8 @@ const VerVehiculos = () => {
   const vehiculosFiltrados = vehiculos.filter((v) => {
     const coincideEstado = filtroEstado ? v.estado === filtroEstado : true;
     const coincidePlaca = filtroPlaca ? v.placa.toLowerCase().includes(filtroPlaca.toLowerCase()) : true;
-    return coincideEstado && coincidePlaca;
+    const noEstaBorrado = !v.borrado; // Filter out vehicles where borrado is true
+    return coincideEstado && coincidePlaca && noEstaBorrado;
   });
 
   // Paginación
@@ -107,6 +111,65 @@ const VerVehiculos = () => {
       setPaginaActual(nuevaPagina);
     }
   };
+
+  const handleOpenDeleteModal = (vehiculo) => {
+    setVehicleToDelete(vehiculo);
+    setShowDeleteModal(true);
+    setDeleteReason(''); // Reset reason
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setVehicleToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!vehicleToDelete || !deleteReason.trim()) {
+      alert("Por favor, ingrese un motivo para la eliminación.");
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:8000/api/vehiculos/${vehicleToDelete.id_vehiculo}/`, {
+        method: 'PATCH', // Or 'PUT' if you update the whole object
+        headers: {
+          'Content-Type': 'application/json',
+          // Include Authorization header if your API requires it
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          borrado: true,
+          motivo_borrado: deleteReason,
+        }),
+      });
+
+      if (!response.ok) {
+        // Try to get more specific error from backend
+        const errorData = await response.json().catch(() => ({ message: "Error al actualizar el vehículo." }));
+        throw new Error(errorData.message || `Error del servidor: ${response.status}`);
+      }
+
+      // Update the local state to reflect the deletion
+      setVehiculos(prevVehiculos =>
+        prevVehiculos.map(v =>
+          v.id_vehiculo === vehicleToDelete.id_vehiculo ? { ...v, borrado: true, motivo_borrado: deleteReason } : v
+        )
+      );
+      // Or, if you prefer to filter out "deleted" items from the main list:
+      // setVehiculos(prevVehiculos => prevVehiculos.filter(v => v.id_vehiculo !== vehicleToDelete.id_vehiculo));
+
+
+      console.log('Vehículo marcado como borrado:', vehicleToDelete.id_vehiculo, 'Motivo:', deleteReason);
+      handleCloseDeleteModal();
+      // Optionally, show a success message to the user
+      // alert('Vehículo eliminado con éxito.');
+
+    } catch (error) {
+      console.error("Error al marcar el vehículo como borrado:", error);
+      alert(`Error al eliminar el vehículo: ${error.message}`);
+      // Handle error (e.g., show error message to user)
+    }
+  };
+
 
   // Resetear página al cambiar filtros
   useEffect(() => {
@@ -210,7 +273,8 @@ const VerVehiculos = () => {
                       <div className="acciones">
                         <FontAwesomeIcon icon={faEye} size="lg" className="accion-icon" title="Ver detalles" style={{ cursor: 'pointer' }} onClick={() => handleVerDetalles(vehiculo.id_vehiculo)}/>
                         <FontAwesomeIcon icon={faPen} size="lg" className="accion-icon" title="Editar vehículo" style={{ cursor: 'pointer' }} onClick={() => navigate(`/editar-vehiculo/${vehiculo.id_vehiculo}`)}/>
-                        <FontAwesomeIcon icon={faTrashAlt} size="lg" className="accion-icon" title="Eliminar vehículo"/>
+                        <FontAwesomeIcon icon={faTrashAlt} size="lg" className="accion-icon" onClick={() => handleOpenDeleteModal(vehiculo)} style={{ cursor: 'pointer'}} title="Eliminar Vehículo"
+                        />
                       </div>
                     </td>
                   </tr>
@@ -277,6 +341,32 @@ const VerVehiculos = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de Confirmación de Eliminación */}
+      {showDeleteModal && vehicleToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Confirmar Eliminación</h2>
+            <p>
+              ¿Está seguro de que desea eliminar el vehículo <strong>{vehicleToDelete.placa}</strong>?
+            </p>
+            <div className="form-group">
+              <label htmlFor="deleteReason">Motivo de la eliminación:</label>
+              <textarea
+                id="deleteReason"
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                rows="3"
+                placeholder="Ingrese el motivo..."
+              />
+            </div>
+            <div className="modal-actions">
+              <button onClick={handleConfirmDelete} className="btn btn-confirmar">Aceptar</button>
+              <button onClick={handleCloseDeleteModal} className="btn btn-cancelar">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
