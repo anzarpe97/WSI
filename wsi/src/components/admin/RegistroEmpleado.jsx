@@ -4,7 +4,7 @@ import "../../styles/RegistroEmpleado.css";
 import Header from '../header';
 import bgImage from "../../assets/bg-login.jpg";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBell, faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faBell, faUserCircle, faSignOutAlt, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -22,6 +22,7 @@ const RegistroEmpleado = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
@@ -76,6 +77,27 @@ const RegistroEmpleado = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: "" });
   };
+
+  // Manejador para campos solo letras (nombre, apellido)
+  const handleLettersOnlyChange = (e) => {
+    const { name, value } = e.target;
+    // Solo letras y espacios
+    if (/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]*$/.test(value)) {
+      setFormData({ ...formData, [name]: value });
+      setErrors({ ...errors, [name]: '' });
+    }
+  };
+
+  // Manejador para campos solo números (cédula, teléfono)
+  const handleNumbersOnlyChange = (e) => {
+    const { name, value } = e.target;
+    if (/^\d*$/.test(value)) {
+      setFormData({ ...formData, [name]: value });
+      setErrors({ ...errors, [name]: '' });
+    }
+  };
+
+  const toggleShowPassword = () => setShowPassword((prev) => !prev);
 
   const validateForm = () => {
     const newErrors = {};
@@ -221,8 +243,10 @@ const RegistroEmpleado = () => {
                 id="nombre"
                 name="nombre"
                 value={formData.nombre}
-                onChange={handleChange}
+                onChange={handleLettersOnlyChange}
                 placeholder="Ingrese el nombre"
+                maxLength={30}
+                autoComplete="off"
               />
               {errors.nombre && <small className="error">{errors.nombre}</small>}
             </div>
@@ -233,8 +257,10 @@ const RegistroEmpleado = () => {
                 id="apellido"
                 name="apellido"
                 value={formData.apellido}
-                onChange={handleChange}
+                onChange={handleLettersOnlyChange}
                 placeholder="Ingrese el apellido"
+                maxLength={30}
+                autoComplete="off"
               />
               {errors.apellido && <small className="error">{errors.apellido}</small>}
             </div>
@@ -260,9 +286,10 @@ const RegistroEmpleado = () => {
                 id="cedula"
                 name="cedula"
                 value={formData.cedula}
-                onChange={handleChange}
+                onChange={handleNumbersOnlyChange}
                 maxLength={8}
                 placeholder="Ej: 12345678"
+                autoComplete="off"
               />
               {errors.cedula && <small className="error">{errors.cedula}</small>}
             </div>
@@ -287,13 +314,14 @@ const RegistroEmpleado = () => {
             <div className="campo">
               <label htmlFor="telefono">Teléfono</label>
               <input
-                type="tel"
+                type="text"
                 id="telefono"
                 name="telefono"
                 value={formData.telefono}
-                onChange={handleChange}
+                onChange={handleNumbersOnlyChange}
                 maxLength={10}
-                placeholder="Ej: 04121234567"
+                placeholder="Ej: 0412123456"
+                autoComplete="off"
               />
               {errors.telefono && <small className="error">{errors.telefono}</small>}
             </div>
@@ -314,14 +342,32 @@ const RegistroEmpleado = () => {
             </div>
             <div className="campo">
               <label htmlFor="password">Contraseña</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Mínimo 8 caracteres"
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Mínimo 8 caracteres"
+                  autoComplete="off"
+                />
+                <span
+                  onClick={toggleShowPassword}
+                  style={{
+                    position: 'absolute',
+                    right: 10,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    cursor: 'pointer',
+                    color: '#888',
+                    fontSize: 18
+                  }}
+                  title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                </span>
+              </div>
               {errors.password && <small className="error">{errors.password}</small>}
             </div>
           </div>

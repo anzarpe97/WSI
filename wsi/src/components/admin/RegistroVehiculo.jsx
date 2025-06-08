@@ -85,10 +85,27 @@ const RegistroVehiculo = () => {
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: '' });
+  };
+
+  // Manejador específico para campos numéricos
+  const handleNumericChange = (e) => {
+    const { name, value } = e.target;
+    // Solo permitir números enteros positivos
+    if (value === '' || /^\d+$/.test(value)) {
+      setForm({ ...form, [name]: value });
+      setErrors({ ...errors, [name]: '' });
+    }
+  };
+
+  // Manejador para prevenir caracteres no válidos en campos numéricos
+  const handleKeyPress = (e) => {
+    // Prevenir entrada de caracteres no numéricos (incluyendo 'e', '-', '+', '.')
+    if (!/^\d$/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+    }
   };
 
   const validateForm = () => {
@@ -100,12 +117,14 @@ const RegistroVehiculo = () => {
       newErrors.placaVehiculo = 'La placa solo puede contener letras, números y guiones';
     } else if (form.placaVehiculo.length > 10) {
       newErrors.placaVehiculo = 'La placa no puede tener más de 10 caracteres';
-    }
-
-    if (!form.kilometraje.trim()) {
+    }    if (!form.kilometraje.trim()) {
       newErrors.kilometraje = 'El kilometraje es requerido';
-    } else if (!/^\d+$/.test(form.kilometraje) || Number(form.kilometraje) < 0) {
+    } else if (!/^\d+$/.test(form.kilometraje)) {
+      newErrors.kilometraje = 'El kilometraje solo puede contener números enteros';
+    } else if (Number(form.kilometraje) < 0) {
       newErrors.kilometraje = 'El kilometraje debe ser un número positivo';
+    } else if (Number(form.kilometraje) > 9999999) {
+      newErrors.kilometraje = 'El kilometraje no puede exceder los 9,999,999 km';
     }
 
     if (!form.estadoVehiculo) {
@@ -124,15 +143,15 @@ const RegistroVehiculo = () => {
       newErrors.motorVehiculo = 'El número/código de motor es requerido';
     } else if (form.motorVehiculo.length > 50) {
       newErrors.motorVehiculo = 'El número/código de motor no puede tener más de 50 caracteres';
-    }
-
-    const currentYear = new Date().getFullYear();
+    }    const currentYear = new Date().getFullYear();
     if (!form.anoVehiculo.trim()) {
       newErrors.anoVehiculo = 'El año es requerido';
     } else if (!/^\d{4}$/.test(form.anoVehiculo)) {
-      newErrors.anoVehiculo = 'El año debe tener 4 dígitos';
+      newErrors.anoVehiculo = 'El año debe tener exactamente 4 dígitos';
     } else if (Number(form.anoVehiculo) < 1950 || Number(form.anoVehiculo) > currentYear) {
       newErrors.anoVehiculo = `El año debe estar entre 1950 y ${currentYear}`;
+    } else if (isNaN(Number(form.anoVehiculo))) {
+      newErrors.anoVehiculo = 'El año debe ser un número válido';
     }
 
     if (!form.marcaVehiculo.trim()) {
@@ -157,28 +176,34 @@ const RegistroVehiculo = () => {
       newErrors.tipologia = 'La tipología solo puede contener letras y espacios';
     } else if (form.tipologia.length > 20) {
       newErrors.tipologia = 'La tipología no puede tener más de 20 caracteres';
-    }
-
-    if (!form.capacidadCombustible.trim()) {
+    }    if (!form.capacidadCombustible.trim()) {
       newErrors.capacidadCombustible = 'La capacidad de combustible es requerida';
-    } else if (!/^\d+$/.test(form.capacidadCombustible) || Number(form.capacidadCombustible) <= 0) {
-      newErrors.capacidadCombustible = 'Debe ser un número positivo';
+    } else if (!/^\d+$/.test(form.capacidadCombustible)) {
+      newErrors.capacidadCombustible = 'La capacidad de combustible solo puede contener números enteros';
+    } else if (Number(form.capacidadCombustible) <= 0) {
+      newErrors.capacidadCombustible = 'La capacidad de combustible debe ser un número positivo';
+    } else if (Number(form.capacidadCombustible) > 10000) {
+      newErrors.capacidadCombustible = 'La capacidad de combustible no puede exceder los 10,000 litros';
     }
 
     if (!form.tipoCombustible) {
       newErrors.tipoCombustible = 'El tipo de combustible es requerido';
-    }
-
-    if (!form.capacidadCarga.trim()) {
+    }    if (!form.capacidadCarga.trim()) {
       newErrors.capacidadCarga = 'La capacidad de carga es requerida';
-    } else if (!/^\d+$/.test(form.capacidadCarga) || Number(form.capacidadCarga) <= 0) {
-      newErrors.capacidadCarga = 'Debe ser un número positivo';
-    }
-
-    if (!form.costo.trim()) {
+    } else if (!/^\d+$/.test(form.capacidadCarga)) {
+      newErrors.capacidadCarga = 'La capacidad de carga solo puede contener números enteros';
+    } else if (Number(form.capacidadCarga) <= 0) {
+      newErrors.capacidadCarga = 'La capacidad de carga debe ser un número positivo';
+    } else if (Number(form.capacidadCarga) > 100000) {
+      newErrors.capacidadCarga = 'La capacidad de carga no puede exceder los 100,000 kg';
+    }    if (!form.costo.trim()) {
       newErrors.costo = 'El costo es requerido';
-    } else if (!/^\d+$/.test(form.costo) || Number(form.costo) <= 0) {
-      newErrors.costo = 'Debe ser un número positivo';
+    } else if (!/^\d+$/.test(form.costo)) {
+      newErrors.costo = 'El costo solo puede contener números enteros';
+    } else if (Number(form.costo) <= 0) {
+      newErrors.costo = 'El costo debe ser un número positivo';
+    } else if (Number(form.costo) > 999999999) {
+      newErrors.costo = 'El costo no puede exceder los 999,999,999';
     }
 
     setErrors(newErrors);
@@ -280,16 +305,17 @@ const RegistroVehiculo = () => {
                 required
               />
               {errors.placaVehiculo && <small className="error">{errors.placaVehiculo}</small>}
-            </div>
-            <div className="campo">
+            </div>            <div className="campo">
               <label htmlFor="kilometraje">Kilometraje</label>
               <input
-                type="number"
+                type="text"
                 id="kilometraje"
                 name="kilometraje"
                 placeholder="Kilometraje"
                 value={form.kilometraje}
-                onChange={handleChange}
+                onChange={handleNumericChange}
+                onKeyDown={handleKeyPress}
+                maxLength={7}
                 required
               />
               {errors.kilometraje && <small className="error">{errors.kilometraje}</small>}
@@ -347,12 +373,14 @@ const RegistroVehiculo = () => {
             <div className="campo">
               <label htmlFor="anoVehiculo">Año Vehículo</label>
               <input
-                type="number"
+                type="text"
                 id="anoVehiculo"
                 name="anoVehiculo"
                 placeholder="Año Vehículo"
                 value={form.anoVehiculo}
-                onChange={handleChange}
+                onChange={handleNumericChange}
+                onKeyDown={handleKeyPress}
+                maxLength={4}
                 required
               />
               {errors.anoVehiculo && <small className="error">{errors.anoVehiculo}</small>}
@@ -408,12 +436,14 @@ const RegistroVehiculo = () => {
             <div className="campo">
               <label htmlFor="capacidadCombustible">Capacidad Combustible</label>
               <input
-                type="number"
+                type="text"
                 id="capacidadCombustible"
                 name="capacidadCombustible"
                 placeholder="Litros"
                 value={form.capacidadCombustible}
-                onChange={handleChange}
+                onChange={handleNumericChange}
+                onKeyDown={handleKeyPress}
+                maxLength={5}
                 required
               />
               {errors.capacidadCombustible && <small className="error">{errors.capacidadCombustible}</small>}
@@ -439,12 +469,14 @@ const RegistroVehiculo = () => {
             <div className="campo">
               <label htmlFor="capacidadCarga">Capacidad Carga</label>
               <input
-                type="number"
+                type="text"
                 id="capacidadCarga"
                 name="capacidadCarga"
                 placeholder="kg"
                 value={form.capacidadCarga}
-                onChange={handleChange}
+                onChange={handleNumericChange}
+                onKeyDown={handleKeyPress}
+                maxLength={6}
                 required
               />
               {errors.capacidadCarga && <small className="error">{errors.capacidadCarga}</small>}
@@ -452,12 +484,14 @@ const RegistroVehiculo = () => {
             <div className="campo">
               <label htmlFor="costo">Costo</label>
               <input
-                type="number"
+                type="text"
                 id="costo"
                 name="costo"
                 placeholder="Costo"
                 value={form.costo}
-                onChange={handleChange}
+                onChange={handleNumericChange}
+                onKeyDown={handleKeyPress}
+                maxLength={9}
                 required
               />
               {errors.costo && <small className="error">{errors.costo}</small>}
