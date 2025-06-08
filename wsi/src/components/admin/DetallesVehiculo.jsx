@@ -1,17 +1,23 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faEdit, faPrint, faGasPump, faWeightHanging, faGauge, faMoneyBill, faWeight, faCalendarAlt, faDollarSign,faCar,faIdCard,faPalette,faCalendar,faCogs,faChartLine} from '@fortawesome/free-solid-svg-icons';
+import { 
+  faArrowLeft, faEdit, faPrint, faGasPump, faWeightHanging, 
+  faGauge, faMoneyBill, faWeight, faCalendarAlt, faDollarSign,
+  faCar, faIdCard, faPalette, faCalendar, faCogs, faChartLine,
+  faWrench, faTools, faFileAlt
+} from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import '../../styles/DetalleVehiculo.css';
 import Header from '../header';
 import { verifyToken } from '../../services/auth';
+import '../../styles/DetalleVehiculo.css';
 
 const DetalleVehiculo = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [vehiculo, setVehiculo] = useState(null);
+  const [mantenimientos, setMantenimientos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const reportRef = useRef();
@@ -41,7 +47,6 @@ const DetalleVehiculo = () => {
       try {
         const result = await verifyToken();
         if (result.isValid && result.user) {
-          // Si el rol no es 0, redirige al home correspondiente
           if (String(result.user.rol) !== "0") {
             if (String(result.user.rol) === "1") {
               navigate('/supervisorHome', { replace: true });
@@ -61,7 +66,6 @@ const DetalleVehiculo = () => {
     };
     checkAuth();
   }, [navigate]);
-  // --- FIN VERIFICACIÓN ROL ---
 
   useEffect(() => {
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
@@ -78,12 +82,12 @@ const DetalleVehiculo = () => {
       events.forEach(event => window.removeEventListener(event, resetTimer));
     };
   }, [navigate]);
-  // --- FIN INACTIVIDAD ---
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const fetchVehiculo = async () => {
       try {
+        // Obtener vehículo
         const response = await fetch(`http://localhost:8000/api/vehiculos/${id}/`, {
           headers: {
             'Authorization': `Token ${token}`,
@@ -93,8 +97,36 @@ const DetalleVehiculo = () => {
         if (!response.ok) throw new Error('No se pudo cargar el vehículo');
         const data = await response.json();
         setVehiculo(data);
+
+        // Mantenimientos de ejemplo
+        setMantenimientos([
+          {
+            id: 1,
+            tipo: 'Cambio de aceite',
+            fecha: '2023-10-15T14:30:00Z',
+            costo: 120.50,
+            descripcion: 'Cambio de aceite y filtro',
+            kilometraje: 15000
+          },
+          {
+            id: 2,
+            tipo: 'Rotación de neumáticos',
+            fecha: '2023-08-22T10:15:00Z',
+            costo: 80.00,
+            descripcion: 'Rotación y balanceo de neumáticos',
+            kilometraje: 12000
+          },
+          {
+            id: 3,
+            tipo: 'Revisión general',
+            fecha: '2023-05-10T09:00:00Z',
+            costo: 200.00,
+            descripcion: 'Revisión completa del vehículo',
+            kilometraje: 8000
+          }
+        ]);
       } catch (err) {
-        setError('No se pudo cargar el vehículo');
+        setError('No se pudo cargar la información completa');
       } finally {
         setLoading(false);
       }
@@ -110,7 +142,6 @@ const DetalleVehiculo = () => {
     navigate(`/editar-vehiculo/${vehiculo.id_vehiculo}`);
   };
 
-  // Función mejorada para generar reporte PDF
   const handleGenerarReporte = () => {
     const doc = new jsPDF({
       orientation: 'portrait',
@@ -212,132 +243,180 @@ const DetalleVehiculo = () => {
     });
   };
 
+  const formatFechaHora = (fecha) => {
+    if (!fecha) return 'N/A';
+    return new Date(fecha).toLocaleString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   if (loading) return <div className="loader">Cargando...</div>;
   if (error) return <div style={{ color: 'red' }}>{error}</div>;
   if (!vehiculo) return null;
 
   return (
-    <div className="detalle-vehiculo-container" ref={reportRef}>
-      <Header 
-        title="WSI"
-        showBackButton={true}
-        customIconSize="1.8rem"
-      />
-      
-      <div className="detalle-vehiculo-content">
-        <div className="detalle-vehiculo-header">
-          <h2 className="detalle-vehiculo-titulo">
-            <FontAwesomeIcon icon={faCar} /> {vehiculo.marca} {vehiculo.modelo} - {vehiculo.placa}
-          </h2>
-          <div className="detalle-vehiculo-acciones">
-            <button className="detalle-vehiculo-btn imprimir" title="Generar PDF" onClick={handleGenerarReporte}>
-              <FontAwesomeIcon icon={faPrint} /> PDF
-            </button>
-            <button className="detalle-vehiculo-btn editar" title="Editar" onClick={handleEditar}>
-              <FontAwesomeIcon icon={faEdit} />
-            </button>
-            <button className="detalle-vehiculo-btn volver" title="Volver" onClick={handleVolver}>
-              <FontAwesomeIcon icon={faArrowLeft} />
-            </button>
-          </div>
-        </div>
+    <div className="vehiculo-home-wrapper">
+      <Header title="WSI" />
 
+      <div className="detalle-vehiculo-container" ref={reportRef}>
         <div className="detalle-vehiculo-card">
-          <div className="detalle-vehiculo-imagen">
-            <div className="detalle-vehiculo-imagen-placeholder">
-              <span>{vehiculo.marca?.charAt(0)}{vehiculo.modelo?.charAt(0)}</span>
+          <div className="detalle-vehiculo-header">
+            <h2 className="detalle-vehiculo-titulo">Detalles del Vehículo</h2>
+            <div className="detalle-vehiculo-acciones">
+              <button 
+                className="detalle-vehiculo-boton-imprimir"
+                onClick={handleGenerarReporte}
+              >
+                <FontAwesomeIcon icon={faPrint} />
+              </button>
             </div>
           </div>
           
-          <div className="detalle-vehiculo-info">
-            <div className="detalle-vehiculo-info-row">
-              <FontAwesomeIcon icon={faIdCard} className="icono-info" />
-              <span className="detalle-vehiculo-label">Estado:</span>
-              <span className={`detalle-vehiculo-value estado ${vehiculo.estado?.toLowerCase()}`}>
-                {formatEstado(vehiculo.estado)}
-              </span>
+          <div className="detalle-vehiculo-profile">
+            <div className="avatar-vehiculo">
+              <FontAwesomeIcon icon={faCar} size="3x" />
             </div>
-            <div className="detalle-vehiculo-info-row">
-              <FontAwesomeIcon icon={faPalette} className="icono-info" />
-              <span className="detalle-vehiculo-label">Color:</span>
-              <span className="detalle-vehiculo-value">
-                <span 
-                  className="detalle-vehiculo-color-indicator" 
-                  style={{ backgroundColor: getColorCode(vehiculo.color) }}
-                ></span>
-                {vehiculo.color}
-              </span>
+            <div className="detalle-vehiculo-nombre">
+              {vehiculo.marca} {vehiculo.modelo}
             </div>
-            <div className="detalle-vehiculo-info-row">
-              <FontAwesomeIcon icon={faCalendar} className="icono-info" />
-              <span className="detalle-vehiculo-label">Año:</span>
-              <span className="detalle-vehiculo-value">{vehiculo.anio}</span>
-            </div>
-            <div className="detalle-vehiculo-info-row">
-              <FontAwesomeIcon icon={faCogs} className="icono-info" />
-              <span className="detalle-vehiculo-label">Tipología:</span>
-              <span className="detalle-vehiculo-value">{vehiculo.tipologia}</span>
-            </div>
-            <div className="detalle-vehiculo-info-row">
-              <FontAwesomeIcon icon={faChartLine} className="icono-info" />
-              <span className="detalle-vehiculo-label">Motor:</span>
-              <span className="detalle-vehiculo-value">{vehiculo.motor}</span>
+            <div className="detalle-vehiculo-placa">
+              {vehiculo.placa}
             </div>
           </div>
-        </div>
-
-        <div className="detalle-vehiculo-seccion">
-          <h3 className="detalle-vehiculo-subtitulo">
-            <FontAwesomeIcon icon={faWeight} className="icono-seccion" />
-            Especificaciones Técnicas
-          </h3>
-          <div className="detalle-vehiculo-info-adicional">
-            <div className="detalle-vehiculo-info-row">
-              <FontAwesomeIcon icon={faWeightHanging} className="icono-info" />
-              <span className="detalle-vehiculo-label">Capacidad de carga:</span>
-              <span className="detalle-vehiculo-value">{vehiculo.capacidad_carga} kg</span>
+          
+          <div className="detalle-vehiculo-info-grid">
+            <div className="info-card">
+              <div className="info-icon">
+                <FontAwesomeIcon icon={faIdCard} />
+              </div>
+              <div className="info-content">
+                <h3>Información General</h3>
+                <div className="info-row">
+                  <span className="info-label">Estado:</span>
+                  <span className={`info-value estado ${vehiculo.estado?.toLowerCase()}`}>
+                    {formatEstado(vehiculo.estado)}
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Color:</span>
+                  <span className="info-value">
+                    <span 
+                      className="color-indicator" 
+                      style={{ backgroundColor: getColorCode(vehiculo.color) }}
+                    ></span>
+                    {vehiculo.color}
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Año:</span>
+                  <span className="info-value">{vehiculo.anio}</span>
+                </div>
+              </div>
             </div>
-            <div className="detalle-vehiculo-info-row">
-              <FontAwesomeIcon icon={faGasPump} className="icono-info" />
-              <span className="detalle-vehiculo-label">Combustible:</span>
-              <span className="detalle-vehiculo-value">
-                {vehiculo.tipo_combustible} ({vehiculo.capacidad_combustible} L)
-              </span>
+            
+            <div className="info-card">
+              <div className="info-icon">
+                <FontAwesomeIcon icon={faCogs} />
+              </div>
+              <div className="info-content">
+                <h3>Especificaciones</h3>
+                <div className="info-row">
+                  <span className="info-label">Tipología:</span>
+                  <span className="info-value">{vehiculo.tipologia || 'N/A'}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Motor:</span>
+                  <span className="info-value">{vehiculo.motor || 'N/A'}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Capacidad:</span>
+                  <span className="info-value">{vehiculo.capacidad_carga} kg</span>
+                </div>
+              </div>
             </div>
-            <div className="detalle-vehiculo-info-row">
-              <FontAwesomeIcon icon={faGauge} className="icono-info" />
-              <span className="detalle-vehiculo-label">Kilometraje:</span>
-              <span className="detalle-vehiculo-value">{vehiculo.kilometraje?.toLocaleString()} km</span>
+            
+            <div className="info-card">
+              <div className="info-icon">
+                <FontAwesomeIcon icon={faGasPump} />
+              </div>
+              <div className="info-content">
+                <h3>Combustible</h3>
+                <div className="info-row">
+                  <span className="info-label">Tipo:</span>
+                  <span className="info-value">{vehiculo.tipo_combustible || 'N/A'}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Capacidad:</span>
+                  <span className="info-value">{vehiculo.capacidad_combustible} L</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Kilometraje:</span>
+                  <span className="info-value">{vehiculo.kilometraje?.toLocaleString()} km</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="info-card">
+              <div className="info-icon">
+                <FontAwesomeIcon icon={faMoneyBill} />
+              </div>
+              <div className="info-content">
+                <h3>Finanzas</h3>
+                <div className="info-row">
+                  <span className="info-label">Costo:</span>
+                  <span className="info-value">
+                    ${vehiculo.costo?.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Fecha:</span>
+                  <span className="info-value">{formatFecha(vehiculo.fecha_creado)}</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="detalle-vehiculo-seccion">
-          <h3 className="detalle-vehiculo-subtitulo">
-            <FontAwesomeIcon icon={faDollarSign} className="icono-seccion" />
-            Información Financiera
-          </h3>
-          <div className="detalle-vehiculo-info-adicional">
-            <div className="detalle-vehiculo-info-row">
-              <FontAwesomeIcon icon={faMoneyBill} className="icono-info" />
-              <span className="detalle-vehiculo-label">Costo:</span>
-              <span className="detalle-vehiculo-value">
-                ${vehiculo.costo?.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="detalle-vehiculo-seccion">
-          <h3 className="detalle-vehiculo-subtitulo">
-            <FontAwesomeIcon icon={faCalendarAlt} className="icono-seccion" />
-            Registro del Vehículo
-          </h3>
-          <div className="detalle-vehiculo-info-adicional">
-            <div className="detalle-vehiculo-info-row">
-              <span className="detalle-vehiculo-label">Fecha de creación:</span>
-              <span className="detalle-vehiculo-value">{formatFecha(vehiculo.fecha_creado)}</span>
-            </div>
+          {/* Sección de Mantenimientos */}
+          <div className="mantenimientos-section">
+            <h3 className="section-title">
+              <FontAwesomeIcon icon={faTools} /> Últimos Mantenimientos
+            </h3>
+            
+            {mantenimientos.length === 0 ? (
+              <div className="no-mantenimientos">
+                <FontAwesomeIcon icon={faFileAlt} size="2x" />
+                <p>Este vehículo no tiene mantenimientos registrados.</p>
+              </div>
+            ) : (
+              <div className="mantenimientos-grid">
+                {mantenimientos.map(mant => (
+                  <div className="mantenimiento-card" key={mant.id}>
+                    <div className="mantenimiento-header">
+                      <span className="mantenimiento-fecha">{formatFechaHora(mant.fecha)}</span>
+                      <span className={`mantenimiento-estado ${mant.estado?.toLowerCase() || 'completado'}`}>
+                        {mant.estado || 'COMPLETADO'}
+                      </span>
+                    </div>
+                    <div className="mantenimiento-body">
+                      <h4 className="mantenimiento-titulo">{mant.tipo}</h4>
+                      <p className="mantenimiento-descripcion">{mant.descripcion || 'Sin descripción'}</p>
+                    </div>
+                    <div className="mantenimiento-footer">
+                      <span className="mantenimiento-costo">
+                        ${mant.costo?.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                      </span>
+                      <span className="mantenimiento-kilometraje">
+                        {mant.kilometraje} km
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
