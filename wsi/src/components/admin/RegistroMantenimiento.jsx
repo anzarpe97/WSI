@@ -65,7 +65,6 @@ const RegistroMantenimiento = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
       events.forEach(event => window.removeEventListener(event, resetTimer));
     };
-    // --- Fin temporizador ---
     // eslint-disable-next-line
   }, [navigate]);
   // --- Fin manejo de sesión e inactividad ---
@@ -99,6 +98,9 @@ const RegistroMantenimiento = () => {
 
   // Estado para motivos de mantenimiento
   const [motivos, setMotivos] = useState([]);
+
+  // Estado para controlar el envío del formulario
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Obtener motivos de mantenimiento desde la API
   useEffect(() => {
@@ -185,7 +187,7 @@ const RegistroMantenimiento = () => {
           { headers: { Authorization: `Token ${token}` } }
         );
         const data = await response.json();
-        setMecanicos(Array.isArray(data) ? data : []);
+        setMecanicos(Array.isArray(data) ? data.filter(user => String(user.rol) === "2") : []);
       } catch {
         setMecanicos([]);
       }
@@ -263,7 +265,6 @@ const RegistroMantenimiento = () => {
     const selectedDate = e.target.value;
     setFechaInicio(selectedDate);
 
-    // Si la fecha límite es anterior a la nueva fecha de inicio, actualizarla
     if (fechaLimite && new Date(fechaLimite) < new Date(selectedDate)) {
       setFechaLimite(selectedDate);
     }
@@ -274,27 +275,47 @@ const RegistroMantenimiento = () => {
     setFechaLimite(e.target.value);
   };
 
+  // Función para resetear el formulario
+  const resetForm = () => {
+    setPlaca('');
+    setVehiculoInfo(null);
+    setPlacaError('');
+    setFechaInicio('');
+    setFechaLimite('');
+    setFechaError('');
+    setMotivo('');
+    setTipoMantenimiento('');
+    setMecanico('');
+    setObservaciones('');
+    setSuministros([{ detalle: '', cantidad: '', precio: '', total: '0.00' }]);
+  };
+
   // Manejar envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     if (!vehiculoInfo) {
       toast.error('Debe buscar y seleccionar un vehículo');
+      setIsSubmitting(false);
       return;
     }
 
     if (!validateDates()) {
       toast.error('Por favor corrija las fechas antes de enviar');
+      setIsSubmitting(false);
       return;
     }
 
     if (!validarSuministros()) {
       toast.error('Complete todos los campos de suministros');
+      setIsSubmitting(false);
       return;
     }
 
     if (!motivo || !tipoMantenimiento || !mecanico) {
       toast.error('Complete todos los campos obligatorios');
+      setIsSubmitting(false);
       return;
     }
 
@@ -326,13 +347,65 @@ const RegistroMantenimiento = () => {
 
       if (response.ok) {
         toast.success('Orden de mantenimiento creada correctamente');
-        // Opcional: limpiar formulario aquí
+
+        // ---- Crear notificación para todos los usuarios ----
+        try {
+          const notificacionData = {
+            mensaje: `Nueva orden de mantenimiento registrada para el vehículo ${vehiculoInfo.placa}.`,
+            tipo: 'NUEVO_MANTENIMIENTO'
+          };
+          const notificacionResponse = await fetch('http://localhost:8000/api/notificaciones/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Token ${token}`
+            },
+            body: JSON.stringify(notificacionData)
+          });
+
+          if (notificacionResponse.ok) {
+            console.log('Notificación de mantenimiento creada exitosamente.');
+          } else {
+            const errorData = await notificacionResponse.text();
+            console.error('Error al crear la notificación de mantenimiento:', errorData);
+          }
+        } catch (notifError) {
+          console.error('Error de red al crear la notificación de mantenimiento:', notifError);
+        }
+        // ---- Fin notificación ----
+
+        resetForm();
       } else {
-        const data = await response.json();
-        toast.error(data.error || 'Error al crear la orden');
+        let errorMessage = 'Error al crear la orden. Intente nuevamente.';
+        try {
+          const backendErrors = await response.json();
+          if (typeof backendErrors === 'string') {
+            errorMessage = backendErrors;
+          } else if (typeof backendErrors === 'object' && backendErrors !== null) {
+            if (backendErrors.detail) {
+              errorMessage = backendErrors.detail;
+            } else if (backendErrors.error) {
+              errorMessage = backendErrors.error;
+            } else {
+              const firstErrorKey = Object.keys(backendErrors)[0];
+              if (firstErrorKey && Array.isArray(backendErrors[firstErrorKey]) && backendErrors[firstErrorKey].length > 0) {
+                errorMessage = `${firstErrorKey.replace(/^id_|_id$/, '').replace(/_/g, ' ')}: ${backendErrors[firstErrorKey][0]}`;
+              } else if (firstErrorKey && typeof backendErrors[firstErrorKey] === 'string') {
+                errorMessage = `${firstErrorKey.replace(/^id_|_id$/, '').replace(/_/g, ' ')}: ${backendErrors[firstErrorKey]}`;
+              } else if (Object.values(backendErrors).length > 0 && typeof Object.values(backendErrors)[0] === 'string') {
+                errorMessage = Object.values(backendErrors)[0];
+              }
+            }
+          }
+        } catch (jsonError) {
+          errorMessage = `Error del servidor (estado: ${response.status}). No se pudo procesar la respuesta.`;
+        }
+        toast.error(errorMessage);
       }
     } catch (error) {
-      toast.error('Error de conexión al crear la orden');
+      toast.error('Error de conexión al crear la orden. Verifique su red e intente nuevamente.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -341,13 +414,11 @@ const RegistroMantenimiento = () => {
       <Header title="WSI" />
       <ToastContainer position="top-right" autoClose={3000} />
 
-    <div className="registroMantenimiento-bg">
+      <div className="registroMantenimiento-bg">
         <img src={bgImage} alt="Fondo" />
       </div>
       
       <div className="registroMantenimiento-content">
-        
-
         <div className="registroMantenimiento-container">
           <h1 className="registroMantenimiento-title">Registro Orden de Mantenimiento</h1>
 
@@ -380,7 +451,7 @@ const RegistroMantenimiento = () => {
                     <input
                       type="text"
                       id="registroMantenimiento-placa"
-                      maxLength='7'
+                      maxLength='8'
                       placeholder="Ej: ABC1234"
                       value={placa}
                       onChange={e => setPlaca(e.target.value.toUpperCase())}
@@ -567,8 +638,9 @@ const RegistroMantenimiento = () => {
               <button
                 type="submit"
                 className="registroMantenimiento-submitBtn"
+                disabled={isSubmitting}
               >
-                Crear Orden de Mantenimiento
+                {isSubmitting ? 'Creando Orden...' : 'Crear Orden de Mantenimiento'}
               </button>
             </div>
           </form>

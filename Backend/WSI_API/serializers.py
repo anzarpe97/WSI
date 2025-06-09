@@ -212,17 +212,25 @@ class VehiculoSerializer(serializers.ModelSerializer):
             'id_vehiculo', 'placa', 'marca', 'modelo', 'anio', 'color', 
             'tipologia', 'motor', 'capacidad_carga', 'tipo_combustible', 
             'capacidad_combustible', 'kilometraje', 'costo', 'estado', 
-            'fecha_creado', 'borrado', 'motivo_borrado' # Removed fecha_actualizado
+            'fecha_creado', 'borrado', 'motivo_borrado' 
         ]
-        read_only_fields = ['id_vehiculo', 'fecha_creado'] # Removed fecha_actualizado
+        read_only_fields = ['id_vehiculo', 'fecha_creado'] 
 
     def validate_placa(self, value):
+        value = value.strip().upper()
         if not value:
             raise serializers.ValidationError("La placa es requerida.")
         if len(value) > 20:
             raise serializers.ValidationError("La placa no puede tener más de 20 caracteres.")
-        return value.upper()
-
+        # Si es actualización, ignora el propio registro
+        if self.instance:
+            if Vehiculo.objects.exclude(pk=self.instance.pk).filter(placa=value).exists():
+                raise serializers.ValidationError("Ya existe un vehículo registrado con esta placa.")
+        else:
+            if Vehiculo.objects.filter(placa=value).exists():
+                raise serializers.ValidationError("Ya existe un vehículo registrado con esta placa.")
+        return value
+    
     def validate_kilometraje(self, value):
         if value < 0:
             raise serializers.ValidationError("El kilometraje debe ser un número positivo.")
@@ -336,7 +344,6 @@ class DetalleMantenimientoSerializer(serializers.ModelSerializer):
             'observaciones',
             'suministros'
         ]
-
 
 
 

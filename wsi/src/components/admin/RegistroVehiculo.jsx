@@ -186,71 +186,77 @@ const RegistroVehiculo = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  e.preventDefault();
+  if (!validateForm()) return;
 
-    setErrors({});
-    setLoading(true);
+  setErrors({});
+  setLoading(true);
 
-    try {
-      const token = localStorage.getItem('token');
-      const data = {
-        placa: form.placaVehiculo,
-        kilometraje: Number(form.kilometraje),
-        estado: form.estadoVehiculo,
-        marca: form.marcaVehiculo,
-        modelo: form.modeloVehiculo,
-        motor: form.motorVehiculo,
-        anio: Number(form.anoVehiculo),
-        color: form.colorVehiculo,
-        tipologia: form.tipologia,
-        capacidad_carga: Number(form.capacidadCarga),
-        capacidad_combustible: Number(form.capacidadCombustible),
-        costo: Number(form.costo),
-        tipo_combustible: form.tipoCombustible,
-      };
+  try {
+    const token = localStorage.getItem('token');
+    const data = {
+      placa: form.placaVehiculo,
+      kilometraje: Number(form.kilometraje),
+      estado: form.estadoVehiculo,
+      marca: form.marcaVehiculo,
+      modelo: form.modeloVehiculo,
+      motor: form.motorVehiculo,
+      anio: Number(form.anoVehiculo),
+      color: form.colorVehiculo,
+      tipologia: form.tipologia,
+      capacidad_carga: Number(form.capacidadCarga),
+      capacidad_combustible: Number(form.capacidadCombustible),
+      costo: Number(form.costo),
+      tipo_combustible: form.tipoCombustible,
+    };
 
-      await axios.post(
-        'http://localhost:8000/api/vehiculos/registrar/',
-        data,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      toast.success('Vehículo registrado exitosamente');
-      setForm({
-        placaVehiculo: '',
-        kilometraje: '',
-        estadoVehiculo: '',
-        modeloVehiculo: '',
-        motorVehiculo: '',
-        anoVehiculo: '',
-        marcaVehiculo: '',
-        colorVehiculo: '',
-        tipologia: '',
-        capacidadCombustible: '',
-        tipoCombustible: '',
-        capacidadCarga: '',
-        costo: '',
-      });
-      setErrors({});
-    } catch (error) {
-      if (error.response && error.response.data) {
-        console.log(error.response.data);
-        setErrors(error.response.data);
-        toast.error('Error al registrar el vehículo');
-      } else {
-        toast.error('Error de conexión con el servidor');
+    await axios.post(
+      'http://localhost:8000/api/vehiculos/registrar/',
+      data,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
       }
-    } finally {
-      setLoading(false);
-    }
-  };
+    );
 
+    toast.success('Vehículo registrado exitosamente');
+    setForm({
+      placaVehiculo: '',
+      kilometraje: '',
+      estadoVehiculo: '',
+      modeloVehiculo: '',
+      motorVehiculo: '',
+      anoVehiculo: '',
+      marcaVehiculo: '',
+      colorVehiculo: '',
+      tipologia: '',
+      capacidadCombustible: '',
+      tipoCombustible: '',
+      capacidadCarga: '',
+      costo: '',
+    });
+    setErrors({});
+  } catch (error) {
+    if (error.response && error.response.data) {
+      const data = error.response.data;
+      setErrors(data);
+      // Mostrar todos los mensajes del backend en un toast
+      Object.entries(data).forEach(([campo, mensajes]) => {
+        if (Array.isArray(mensajes)) {
+          mensajes.forEach(msg => toast.error(`Error: ${msg}`));
+        } else {
+          toast.error(`Error: ${mensajes}`);
+        }
+      });
+    } else {
+      toast.error('Error de conexión con el servidor');
+    }
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="home-wrapper">
       <Header title="WSI" />

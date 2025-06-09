@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'rest_framework',                   
     'rest_framework.authtoken',          
     'WSI_API.apps.WsiApiConfig',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -57,6 +58,7 @@ TEMPLATES = [
 
 # --- WSGI ---
 WSGI_APPLICATION = 'WSI.wsgi.application'
+ASGI_APPLICATION = 'WSI.asgi.application' 
 
 
 # --- Base de datos ---

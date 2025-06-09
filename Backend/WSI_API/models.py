@@ -88,7 +88,7 @@ class Vehiculo(models.Model):
     ]
     
     id_vehiculo = models.AutoField(primary_key=True, verbose_name='ID Vehiculo' )
-    placa = models.CharField(unique=True, max_length=20, verbose_name='Placa Vehiculo')
+    placa = models.CharField(unique=True, max_length=20, verbose_name='Placa Vehiculo', error_messages={"unique": "Ya existe un vehículo registrado con esta placa."})
     kilometraje = models.IntegerField(null = False, verbose_name='Kilometraje Vehiculo')
     estado = models.CharField(max_length=16, choices=ESTADOS_VEHICULO, default='ACTIVO', verbose_name='Estado del vehículo')
     marca = models.CharField(max_length=50, null=False, verbose_name='Marca vehículo')
@@ -206,6 +206,23 @@ class DocumentoChofer(models.Model):
 
     def __str__(self):
         return f"{self.chofer.nombre} {self.chofer.apellido} - {self.tipo_documento} - {self.numero_documento}"
+
+# MODELO DE DOCUMENTO VEHICULOS
+class DocumentoVehiculo(models.Model):
+
+    TIPO_DOCUMENTO_CHOICES = [
+        ('RCV', 'RCV'),
+        ('TRIMESTRES', 'Trimestres'),
+    ]
+    
+    id_documento_vehiculo = models.AutoField(primary_key=True)
+    Vehiculo = models.ForeignKey('Vehiculo', on_delete=models.RESTRICT, null=False)    
+    tipo_documento = models.CharField(max_length=30, choices=TIPO_DOCUMENTO_CHOICES, null=False)
+    numero_documento = models.CharField(max_length=50, null=False)
+    fecha_emision = models.DateField()
+    fecha_caducidad = models.DateField()
+    archivo = models.FileField(upload_to='documentos_choferes/', null=False)
+    fecha_subida = models.DateTimeField(auto_now_add=True)
 
 # MODELO DE NOTIFICACIONES
 class NotificacionGlobal(models.Model):

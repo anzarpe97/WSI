@@ -430,4 +430,3 @@ class UsuarioDetailAPIView(RetrieveAPIView):
 
 
 
-
