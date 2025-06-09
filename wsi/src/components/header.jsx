@@ -51,7 +51,7 @@ const Header = ({
     fetchNotifications(); // Llama al cargar
 
     // Polling cada 10 segundos
-    pollingRef.current = setInterval(fetchNotifications, 10000);
+    pollingRef.current = setInterval(fetchNotifications, 15000);
 
     return () => clearInterval(pollingRef.current);
   }, [showIcons]);
@@ -199,9 +199,15 @@ const Header = ({
                       ))}
                   </div>
 
-                  <div className="notification-footer">
-                    <button className="view-all">Ver todas las notificaciones</button>
-                  </div>
+                  <button
+                    className="view-all"
+                    onClick={() => {
+                      setNotificationsOpen(false);
+                      navigate('/notificaciones');
+                    }}
+                  >
+                    Ver todas las notificaciones
+                  </button>
                 </div>
               )}
             </div>

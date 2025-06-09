@@ -19,6 +19,8 @@ import Estadisticas from './components/admin/Estadisticas';
 import MenuGestionDocumentos from './components/admin/MenuGestionDocumentos';
 import DetalleMantenimiento from './components/admin/DetalleMantenimiento';
 import DetalleEmpleado from './components/admin/DetalleEmpleados';
+import Notificaciones from './components/Notificaciones';
+
 const App = () => {
   return (
     <Router>
@@ -52,6 +54,7 @@ const App = () => {
         {/* RUTAS SUPERVISOR*/}     
         <Route path="/supervisorHome" element={<HomeSupervisor />} />
         {/* RUTAS USUARIO*/}
+        <Route path="/notificaciones" element={<Notificaciones />} />
 
       </Routes>
     </Router>
