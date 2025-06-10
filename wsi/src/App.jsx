@@ -20,6 +20,7 @@ import MenuGestionDocumentos from './components/admin/MenuGestionDocumentos';
 import DetalleMantenimiento from './components/admin/DetalleMantenimiento';
 import DetalleEmpleado from './components/admin/DetalleEmpleados';
 import Notificaciones from './components/Notificaciones';
+import GestionDocumentoChoferes from './components/admin/GestionDocumentoChoferes';
 
 const App = () => {
   return (
@@ -37,6 +38,7 @@ const App = () => {
         {/* RUTAS DOCUMENTOS ADMINISTRADOR*/}
         <Route path="/menu-documentos" element={<MenuDocumentos />} />
         <Route path="/menu-gestion-documentos" element={<MenuGestionDocumentos />} />
+        <Route path="/gestion-documento-choferes" element={<GestionDocumentoChoferes />} />
         <Route path="/registro-documentos-vehiculo" element={<RegistroDocumentosVehiculos />} />
         <Route path="/registro-documentos-choferes" element={<RegistroDocumentoChoferes />} />
         {/* RUTAS VEHICULOS ADMINISTRADOR*/}

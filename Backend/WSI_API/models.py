@@ -167,7 +167,7 @@ class MotivoMantenimiento(models.Model):
         verbose_name_plural = 'Motivos Mantenimiento'
         db_table = 'motivo_mantenimiento'
               
-# MODELO DE DETALLE DE ANTENIMIENTO        
+# MODELO DE DETALLE DE MANTENIMIENTO        
 class DetalleMantenimiento(models.Model):
     
     # ATRIBUTOS MODELO DETALLE MANTENIMIENTO

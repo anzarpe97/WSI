@@ -40,7 +40,6 @@ const RegistroDocumentosVehiculos = () => {
       try {
         const result = await verifyToken();
         if (result.isValid && result.user) {
-          // Si el rol no es 0, redirige al home correspondiente
           if (String(result.user.rol) !== "0") {
             if (String(result.user.rol) === "1") {
               navigate('/supervisorHome', { replace: true });
@@ -59,7 +58,6 @@ const RegistroDocumentosVehiculos = () => {
       }
     };
     checkAuth();
-    // --- Temporizador de inactividad ---
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
     const resetTimer = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
@@ -75,11 +73,7 @@ const RegistroDocumentosVehiculos = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
       events.forEach(event => window.removeEventListener(event, resetTimer));
     };
-    // --- Fin temporizador ---
   }, [navigate]);
-  // --- Fin Logout y temporizador ---
-
-  const validarPlaca = (placa) => /^[A-Za-z]{2,3}\d{3,4}$/.test(placa);
 
   document.title = "WSI - Registro Documentos Vehículos";
 
@@ -88,8 +82,14 @@ const RegistroDocumentosVehiculos = () => {
       setPlacaError('Por favor ingrese una placa');
       return;
     }
-    if (!validarPlaca(placa)) {
-      setPlacaError('Formato inválido (ejemplo: ABC123 o AB1234)');
+
+    // Limpiar y convertir a mayúsculas antes de buscar
+    const placaLimpia = placa.replace(/\s+/g, '').toUpperCase();
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast.error('Sesión expirada. Inicie sesión nuevamente.');
+      logout();
       return;
     }
 
@@ -97,20 +97,42 @@ const RegistroDocumentosVehiculos = () => {
     setIsSearching(true);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/vehiculos/?placa=${placa}`);
+      const response = await fetch(`http://localhost:8000/api/vehiculos/?placa=${placaLimpia}`, {
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.status === 401) {
+        toast.error('Sesión expirada. Inicie sesión nuevamente.');
+        logout();
+        return;
+      }
       if (response.ok) {
         const data = await response.json();
-        if (data && data.id && data.marca && data.modelo) {
+        // Si el backend devuelve una lista, toma el primer elemento
+        const vehiculo = Array.isArray(data) ? data[0] : data;
+        if (vehiculo && vehiculo.id && vehiculo.marca && vehiculo.modelo) {
           setVehiculoInfo({
-            id: data.id,
-            marca: data.marca,
-            modelo: data.modelo,
-            año: data.año
+            id: vehiculo.id,
+            marca: vehiculo.marca,
+            modelo: vehiculo.modelo,
+            año: vehiculo.año
           });
           toast.success("Vehículo encontrado");
 
           // Consultar documentos ya registrados por el vehículo
-          const docsResponse = await fetch(`http://localhost:8000/api/documentos-vehiculos-verificar/?vehiculo=${data.id}`);
+          const docsResponse = await fetch(`http://localhost:8000/api/documentos-vehiculos-verificar/?vehiculo=${vehiculo.id}`, {
+            headers: {
+              'Authorization': `Token ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (docsResponse.status === 401) {
+            toast.error('Sesión expirada. Inicie sesión nuevamente.');
+            logout();
+            return;
+          }
           if (docsResponse.ok) {
             const docsData = await docsResponse.json();
             setDocumentosRegistrados(docsData.map(doc => doc.tipo_documento));
@@ -149,7 +171,6 @@ const RegistroDocumentosVehiculos = () => {
     return fecha.toISOString().split('T')[0];
   };
 
-  // Actualiza la fecha de caducidad automáticamente y valida vigencia
   useEffect(() => {
     if (tipoDocumento && fechaEmision) {
       const nuevaFechaCaducidad = calcularFechaCaducidad(tipoDocumento, fechaEmision);
@@ -185,6 +206,10 @@ const RegistroDocumentosVehiculos = () => {
     return texto.replace(/[^A-Za-z0-9_]/g, ''); // permite el guion bajo
   };
 
+  const generarSufijoAleatorio = () => {
+    return Math.floor(1000 + Math.random() * 9000); // 4 dígitos aleatorios
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormSubmitted(true);
@@ -214,11 +239,12 @@ const RegistroDocumentosVehiculos = () => {
       return;
     }
 
-    const placaLimpia = limpiarTexto(placa);
+    const placaLimpia = limpiarTexto(placa).toUpperCase();
     const tipoDocumentoLimpio = limpiarTexto(tipoDocumento);
     const numeroDocumentoLimpio = limpiarTexto(documentNumber);
     const ext = file.name.split('.').pop();
-    const newFileName = `${placaLimpia}_${tipoDocumentoLimpio}.${ext}`;
+    const sufijo = generarSufijoAleatorio();
+    const newFileName = `${placaLimpia}_${tipoDocumentoLimpio}_${sufijo}.${ext}`;
     const renamedFile = new File([file], newFileName, { type: file.type });
 
     const formData = new FormData();
@@ -233,11 +259,27 @@ const RegistroDocumentosVehiculos = () => {
     formData.append('fecha_caducidad', fechaCaducidad);
     formData.append('archivo', renamedFile);
 
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast.error('Sesión expirada. Inicie sesión nuevamente.');
+      logout();
+      return;
+    }
+
     try {
       const response = await fetch('http://localhost:8000/api/documentos-vehiculos/', {
         method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`
+        },
         body: formData,
       });
+
+      if (response.status === 401) {
+        toast.error('Sesión expirada. Inicie sesión nuevamente.');
+        logout();
+        return;
+      }
 
       if (response.ok) {
         toast.success('Documento registrado exitosamente');
@@ -290,8 +332,8 @@ const RegistroDocumentosVehiculos = () => {
                   <input
                     type="text"
                     value={placa}
-                    onChange={(e) => setPlaca(e.target.value)}
-                    placeholder="Ej: ABC123"
+                    onChange={(e) => setPlaca(e.target.value.replace(/\s+/g, '').toUpperCase())}
+                    placeholder="Ej: A17BN21"
                     className={placaError ? 'input-error' : ''}
                     aria-describedby="placa-error"
                   />
@@ -337,10 +379,8 @@ const RegistroDocumentosVehiculos = () => {
                   aria-required="true"
                 >
                   <option value="">Seleccione un tipo</option>
-                  <option value="TARJETA_PROPIEDAD" disabled={documentosRegistrados.includes('TARJETA_PROPIEDAD')}>Tarjeta de Propiedad</option>
-                  <option value="SOAT" disabled={documentosRegistrados.includes('SOAT')}>SOAT</option>
-                  <option value="TECNOMECANICA" disabled={documentosRegistrados.includes('TECNOMECANICA')}>Tecnomecánica</option>
-                  <option value="SEGURO" disabled={documentosRegistrados.includes('SEGURO')}>Seguro</option>
+                  <option value="RCV" disabled={documentosRegistrados.includes('RCV')}>RCV</option>
+                  <option value="TRIMESTRES" disabled={documentosRegistrados.includes('TRIMESTRES')}>Trimestres</option>
                 </select>
                 {!tipoDocumento && (
                   <div className="error-message">Campo requerido</div>

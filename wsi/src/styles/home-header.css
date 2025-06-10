@@ -44,9 +44,9 @@
   right: 4px;
   width: 12px;
   height: 12px;
-  background: rgb(192, 22, 22);
+  background: #ff6a00;
   border-radius: 50%;
-  border: 2px solid rgb(192, 22, 22);
+  border: 2px solid #ffffff;
   z-index: 2;
   pointer-events: none;
 }

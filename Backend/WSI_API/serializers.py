@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
-from .models import DetalleMantenimiento, MotivoMantenimiento, Usuario, Vehiculo, Mantenimiento, DocumentoChofer, NotificacionUsuario, NotificacionGlobal
+from .models import DocumentoVehiculo, DetalleMantenimiento, MotivoMantenimiento, Usuario, Vehiculo, Mantenimiento, DocumentoChofer, NotificacionUsuario, NotificacionGlobal
 import re
 
 User = get_user_model()
@@ -345,10 +345,21 @@ class DetalleMantenimientoSerializer(serializers.ModelSerializer):
             'suministros'
         ]
 
+class DocumentoChoferSerializer(serializers.ModelSerializer):
+    chofer_nombre = serializers.CharField(source='chofer.nombre', read_only=True)
+    chofer_apellido = serializers.CharField(source='chofer.apellido', read_only=True)
+    # Puedes agregar más campos si necesitas
+
+    class Meta:
+        model = DocumentoChofer
+        fields = '__all__'  # Incluye todos los campos del modelo
+        # Los campos extra definidos arriba (chofer_nombre, chofer_apellido) se agregan automáticamente
 
 
-
-
+class DocumentoVehiculoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DocumentoVehiculo
+        fields = '__all__'
 
 
 

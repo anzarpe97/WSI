@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faTrashAlt, faPlus, faFileAlt } from '@fortawesome/free-solid-svg-icons';
-import './GestionDocumentoChoferes.css';
+import '../../styles/GestionDocumentoChoferes.css';
 import { useNavigate } from 'react-router-dom';
 import Header from '../header';
 import bgImage from '../../assets/bg-login.jpg';
@@ -57,7 +57,7 @@ const GestionDocumentoChoferes = () => {
     const fetchDocumentos = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:8000/api/documentos-choferes/', {
+        const response = await fetch('http://localhost:8000/api/documentos-choferes-verificar/', {
           headers: {
             'Authorization': `Token ${token}`,
             'Content-Type': 'application/json'
@@ -102,7 +102,7 @@ const GestionDocumentoChoferes = () => {
   );
 
   const handleRegistroDocumentoClick = () => {
-    navigate('/registro-documento-chofer');
+    navigate('/registro-documentos-choferes');
   };
 
   const handleVerDetalles = (id) => {
@@ -122,9 +122,17 @@ const GestionDocumentoChoferes = () => {
       'VIGENTE': 'Vigente',
       'VENCIDO': 'Vencido',
       'PROXIMO_VENCER': 'Próximo a vencer',
-      'EN_REVISION': 'En revisión'
     };
     return estados[estado] || estado;
+  };
+
+  const traducirTipoDocumento = (tipo) => {
+    const tipos = {
+      'CEDULA_IDENTIDAD': 'Cédula de Identidad',
+      'LICENCIA_CONDUCIR': 'Licencia de Conducir',
+      'CARTA_MEDICA': 'Carta Médica',
+    };
+    return tipos[tipo] || tipo;
   };
 
   // Formatear el ID del documento
@@ -144,12 +152,20 @@ const GestionDocumentoChoferes = () => {
   };
 
   // Calcular días restantes para documentos próximos a vencer
-  const calcularDiasRestantes = (fechaVencimiento) => {
+  const calcularDiasRestantes = (fechaCaducidad) => {
     const hoy = new Date();
-    const vencimiento = new Date(fechaVencimiento);
+    const vencimiento = new Date(fechaCaducidad);
     const diffTime = vencimiento - hoy;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+
+  // Calcular estado del documento
+  const calcularEstado = (fechaCaducidad) => {
+    const diasRestantes = calcularDiasRestantes(fechaCaducidad);
+    if (diasRestantes < 0) return 'VENCIDO';
+    if (diasRestantes <= 30) return 'PROXIMO_VENCER';
+    return 'VIGENTE';
   };
 
   return (
@@ -187,7 +203,6 @@ const GestionDocumentoChoferes = () => {
               <option value="VIGENTE">Vigente</option>
               <option value="PROXIMO_VENCER">Próximo a vencer</option>
               <option value="VENCIDO">Vencido</option>
-              <option value="EN_REVISION">En revisión</option>
             </select>
           </div>
         </div>
@@ -199,7 +214,8 @@ const GestionDocumentoChoferes = () => {
                 <th>ID Documento</th>
                 <th>Chofer</th>
                 <th>Tipo de Documento</th>
-                <th>Fecha Vencimiento</th>
+                <th>Número</th>
+                <th>Fecha Caducidad</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -207,74 +223,79 @@ const GestionDocumentoChoferes = () => {
             <tbody>
               {documentosPagina.length === 0 ? (
                 <tr key="no-documentos">
-                  <td colSpan="6" className="documento-chofer-sin-registros">
+                  <td colSpan="7" className="documento-chofer-sin-registros">
                     <FontAwesomeIcon icon={faFileAlt} className="documento-chofer-icono-vacio" />
                     No hay documentos registrados.
                   </td>
                 </tr>
               ) : (
-                documentosPagina.map((documento) => (
-                  <tr key={documento.id_documento}>
-                    <td data-label="ID Documento">{formatIdDocumento(documento.id_documento)}</td>
-                    <td data-label="Chofer">
-                      <div className="documento-chofer-info-chofer">
-                        <div className="documento-chofer-avatar">
-                          {documento.chofer_nombre?.charAt(0) || 'C'}
+                documentosPagina.map((documento) => {
+                  const estado = calcularEstado(documento.fecha_caducidad);
+                  return (
+                    <tr key={documento.id_documento_chofer}>
+                      <td data-label="ID Documento">{formatIdDocumento(documento.id_documento_chofer)}</td>
+                      <td data-label="Chofer">
+                        <div className="documento-chofer-info-chofer">
+                          <div className="documento-chofer-avatar">
+                            {documento.chofer_nombre?.charAt(0) || 'C'}
+                          </div>
+                          <div>
+                            <div className="documento-chofer-nombre">{documento.chofer_nombre || 'N/A'}</div>
+                            <div className="documento-chofer-licencia">{documento.chofer_apellido || ''}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="documento-chofer-nombre">{documento.chofer_nombre || 'N/A'}</div>
-                          <div className="documento-chofer-licencia">{documento.chofer_licencia || 'Sin licencia'}</div>
+                      </td>
+                      <td data-label="Tipo Documento">
+                        {traducirTipoDocumento(documento.tipo_documento)}
+                      </td>
+                      <td data-label="Número">
+                        {documento.numero_documento}
+                      </td>
+                      <td data-label="Fecha Caducidad">
+                        {documento.fecha_caducidad ? new Date(documento.fecha_caducidad).toLocaleDateString('es-ES', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        }) : 'N/A'}
+                        {estado === 'PROXIMO_VENCER' && documento.fecha_caducidad && (
+                          <div className="documento-chofer-alerta">
+                            {calcularDiasRestantes(documento.fecha_caducidad)} días
+                          </div>
+                        )}
+                      </td>
+                      <td data-label="Estado">
+                        <span className={`documento-chofer-estado-badge estado-${estado.toLowerCase()}`}>
+                          {traducirEstado(estado)}
+                        </span>
+                      </td>
+                      <td data-label="Acciones">
+                        <div className="documento-chofer-acciones">
+                          <button 
+                            className="documento-chofer-accion-btn"
+                            onClick={() => handleVerDetalles(documento.id_documento_chofer)}
+                            title="Ver detalles"
+                          >
+                            <FontAwesomeIcon icon={faEye} size="lg" />
+                          </button>
+                          <button 
+                            className="documento-chofer-accion-btn"
+                            onClick={() => handleEditarDocumento(documento.id_documento_chofer)}
+                            title="Editar documento"
+                          >
+                            <FontAwesomeIcon icon={faPen} size="lg" />
+                          </button>
+                          <button 
+                            className="documento-chofer-accion-btn"
+                            onClick={() => handleEliminarDocumento(documento.id_documento_chofer)}
+                            title="Eliminar documento"
+                          >
+                            <FontAwesomeIcon icon={faTrashAlt} size="lg" />
+                          </button>
                         </div>
-                      </div>
-                    </td>
-                    <td data-label="Tipo Documento">
-                      {documento.tipo_documento || 'N/A'}
-                      <div className="documento-chofer-detalle-tipo">{documento.detalle_tipo || ''}</div>
-                    </td>
-                    <td data-label="Fecha Vencimiento">
-                      {documento.fecha_vencimiento ? new Date(documento.fecha_vencimiento).toLocaleDateString('es-ES', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                      }) : 'N/A'}
-                      {documento.estado === 'PROXIMO_VENCER' && documento.fecha_vencimiento && (
-                        <div className="documento-chofer-alerta">
-                          {calcularDiasRestantes(documento.fecha_vencimiento)} días
-                        </div>
-                      )}
-                    </td>
-                    <td data-label="Estado">
-                      <span className={`documento-chofer-estado-badge estado-${documento.estado?.toLowerCase()}`}>
-                        {traducirEstado(documento.estado)}
-                      </span>
-                    </td>
-                    <td data-label="Acciones">
-                      <div className="documento-chofer-acciones">
-                        <button 
-                          className="documento-chofer-accion-btn"
-                          onClick={() => handleVerDetalles(documento.id_documento)}
-                          title="Ver detalles"
-                        >
-                          <FontAwesomeIcon icon={faEye} size="lg" />
-                        </button>
-                        <button 
-                          className="documento-chofer-accion-btn"
-                          onClick={() => handleEditarDocumento(documento.id_documento)}
-                          title="Editar documento"
-                        >
-                          <FontAwesomeIcon icon={faPen} size="lg" />
-                        </button>
-                        <button 
-                          className="documento-chofer-accion-btn"
-                          onClick={() => handleEliminarDocumento(documento.id_documento)}
-                          title="Eliminar documento"
-                        >
-                          <FontAwesomeIcon icon={faTrashAlt} size="lg" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>
