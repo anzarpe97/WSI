@@ -4,13 +4,13 @@ from django.middleware.csrf import get_token
 from django.core.mail import EmailMultiAlternatives
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView,CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
-from .models import MotivoMantenimiento, Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
-from .serializers import (DetalleMantenimientoSerializer, MotivoMantenimientoSerializer, NotificacionUsuarioSerializer,DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
+from .models import DocumentoVehiculo, MotivoMantenimiento, Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
+from .serializers import (DocumentoVehiculoSerializer, DetalleMantenimientoSerializer, MotivoMantenimientoSerializer, NotificacionUsuarioSerializer,DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
 from django.utils.decorators import method_decorator
 from rest_framework.generics import RetrieveAPIView
 from django.views.decorators.csrf import csrf_exempt
@@ -365,13 +365,33 @@ class UsuarioDetailAPIView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
 
+class DocumentosChoferListAPIView(ListAPIView):
+    queryset = DocumentoChofer.objects.all()
+    serializer_class = DocumentoChoferSerializer
 
+class VehiculoCreateView(CreateAPIView):
+    queryset = Vehiculo.objects.all()
+    serializer_class = VehiculoSerializer
 
+class DocumentosVehiculoListAPIView(ListAPIView):
+    serializer_class = DocumentoVehiculoSerializer
 
+    def get_queryset(self):
+        vehiculo_id = self.request.query_params.get('vehiculo')
+        queryset = DocumentoVehiculo.objects.all()
+        if vehiculo_id:
+            queryset = queryset.filter(vehiculo_id=vehiculo_id)
+        return queryset
 
+class DocumentosVehiculoListAPIView(ListAPIView):
+    serializer_class = DocumentoVehiculoSerializer
 
-
-
+    def get_queryset(self):
+        vehiculo_id = self.request.query_params.get('vehiculo')
+        queryset = DocumentoVehiculo.objects.all()
+        if vehiculo_id:
+            queryset = queryset.filter(vehiculo_id=vehiculo_id)
+        return queryset
 
 
 

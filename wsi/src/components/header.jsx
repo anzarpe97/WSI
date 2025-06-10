@@ -13,37 +13,47 @@ const Header = ({
 }) => {
   const navigate = useNavigate();
 
-  // Estilo dinámico para cuando se pasa un tamaño personalizado
   const iconStyle = customIconSize ? {
     fontSize: customIconSize,
     width: customIconSize,
     height: customIconSize
   } : {};
 
-  // --- Lógica de notificaciones (copiada de Home-Header) ---
   const [displayName, setDisplayName] = useState(userName);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationRef = useRef(null);
   const [notifications, setNotifications] = useState([]);
+  const pollingRef = useRef(null);
 
-  // Obtener notificaciones del backend
   useEffect(() => {
     if (!showIcons) return;
-    fetch('http://localhost:8000/api/notificaciones/', {
-      headers: {
-        'Authorization': `Token ${localStorage.getItem('token')}`
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        setNotifications(data.map(n => ({
-          id: n.id,
-          title: n.notificacion.titulo,
-          content: n.notificacion.mensaje,
-          time: new Date(n.notificacion.fecha_creacion).toLocaleString(),
-          read: n.leida
-        })));
-      });
+
+    // Función para obtener notificaciones
+    const fetchNotifications = () => {
+      fetch('http://localhost:8000/api/notificaciones/', {
+        headers: {
+          'Authorization': `Token ${localStorage.getItem('token')}`
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          setNotifications(data.map(n => ({
+            id: n.id,
+            title: n.notificacion.titulo,
+            content: n.notificacion.mensaje,
+            time: new Date(n.notificacion.fecha_creacion).toLocaleString(),
+            read: n.leida
+          })));
+        })
+        .catch(error => console.error("Error cargando notificaciones:", error));
+    };
+
+    fetchNotifications(); // Llama al cargar
+
+    // Polling cada 10 segundos
+    pollingRef.current = setInterval(fetchNotifications, 15000);
+
+    return () => clearInterval(pollingRef.current);
   }, [showIcons]);
 
   useEffect(() => {
@@ -87,7 +97,8 @@ const Header = ({
         if (res.ok) {
           setNotifications(prev => prev.filter(notification => notification.id !== id));
         }
-      });
+      })
+      .catch(error => console.error("Error marcando como leída:", error));
   };
 
   const markAllAsRead = () => {
@@ -102,9 +113,9 @@ const Header = ({
         if (res.ok) {
           setNotifications([]);
         }
-      });
+      })
+      .catch(error => console.error("Error marcando todas como leídas:", error));
   };
-  // --- Fin lógica de notificaciones ---
 
   return (
     <header className="header">
@@ -188,9 +199,15 @@ const Header = ({
                       ))}
                   </div>
 
-                  <div className="notification-footer">
-                    <button className="view-all">Ver todas las notificaciones</button>
-                  </div>
+                  <button
+                    className="view-all"
+                    onClick={() => {
+                      setNotificationsOpen(false);
+                      navigate('/notificaciones');
+                    }}
+                  >
+                    Ver todas las notificaciones
+                  </button>
                 </div>
               )}
             </div>

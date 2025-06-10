@@ -62,7 +62,7 @@ const MenuGestionDocumentos = () => {
             <FontAwesomeIcon icon={faTruckMoving} size="3x" />
             <p>Gestión Documentos Vehículos</p>
           </Link>
-          <Link to="/registro-documentos-choferes" className="menu-documentos-card" id="menu-documentos-card-docvehiculo">
+          <Link to="/gestion-documento-choferes" className="menu-documentos-card" id="menu-documentos-card-docvehiculo">
             <FontAwesomeIcon icon={faUserGear} size="3x" />
             <p>Gestión Documentos Choferes</p>
           </Link>

@@ -8,7 +8,7 @@ import {
   faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
-import '../styles/home-header.css'; // Asegúrate de tener este archivo CSS
+import '../styles/home-header.css';
 
 const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) => {
   const navigate = useNavigate();
@@ -66,7 +66,7 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
     setNotificationsOpen(!notificationsOpen);
   };
 
-    const markAsRead = (id) => {
+  const markAsRead = (id) => {
     fetch(`http://localhost:8000/api/notificaciones/${id}/marcar-leida/`, {
       method: 'PATCH',
       headers: {
@@ -76,7 +76,6 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
     })
     .then(res => {
       if (res.ok) {
-        // Elimina la notificación del estado para que desaparezca del listado
         setNotifications(prev => prev.filter(notification => notification.id !== id));
       }
     });
@@ -109,7 +108,7 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
       
       {showIcons && (
         <div className="header-right">
-          <div className="icon-wrapper" ref={notificationRef}>
+          <div className="icon-wrapper" ref={notificationRef} style={{ position: 'relative' }}>
             <FontAwesomeIcon 
               icon={faBell} 
               className={`header-icon ${notifications.some(n => !n.read) ? 'has-unread' : ''}`}
@@ -117,6 +116,9 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
               aria-label="Notificaciones"
               onClick={toggleNotifications}
             />
+            {notifications.some(n => !n.read) && (
+              <span className="notification-badge"></span>
+            )}
             {notificationsOpen && (
               <div className="notification-tray">
                 <div className="notification-header">
@@ -161,7 +163,15 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
               </div>
                 
                 <div className="notification-footer">
-                  <button className="view-all">Ver todas las notificaciones</button>
+                  <button
+                    className="view-all"
+                    onClick={() => {
+                      setNotificationsOpen(false);
+                      navigate('/notificaciones');
+                    }}
+                  >
+                    Ver todas las notificaciones
+                  </button>
                 </div>
               </div>
             )}

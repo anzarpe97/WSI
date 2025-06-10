@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from WSI_API.views import UsuarioDetailAPIView, MantenimientoDetailAPIView, MotivoMantenimientoListAPIView, MarcarTodasNotificacionesLeidasView, DocumentosChoferListAPIView, MarcarNotificacionLeidaView, NotificacionesUsuarioView, BuscarChoferPorCedulaAPIView, DocumentoChoferCreateAPIView, VehiculoUpdateView, MantenimientoListAPIView, CrearMantenimientoAPIView,  BuscarVehiculoPorPlacaAPIView, UsuarioListAPIView, VehiculoMecanicoComboAPIView, VehiculoDetailView, VehiculoListView,VehiculoCreateView, CustomLoginView, VerifyTokenView, registrar_usuario, get_csrf_token,RegistroUsuarioAPIView
-
+from WSI_API.views import DocumentosVehiculoListAPIView, UsuarioDetailAPIView, MantenimientoDetailAPIView, MotivoMantenimientoListAPIView, MarcarTodasNotificacionesLeidasView, DocumentosChoferListAPIView, MarcarNotificacionLeidaView, NotificacionesUsuarioView, BuscarChoferPorCedulaAPIView, DocumentoChoferCreateAPIView, VehiculoUpdateView, MantenimientoListAPIView, CrearMantenimientoAPIView,  BuscarVehiculoPorPlacaAPIView, UsuarioListAPIView, VehiculoMecanicoComboAPIView, VehiculoDetailView, VehiculoListView,VehiculoCreateView, CustomLoginView, VerifyTokenView, registrar_usuario, get_csrf_token,RegistroUsuarioAPIView
+#J503199084
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/login/', CustomLoginView.as_view(), name='custom_login'),
@@ -20,6 +20,9 @@ urlpatterns = [
     path('api/detalle-mantenimiento/<int:pk>/', MantenimientoDetailAPIView.as_view(), name='mantenimiento-detail'),
     path('api/mantenimientos/crear/', CrearMantenimientoAPIView.as_view(), name='crear-mantenimiento'),
     path('api/documentos-choferes/', DocumentoChoferCreateAPIView.as_view(), name='documentos-choferes-create'),
+    path('api/vehiculos/registrar/', VehiculoCreateView.as_view(), name='registrar-vehiculo'),
+    path('api/documentos-vehiculos-verificar/', DocumentosVehiculoListAPIView.as_view(), name='documentos-vehiculos-list'),
+    path('api/documentos-choferes-verificar/', DocumentosChoferListAPIView.as_view(), name='documentos-choferes-list'),
     path('api/choferes/', BuscarChoferPorCedulaAPIView.as_view(), name='buscar-chofer-por-cedula'),
     path('api/documentos-choferes-verificar/', DocumentosChoferListAPIView.as_view(), name='documentos-choferes-list'),
     path('api/motivos/', MotivoMantenimientoListAPIView.as_view(), name='motivo-mantenimiento-list'),
