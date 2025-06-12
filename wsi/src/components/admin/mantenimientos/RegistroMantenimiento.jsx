@@ -5,9 +5,9 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "../../styles/RegistroMantenimiento.css";
 import bgImage from '../../assets/bg-login.jpg';
-import Header from '../header';
+import Header from '../../header';
 import { useNavigate } from "react-router-dom";
-import { verifyToken } from "../../services/auth";
+import { verifyToken } from "../../../services/auth";
 
 const RegistroMantenimiento = () => {
   // --- Manejo de sesión e inactividad ---

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/RegistroEmpleado.css";
-import Header from '../header';
+import Header from '../../header';
 import bgImage from "../../assets/bg-login.jpg";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBell, faUserCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';

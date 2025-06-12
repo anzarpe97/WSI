@@ -1,21 +1,58 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Header from '../header';
-import { useNavigate } from 'react-router-dom';
+import Header from '../../header';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import bgImage from '../../assets/bg-login.jpg';
 import '../../styles/RegistroVehiculo.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { verifyToken } from '../../services/auth';
+import { verifyToken } from '../../../services/auth';
 
-const RegistroVehiculo = () => {
+const EditarVehiculo = () => {
   const navigate = useNavigate();
-  const inactivityTimer = useRef(null);
+  const { id } = useParams();
 
-  // Verificación de token, rol y temporizador de inactividad
+  const [form, setForm] = useState({
+    placaVehiculo: '',
+    kilometraje: '',
+    estadoVehiculo: '',
+    modeloVehiculo: '',
+    motorVehiculo: '',
+    anoVehiculo: '',
+    marcaVehiculo: '',
+    colorVehiculo: '',
+    tipologia: '',
+    capacidadCombustible: '',
+    tipoCombustible: '',
+    capacidadCarga: '',
+    costo: '',
+  });
+
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  // --- INACTIVIDAD ---
+  const inactivityTimer = useRef(null);
+  const [showInactivityModal, setShowInactivityModal] = useState(false);
+
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    if (isInactivityLogout) {
+      setShowInactivityModal(true);
+      setTimeout(() => {
+        navigate('/login', {
+          replace: true,
+          state: { sessionExpired: true }
+        });
+      }, 2500);
+    } else {
+      navigate('/login', { replace: true });
+    }
+  };
+
+  // Verificar rol del usuario al montar
   useEffect(() => {
-    document.title = "WSI - Registro Vehículo";
-    const check = async () => {
+    const checkAuth = async () => {
       try {
         const result = await verifyToken();
         if (result.isValid && result.user) {
@@ -37,54 +74,63 @@ const RegistroVehiculo = () => {
         logout();
       }
     };
-    check();
+    checkAuth();
+  }, [navigate]);
+  // --- FIN VERIFICACIÓN ROL ---
 
-    // --- Temporizador de inactividad ---
+  useEffect(() => {
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
     const resetTimer = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
       inactivityTimer.current = setTimeout(() => {
-        toast.info('Sesión cerrada por inactividad');
         logout(true);
       }, 1200000); // 20 minutos
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
-
     return () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
       events.forEach(event => window.removeEventListener(event, resetTimer));
     };
-    // --- Fin temporizador ---
-    // eslint-disable-next-line
   }, [navigate]);
+  // --- FIN INACTIVIDAD ---
 
-  const logout = (isInactivityLogout = false) => {
-    localStorage.removeItem('token');
-    navigate('/login', {
-      replace: true,
-      state: isInactivityLogout ? { sessionExpired: true } : undefined
-    });
-  };
-
-  const [form, setForm] = useState({
-    placaVehiculo: '',
-    kilometraje: '',
-    estadoVehiculo: '',
-    modeloVehiculo: '',
-    motorVehiculo: '',
-    anoVehiculo: '',
-    marcaVehiculo: '',
-    colorVehiculo: '',
-    tipologia: '',
-    capacidadCombustible: '',
-    tipoCombustible: '',
-    capacidadCarga: '',
-    costo: '',
-  });
-
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  // Cargar datos del vehículo al montar
+  useEffect(() => {
+    document.title = "WSI - Editar Vehículo";
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    const fetchVehiculo = async () => {
+      try {
+        const res = await axios.get(`http://localhost:8000/api/vehiculos/${id}/`, {
+          headers: { Authorization: `Token ${token}` }
+        });
+        const v = res.data;
+        setForm({
+          placaVehiculo: v.placa || '',
+          kilometraje: v.kilometraje?.toString() || '',
+          estadoVehiculo: v.estado || '',
+          modeloVehiculo: v.modelo || '',
+          motorVehiculo: v.motor || '',
+          anoVehiculo: v.anio?.toString() || '',
+          marcaVehiculo: v.marca || '',
+          colorVehiculo: v.color || '',
+          tipologia: v.tipologia || '',
+          capacidadCombustible: v.capacidad_combustible?.toString() || '',
+          tipoCombustible: v.tipo_combustible || '',
+          capacidadCarga: v.capacidad_carga?.toString() || '',
+          costo: v.costo?.toString() || '',
+        });
+      } catch (error) {
+        toast.error('No se pudo cargar el vehículo');
+        navigate('/ver-vehiculos');
+      }
+    };
+    fetchVehiculo();
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -159,9 +205,10 @@ const RegistroVehiculo = () => {
       newErrors.tipologia = 'La tipología no puede tener más de 20 caracteres';
     }
 
-    if (!form.capacidadCombustible.trim()) {
+    // Validación mejorada para campos numéricos
+    if (form.capacidadCombustible === '' || form.capacidadCombustible === null) {
       newErrors.capacidadCombustible = 'La capacidad de combustible es requerida';
-    } else if (!/^\d+$/.test(form.capacidadCombustible) || Number(form.capacidadCombustible) <= 0) {
+    } else if (isNaN(Number(form.capacidadCombustible)) || Number(form.capacidadCombustible) <= 0) {
       newErrors.capacidadCombustible = 'Debe ser un número positivo';
     }
 
@@ -169,15 +216,15 @@ const RegistroVehiculo = () => {
       newErrors.tipoCombustible = 'El tipo de combustible es requerido';
     }
 
-    if (!form.capacidadCarga.trim()) {
+    if (form.capacidadCarga === '' || form.capacidadCarga === null) {
       newErrors.capacidadCarga = 'La capacidad de carga es requerida';
-    } else if (!/^\d+$/.test(form.capacidadCarga) || Number(form.capacidadCarga) <= 0) {
+    } else if (isNaN(Number(form.capacidadCarga)) || Number(form.capacidadCarga) <= 0) {
       newErrors.capacidadCarga = 'Debe ser un número positivo';
     }
 
-    if (!form.costo.trim()) {
+    if (form.costo === '' || form.costo === null) {
       newErrors.costo = 'El costo es requerido';
-    } else if (!/^\d+$/.test(form.costo) || Number(form.costo) <= 0) {
+    } else if (isNaN(Number(form.costo)) || Number(form.costo) <= 0) {
       newErrors.costo = 'Debe ser un número positivo';
     }
 
@@ -186,91 +233,70 @@ const RegistroVehiculo = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!validateForm()) return;
+    e.preventDefault();
+    if (!validateForm()) return;
 
-  setErrors({});
-  setLoading(true);
-
-  try {
-    const token = localStorage.getItem('token');
-    const data = {
-      placa: form.placaVehiculo,
-      kilometraje: Number(form.kilometraje),
-      estado: form.estadoVehiculo,
-      marca: form.marcaVehiculo,
-      modelo: form.modeloVehiculo,
-      motor: form.motorVehiculo,
-      anio: Number(form.anoVehiculo),
-      color: form.colorVehiculo,
-      tipologia: form.tipologia,
-      capacidad_carga: Number(form.capacidadCarga),
-      capacidad_combustible: Number(form.capacidadCombustible),
-      costo: Number(form.costo),
-      tipo_combustible: form.tipoCombustible,
-    };
-
-    await axios.post(
-      'http://localhost:8000/api/vehiculos/registrar/',
-      data,
-      {
-        headers: {
-          Authorization: `Token ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    toast.success('Vehículo registrado exitosamente');
-    setForm({
-      placaVehiculo: '',
-      kilometraje: '',
-      estadoVehiculo: '',
-      modeloVehiculo: '',
-      motorVehiculo: '',
-      anoVehiculo: '',
-      marcaVehiculo: '',
-      colorVehiculo: '',
-      tipologia: '',
-      capacidadCombustible: '',
-      tipoCombustible: '',
-      capacidadCarga: '',
-      costo: '',
-    });
     setErrors({});
-  } catch (error) {
-    if (error.response && error.response.data) {
-      const data = error.response.data;
-      setErrors(data);
-      // Mostrar todos los mensajes del backend en un toast
-      Object.entries(data).forEach(([campo, mensajes]) => {
-        if (Array.isArray(mensajes)) {
-          mensajes.forEach(msg => toast.error(`Error: ${msg}`));
-        } else {
-          toast.error(`Error: ${mensajes}`);
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const data = {
+        placa: form.placaVehiculo,
+        kilometraje: Number(form.kilometraje),
+        estado: form.estadoVehiculo,
+        marca: form.marcaVehiculo,
+        modelo: form.modeloVehiculo,
+        motor: form.motorVehiculo,
+        anio: Number(form.anoVehiculo),
+        color: form.colorVehiculo,
+        tipologia: form.tipologia,
+        capacidad_carga: Number(form.capacidadCarga),
+        capacidad_combustible: Number(form.capacidadCombustible),
+        costo: Number(form.costo),
+        tipo_combustible: form.tipoCombustible,
+      };
+
+      await axios.put(
+        `http://localhost:8000/api/vehiculos/${id}/`,
+        data,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            'Content-Type': 'application/json',
+          },
         }
-      });
-    } else {
-      toast.error('Error de conexión con el servidor');
+      );
+
+      toast.success('Vehículo actualizado exitosamente');
+      setErrors({});
+      navigate('/ver-vehiculos');
+    } catch (error) {
+      if (error.response && error.response.data) {
+        setErrors(error.response.data);
+        toast.error('Error al actualizar el vehículo');
+      } else {
+        toast.error('Error de conexión con el servidor');
+      }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
   return (
     <div className="home-wrapper">
       <Header title="WSI" />
 
       <div className="registro-empleado-bg">
         <img
-                   src={bgImage}
-                   alt="Fondo Detalle Mantenimiento"
-                   onError={(e) => (e.target.style.display = 'none')}
-                 />
+          src={bgImage}
+          alt="Fondo Editar Vehículo"
+          onError={(e) => (e.target.style.display = 'none')}
+        />
       </div>
 
       <div className="registro-empleado-container">
-        <h2 className="titulo">Registro Vehículo</h2>
+        <h2 className="titulo">Editar Vehículo</h2>
         <form className="formulario" onSubmit={handleSubmit} noValidate>
           <div className="fila">
             <div className="campo">
@@ -284,6 +310,7 @@ const RegistroVehiculo = () => {
                 onChange={handleChange}
                 maxLength={10}
                 required
+                disabled // No editable
               />
               {errors.placaVehiculo && <small className="error">{errors.placaVehiculo}</small>}
             </div>
@@ -473,18 +500,29 @@ const RegistroVehiculo = () => {
           <button type="submit" className="boton-registrar" disabled={loading}>
             {loading ? (
               <>
-                Registrando...
+                Guardando...
                 <span className="loader-with-text"></span>
               </>
             ) : (
-              'Registrar Vehículo'
+              'Guardar Cambios'
             )}
           </button>
         </form>
       </div>
       <ToastContainer position="top-right" autoClose={6000} />
+
+      {/* MODAL DE INACTIVIDAD */}
+      {showInactivityModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Sesión cerrada</h2>
+            <p>Tu sesión se ha cerrado por inactividad.<br />Serás redirigido al inicio de sesión.</p>
+            <div className="modal-loader"></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default RegistroVehiculo;
+export default EditarVehiculo;
