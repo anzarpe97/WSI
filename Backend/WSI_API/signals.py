@@ -78,7 +78,7 @@ def crear_notificacion_documento_vehiculo(sender, instance, created, **kwargs):
     if created:
         notificacion = NotificacionGlobal.objects.create(
             titulo="Nuevo Documento de Vehículo Registrado",
-            mensaje=f"Se ha registrado un documento para el vehículo {instance.vehiculo.placa} ({instance.vehiculo.marca} {instance.vehiculo.modelo})",
+            mensaje=f"Se ha registrado un documento para el vehículo {instance.Vehiculo.placa} ({instance.Vehiculo.marca} {instance.Vehiculo.modelo})",
             tipo="DOCUMENTO_VEHICULO",
             rol_destino='0,1,2'
         )

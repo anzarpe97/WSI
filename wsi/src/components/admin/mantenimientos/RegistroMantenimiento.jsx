@@ -195,53 +195,6 @@ const RegistroMantenimiento = () => {
     fetchMecanicos();
   }, []);
 
-  // Validar suministros
-  const validarSuministros = () => {
-    return suministros.every(suministro => {
-      return (
-        suministro.detalle.trim() !== '' &&
-        suministro.cantidad !== '' &&
-        suministro.precio !== ''
-      );
-    });
-  };
-
-  // Manejar cambios en suministros
-  const handleSuministroChange = (index, field, value) => {
-    const newSuministros = [...suministros];
-    newSuministros[index][field] = value;
-
-    if (field === 'cantidad' || field === 'precio') {
-      const cantidad = parseFloat(newSuministros[index].cantidad) || 0;
-      const precio = parseFloat(newSuministros[index].precio) || 0;
-      newSuministros[index].total = (cantidad * precio).toFixed(2);
-    }
-
-    setSuministros(newSuministros);
-  };
-
-  // Agregar nuevo suministro
-  const addSuministro = () => {
-    if (!validarSuministros()) {
-      toast.error('Complete todos los campos del suministro actual antes de agregar uno nuevo');
-      return;
-    }
-
-    setSuministros([...suministros, {
-      detalle: '',
-      cantidad: '',
-      precio: '',
-      total: '0.00'
-    }]);
-  };
-
-  // Eliminar suministro
-  const removeSuministro = (index) => {
-    if (suministros.length > 1) {
-      const newSuministros = suministros.filter((_, i) => i !== index);
-      setSuministros(newSuministros);
-    }
-  };
 
   // Validar fechas
   const validateDates = () => {
@@ -307,12 +260,6 @@ const RegistroMantenimiento = () => {
       return;
     }
 
-    if (!validarSuministros()) {
-      toast.error('Complete todos los campos de suministros');
-      setIsSubmitting(false);
-      return;
-    }
-
     if (!motivo || !tipoMantenimiento || !mecanico) {
       toast.error('Complete todos los campos obligatorios');
       setIsSubmitting(false);
@@ -335,45 +282,12 @@ const RegistroMantenimiento = () => {
           fecha_finalizado: fechaLimite || null,
           tipo_mantenimiento: tipoMantenimiento,
           estado: "ACTIVO",
-          observaciones,
-          suministros: suministros.map(s => ({
-            motivo: s.detalle,
-            cantidad: s.cantidad,
-            precio_und: s.precio,
-            total: (parseFloat(s.cantidad || 0) * parseFloat(s.precio || 0)).toFixed(2)
-          }))
+          observaciones
         })
       });
 
       if (response.ok) {
         toast.success('Orden de mantenimiento creada correctamente');
-
-        // ---- Crear notificación para todos los usuarios ----
-        try {
-          const notificacionData = {
-            mensaje: `Nueva orden de mantenimiento registrada para el vehículo ${vehiculoInfo.placa}.`,
-            tipo: 'NUEVO_MANTENIMIENTO'
-          };
-          const notificacionResponse = await fetch('http://localhost:8000/api/notificaciones/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Token ${token}`
-            },
-            body: JSON.stringify(notificacionData)
-          });
-
-          if (notificacionResponse.ok) {
-            console.log('Notificación de mantenimiento creada exitosamente.');
-          } else {
-            const errorData = await notificacionResponse.text();
-            console.error('Error al crear la notificación de mantenimiento:', errorData);
-          }
-        } catch (notifError) {
-          console.error('Error de red al crear la notificación de mantenimiento:', notifError);
-        }
-        // ---- Fin notificación ----
-
         resetForm();
       } else {
         let errorMessage = 'Error al crear la orden. Intente nuevamente.';
@@ -543,80 +457,6 @@ const RegistroMantenimiento = () => {
                   </select>
                 </div>
               </div>
-            </div>
-
-            {/* Sección de suministros */}
-            <div className="registroMantenimiento-section">
-              <h3 className="registroMantenimiento-sectionTitle">Suministros</h3>
-
-              <div className="registroMantenimiento-supplies">
-                {suministros.map((suministro, index) => (
-                  <div key={index} className="registroMantenimiento-supplyItem">
-                    <div className="registroMantenimiento-supplyField">
-                      <label>Detalle</label>
-                      <input
-                        type="text"
-                        value={suministro.detalle}
-                        onChange={(e) => handleSuministroChange(index, 'detalle', e.target.value)}
-                        placeholder="Descripción del material"
-                        required
-                      />
-                    </div>
-
-                    <div className="registroMantenimiento-supplyField">
-                      <label>Cantidad</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={suministro.cantidad}
-                        onChange={(e) => handleSuministroChange(index, 'cantidad', e.target.value)}
-                        placeholder="0"
-                        required
-                      />
-                    </div>
-
-                    <div className="registroMantenimiento-supplyField">
-                      <label>Precio Unitario</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={suministro.precio}
-                        onChange={(e) => handleSuministroChange(index, 'precio', e.target.value)}
-                        placeholder="0.00"
-                        required
-                      />
-                    </div>
-
-                    <div className="registroMantenimiento-supplyField registroMantenimiento-total">
-                      <label>Total</label>
-                      <div className="registroMantenimiento-totalDisplay">
-                        ${suministro.total}
-                      </div>
-                    </div>
-
-                    {suministros.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeSuministro(index)}
-                        className="registroMantenimiento-deleteBtn"
-                        title="Eliminar suministro"
-                      >
-                        <FontAwesomeIcon icon={faTrashAlt} />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={addSuministro}
-                className="registroMantenimiento-addBtn"
-              >
-                + Agregar Suministro
-              </button>
             </div>
 
             {/* Sección de observaciones */}

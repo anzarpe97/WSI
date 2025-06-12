@@ -21,6 +21,8 @@ import DetalleMantenimiento from './components/admin/mantenimientos/DetalleMante
 import DetalleEmpleado from './components/admin/empleados/DetalleEmpleados';
 import Notificaciones from './components/Notificaciones';
 import GestionDocumentoChoferes from './components/admin/documentos-choferes/GestionDocumentoChoferes';
+import FinalizarMantenimiento from './components/admin/mantenimientos/FinalizarMantinimento';
+
 
 const App = () => {
   return (
@@ -46,7 +48,8 @@ const App = () => {
         <Route path="/editar-vehiculo/:id" element={<EditarVehiculo />} />
         <Route path="/ver-vehiculos" element={<VerVehiculos />} />
         <Route path="/detalle-vehiculo/:id" element={<DetalleVehiculo />} />
-        {/* RUTAS MANTENIMIENTO ADMINISTRADOR*/}        
+        {/* RUTAS MANTENIMIENTO ADMINISTRADOR*/}     
+        <Route path="/finalizar-mantenimiento/:id" element={<FinalizarMantenimiento />} />   
         <Route path="/registro-mantenimiento" element={<RegistroMantenimiento />} />
         <Route path="/gestion-mantenimiento" element={<GestionMantenimiento />} />
         <Route path="/detalle-mantenimiento/:id" element={<DetalleMantenimiento />} />

@@ -221,7 +221,7 @@ class DocumentoVehiculo(models.Model):
     numero_documento = models.CharField(max_length=50, null=False)
     fecha_emision = models.DateField()
     fecha_caducidad = models.DateField()
-    archivo = models.FileField(upload_to='documentos_choferes/', null=False)
+    archivo = models.FileField(upload_to='documentos_vehiculos/', null=False)
     fecha_subida = models.DateTimeField(auto_now_add=True)
 
 # MODELO DE NOTIFICACIONES

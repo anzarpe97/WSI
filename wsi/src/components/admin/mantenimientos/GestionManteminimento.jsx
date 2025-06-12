@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faPen, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faCheck, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
 import '../../../styles/GestionMantenimiento.css';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../header';
@@ -107,13 +107,14 @@ const GestionMantenimiento = () => {
     navigate('/registro-mantenimiento');
   };
 
+  // Redirige al formulario de finalización
+  const handleTerminarMantenimiento = (id) => {
+    navigate(`/finalizar-mantenimiento/${id}`);
+  };
+
   // Envía el id del mantenimiento seleccionado a la ruta de detalles
   const handleVerDetalles = (id) => {
     navigate(`/detalle-mantenimiento/${id}`);
-  };
-
-  const handleEditarMantenimiento = (id) => {
-    navigate(`/editar-mantenimiento/${id}`);
   };
 
   const handleEliminarMantenimiento = (id) => {
@@ -232,11 +233,11 @@ const GestionMantenimiento = () => {
                           onClick={() => handleVerDetalles(mantenimiento.id_mantenimiento)}
                         />
                         <FontAwesomeIcon 
-                          icon={faPen} 
+                          icon={faCheck} 
                           size="lg" 
                           className="mantenimiento-accion-icon" 
-                          title="Editar mantenimiento"
-                          onClick={() => handleEditarMantenimiento(mantenimiento.id_mantenimiento)}
+                          title="Marcar como terminado"
+                          onClick={() => handleTerminarMantenimiento(mantenimiento.id_mantenimiento)}
                         />
                         <FontAwesomeIcon 
                           icon={faTrashAlt} 
