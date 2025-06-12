@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
-import '../../styles/VerVehiculos.css';
+import '../../../styles/VerVehiculos.css';
 import { useNavigate } from 'react-router-dom';
-import Header from '../header';
-import bgImage from '../../assets/bg-login.jpg';
-import { verifyToken } from '../../services/auth';
-import { getVehiculos } from '../../services/vehiculos';
+import Header from '../../header';
+import bgImage from '../../../assets/bg-login.jpg';
+import { verifyToken } from '../../../services/auth';
+import { getVehiculos } from '../../../services/vehiculos';
 import { toast } from 'react-toastify';
 
 const PAGE_SIZE = 5;

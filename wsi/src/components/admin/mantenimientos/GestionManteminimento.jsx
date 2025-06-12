@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
-import '../../styles/GestionMantenimiento.css';
+import '../../../styles/GestionMantenimiento.css';
 import { useNavigate } from 'react-router-dom';
-import Header from '../header';
-import bgImage from '../../assets/bg-login.jpg';
+import Header from '../../header';
+import bgImage from '../../../assets/bg-login.jpg';
 import { toast } from 'react-toastify';
-import { verifyToken } from '../../services/auth';
+import { verifyToken } from '../../../services/auth';
 
 const PAGE_SIZE = 5; // Cambia este valor si quieres más o menos filas por página
 
@@ -133,7 +133,7 @@ const GestionMantenimiento = () => {
   };
 
   // Formatear el número de orden como OMT-00{id}
-  const formatNumeroOrden = (id) => `OMT-00${id}`;
+  const formatNumeroOrden = (id) => `OMT-0${id}`;
 
   // Cambiar de página
   const handlePagina = (nuevaPagina) => {

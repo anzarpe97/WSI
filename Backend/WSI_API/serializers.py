@@ -282,7 +282,7 @@ class EmpleadoSerializer(serializers.ModelSerializer):
 class PlacaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehiculo
-        fields = ['id_vehiculo', 'placa', 'modelo', 'marca']
+        fields = ['id_vehiculo', 'placa', 'modelo', 'marca','anio']
 
 class MantenimientoSerializer(serializers.ModelSerializer):
     motivo = serializers.CharField(source='id_motivo.motivo', read_only=True)

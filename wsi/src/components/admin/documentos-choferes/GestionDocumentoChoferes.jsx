@@ -2,12 +2,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faTrashAlt, faPlus, faFileAlt } from '@fortawesome/free-solid-svg-icons';
-import '../../styles/GestionDocumentoChoferes.css';
+import '../../../styles/GestionDocumentoChoferes.css';
 import { useNavigate } from 'react-router-dom';
-import Header from '../header';
-import bgImage from '../../assets/bg-login.jpg';
+import Header from '../../header';
+import bgImage from '../../../assets/bg-login.jpg';
 import { toast } from 'react-toastify';
-import { verifyToken } from '../../services/auth';
+import { verifyToken } from '../../../services/auth';
 
 const PAGE_SIZE = 5;
 

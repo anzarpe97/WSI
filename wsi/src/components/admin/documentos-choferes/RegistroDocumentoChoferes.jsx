@@ -3,17 +3,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import "../../styles/RegistroDocumentosVehiculos.css";
-import bgImage from '../../assets/bg-login.jpg'
-import Header from '../header';
+import "../../../styles/RegistroDocumentoChoferes.css";
+import bgImage from '../../../assets/bg-login.jpg'
+import Header from '../../header';
 import { useNavigate } from "react-router-dom";
-import { verifyToken } from "../../services/auth";
+import { verifyToken } from "../../../services/auth";
 
-const RegistroDocumentosVehiculos = () => {
-  const [placa, setPlaca] = useState('');
-  const [vehiculoInfo, setVehiculoInfo] = useState(null);
+const RegistroDocumentoChoferes = () => {
+  const [cedula, setCedula] = useState('');
+  const [choferInfo, setChoferInfo] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
-  const [placaError, setPlacaError] = useState('');
+  const [cedulaError, setCedulaError] = useState('');
   const [tipoDocumento, setTipoDocumento] = useState('');
   const [documentNumber, setDocumentNumber] = useState('');
   const [fechaEmision, setFechaEmision] = useState('');
@@ -40,6 +40,7 @@ const RegistroDocumentosVehiculos = () => {
       try {
         const result = await verifyToken();
         if (result.isValid && result.user) {
+          // Si el rol no es 0, redirige al home correspondiente
           if (String(result.user.rol) !== "0") {
             if (String(result.user.rol) === "1") {
               navigate('/supervisorHome', { replace: true });
@@ -58,6 +59,7 @@ const RegistroDocumentosVehiculos = () => {
       }
     };
     checkAuth();
+    // --- Temporizador de inactividad ---
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
     const resetTimer = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
@@ -73,66 +75,41 @@ const RegistroDocumentosVehiculos = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
       events.forEach(event => window.removeEventListener(event, resetTimer));
     };
+    // --- Fin temporizador ---
   }, [navigate]);
+  // --- Fin Logout y temporizador ---
 
-  document.title = "WSI - Registro Documentos Vehículos";
+  const validarCedula = (cedula) => /^\d{7,8}$/.test(cedula);
 
-  const handlePlacaSearch = async () => {
-    if (!placa.trim()) {
-      setPlacaError('Por favor ingrese una placa');
+  document.title = "WSI - Registro Documentos Choferes";
+
+  const handleCedulaSearch = async () => {
+    if (!cedula.trim()) {
+      setCedulaError('Por favor ingrese una cédula');
+      return;
+    }
+    if (!validarCedula(cedula)) {
+      setCedulaError('Formato inválido (debe contener entre 7 - 8 dígitos numéricos)');
       return;
     }
 
-    // Limpiar y convertir a mayúsculas antes de buscar
-    const placaLimpia = placa.replace(/\s+/g, '').toUpperCase();
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      toast.error('Sesión expirada. Inicie sesión nuevamente.');
-      logout();
-      return;
-    }
-
-    setPlacaError('');
+    setCedulaError('');
     setIsSearching(true);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/vehiculos/?placa=${placaLimpia}`, {
-        headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (response.status === 401) {
-        toast.error('Sesión expirada. Inicie sesión nuevamente.');
-        logout();
-        return;
-      }
+      const response = await fetch(`http://localhost:8000/api/choferes/?cedula=${cedula}&rol=2`);
       if (response.ok) {
         const data = await response.json();
-        // Si el backend devuelve una lista, toma el primer elemento
-        const vehiculo = Array.isArray(data) ? data[0] : data;
-        if (vehiculo && vehiculo.id && vehiculo.marca && vehiculo.modelo) {
-          setVehiculoInfo({
-            id: vehiculo.id,
-            marca: vehiculo.marca,
-            modelo: vehiculo.modelo,
-            año: vehiculo.año
+        if (data && data.id && data.nombre && data.apellido) {
+          setChoferInfo({
+            id: data.id,
+            nombre: data.nombre,
+            apellido: data.apellido
           });
-          toast.success("Vehículo encontrado");
+          toast.success("Chofer encontrado");
 
-          // Consultar documentos ya registrados por el vehículo
-          const docsResponse = await fetch(`http://localhost:8000/api/documentos-vehiculos-verificar/?vehiculo=${vehiculo.id}`, {
-            headers: {
-              'Authorization': `Token ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-          if (docsResponse.status === 401) {
-            toast.error('Sesión expirada. Inicie sesión nuevamente.');
-            logout();
-            return;
-          }
+          // Consultar documentos ya registrados por el chofer
+          const docsResponse = await fetch(`http://localhost:8000/api/documentos-choferes-verificar/?chofer=${data.id}`);
           if (docsResponse.ok) {
             const docsData = await docsResponse.json();
             setDocumentosRegistrados(docsData.map(doc => doc.tipo_documento));
@@ -140,18 +117,18 @@ const RegistroDocumentosVehiculos = () => {
             setDocumentosRegistrados([]);
           }
         } else {
-          setVehiculoInfo(null);
-          setPlacaError("La placa no ha sido registrada");
+          setChoferInfo(null);
+          setCedulaError("El número de cédula no ha sido registrado");
           setDocumentosRegistrados([]);
         }
       } else {
-        setVehiculoInfo(null);
-        setPlacaError("La placa no ha sido registrada");
+        setChoferInfo(null);
+        setCedulaError("El número de cédula no ha sido registrado");
         setDocumentosRegistrados([]);
       }
     } catch {
-      setVehiculoInfo(null);
-      setPlacaError("Error al buscar vehículo");
+      setChoferInfo(null);
+      setCedulaError("Error al buscar chofer");
       setDocumentosRegistrados([]);
     } finally {
       setIsSearching(false);
@@ -163,14 +140,14 @@ const RegistroDocumentosVehiculos = () => {
     if (!tipo || !emision) return '';
     const fecha = new Date(emision);
     let anios = 0;
-    if (tipo === 'TARJETA_PROPIEDAD') anios = 10;
-    if (tipo === 'SOAT') anios = 1;
-    if (tipo === 'TECNOMECANICA') anios = 1;
-    if (tipo === 'SEGURO') anios = 1;
+    if (tipo === 'CEDULA_IDENTIDAD') anios = 10;
+    if (tipo === 'LICENCIA_CONDUCIR') anios = 5;
+    if (tipo === 'CARTA_MEDICA') anios = 5;
     fecha.setFullYear(fecha.getFullYear() + anios);
     return fecha.toISOString().split('T')[0];
   };
 
+  // Actualiza la fecha de caducidad automáticamente y valida vigencia
   useEffect(() => {
     if (tipoDocumento && fechaEmision) {
       const nuevaFechaCaducidad = calcularFechaCaducidad(tipoDocumento, fechaEmision);
@@ -206,16 +183,12 @@ const RegistroDocumentosVehiculos = () => {
     return texto.replace(/[^A-Za-z0-9_]/g, ''); // permite el guion bajo
   };
 
-  const generarSufijoAleatorio = () => {
-    return Math.floor(1000 + Math.random() * 9000); // 4 dígitos aleatorios
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormSubmitted(true);
 
-    if (!vehiculoInfo) {
-      toast.error('Debe buscar y seleccionar un vehículo');
+    if (!choferInfo) {
+      toast.error('Debe buscar y seleccionar un chofer');
       return;
     }
     if (!tipoDocumento) {
@@ -239,52 +212,34 @@ const RegistroDocumentosVehiculos = () => {
       return;
     }
 
-    const placaLimpia = limpiarTexto(placa).toUpperCase();
+    const cedulaLimpia = limpiarTexto(cedula);
     const tipoDocumentoLimpio = limpiarTexto(tipoDocumento);
     const numeroDocumentoLimpio = limpiarTexto(documentNumber);
     const ext = file.name.split('.').pop();
-    const sufijo = generarSufijoAleatorio();
-    const newFileName = `${placaLimpia}_${tipoDocumentoLimpio}_${sufijo}.${ext}`;
+    const newFileName = `${cedulaLimpia}_${tipoDocumentoLimpio}.${ext}`;
     const renamedFile = new File([file], newFileName, { type: file.type });
 
     const formData = new FormData();
-    formData.append('placa', placaLimpia);
-    formData.append('vehiculo', vehiculoInfo.id);
-    formData.append('marca', vehiculoInfo.marca);
-    formData.append('modelo', vehiculoInfo.modelo);
-    formData.append('año', vehiculoInfo.año);
+    formData.append('cedula', cedulaLimpia);
+    formData.append('chofer', choferInfo.id);
+    formData.append('nombre', choferInfo.nombre);
+    formData.append('apellido', choferInfo.apellido);
     formData.append('tipo_documento', tipoDocumentoLimpio);
     formData.append('numero_documento', numeroDocumentoLimpio);
     formData.append('fecha_emision', fechaEmision);
     formData.append('fecha_caducidad', fechaCaducidad);
     formData.append('archivo', renamedFile);
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      toast.error('Sesión expirada. Inicie sesión nuevamente.');
-      logout();
-      return;
-    }
-
     try {
-      const response = await fetch('http://localhost:8000/api/documentos-vehiculos/', {
+      const response = await fetch('http://localhost:8000/api/documentos-choferes/', {
         method: 'POST',
-        headers: {
-          'Authorization': `Token ${token}`
-        },
         body: formData,
       });
 
-      if (response.status === 401) {
-        toast.error('Sesión expirada. Inicie sesión nuevamente.');
-        logout();
-        return;
-      }
-
       if (response.ok) {
         toast.success('Documento registrado exitosamente');
-        setPlaca('');
-        setVehiculoInfo(null);
+        setCedula('');
+        setChoferInfo(null);
         setTipoDocumento('');
         setDocumentNumber('');
         setFechaEmision('');
@@ -304,7 +259,7 @@ const RegistroDocumentosVehiculos = () => {
   };
 
   return (
-    <div className="registroDocumentosVehiculos-wrapper">
+    <div className="registroDocumentoChoferes-wrapper">
       <Header title="WSI" />
       <ToastContainer 
         position="top-right" 
@@ -312,36 +267,38 @@ const RegistroDocumentosVehiculos = () => {
         theme="colored"
         pauseOnHover={false}
       />
-      <div className="registroDocumentosVehiculos-bg">
-        <img src={bgImage} alt="Fondo" />
-      </div>
-      <div className="registroDocumentosVehiculos-content">
-        <div className="registroDocumentosVehiculos-container">
-          <h1 className="registroDocumentosVehiculos-title">
-            Registro de Documentos de Vehículos
+    <div className="registroDocumentoChoferes-bg">
+              <img src={bgImage} alt="Fondo" />
+            </div>
+      <div className="registroDocumentoChoferes-content">
+        
+
+        <div className="registroDocumentoChoferes-container">
+          <h1 className="registroDocumentoChoferes-title">
+            Registro de Documentos de Choferes
           </h1>
 
-          <form onSubmit={handleSubmit} className="registroDocumentosVehiculos-form">
+          <form onSubmit={handleSubmit} className="registroDocumentoChoferes-form">
             
-            <section className="registroDocumentosVehiculos-section">
-              <h2 className="registroDocumentosVehiculos-sectionTitle">Datos del Vehículo</h2>
+            <section className="registroDocumentoChoferes-section">
+              <h2 className="registroDocumentoChoferes-sectionTitle">Datos del Chofer</h2>
               
-              <div className="registroDocumentosVehiculos-field">
-                <label>Placa del Vehículo</label>
-                <div className="placa-search-container">
+              <div className="registroDocumentoChoferes-field">
+                <label>Cédula del Chofer</label>
+                <div className="cedula-search-container">
                   <input
                     type="text"
-                    value={placa}
-                    onChange={(e) => setPlaca(e.target.value.replace(/\s+/g, '').toUpperCase())}
-                    placeholder="Ej: A17BN21"
-                    className={placaError ? 'input-error' : ''}
-                    aria-describedby="placa-error"
+                    value={cedula}
+                    onChange={(e) => setCedula(e.target.value)}
+                    placeholder="Ej: 12345678"
+                    className={cedulaError ? 'input-error' : ''}
+                    aria-describedby="cedula-error"
                   />
                   <button
                     type="button"
-                    onClick={handlePlacaSearch}
+                    onClick={handleCedulaSearch}
                     className={`search-btn ${isSearching ? 'searching' : ''}`}
-                    disabled={isSearching || !placa}
+                    disabled={isSearching || !cedula}
                   >
                     {isSearching ? (
                       <FontAwesomeIcon icon={faSpinner} spin />
@@ -351,26 +308,26 @@ const RegistroDocumentosVehiculos = () => {
                     <span>Buscar</span>
                   </button>
                 </div>
-                {placaError && (
-                  <div id="placa-error" className="error-message">
-                    {placaError}
+                {cedulaError && (
+                  <div id="cedula-error" className="error-message">
+                    {cedulaError}
                   </div>
                 )}
               </div>
 
-              {vehiculoInfo && (
-                <div className="vehiculo-info-container">
-                  <div className="vehiculo-info-details">
-                    <div><strong>Vehículo:</strong> {vehiculoInfo.marca} {vehiculoInfo.modelo} ({vehiculoInfo.año})</div>
+              {choferInfo && (
+                <div className="chofer-info-container">
+                  <div className="chofer-info-details">
+                    <div><strong>Nombre:</strong> {choferInfo.nombre} {choferInfo.apellido}</div>
                   </div>
                 </div>
               )}
             </section>
 
-            <section className="registroDocumentosVehiculos-section">
-              <h2 className="registroDocumentosVehiculos-sectionTitle">Información del Documento</h2>
+            <section className="registroDocumentoChoferes-section">
+              <h2 className="registroDocumentoChoferes-sectionTitle">Información del Documento</h2>
               
-              <div className="registroDocumentosVehiculos-field">
+              <div className="registroDocumentoChoferes-field">
                 <label>Tipo de Documento</label>
                 <select
                   value={tipoDocumento}
@@ -379,27 +336,28 @@ const RegistroDocumentosVehiculos = () => {
                   aria-required="true"
                 >
                   <option value="">Seleccione un tipo</option>
-                  <option value="RCV" disabled={documentosRegistrados.includes('RCV')}>RCV</option>
-                  <option value="TRIMESTRES" disabled={documentosRegistrados.includes('TRIMESTRES')}>Trimestres</option>
+                  <option value="CEDULA_IDENTIDAD" disabled={documentosRegistrados.includes('CEDULA_IDENTIDAD')}>Cedula de Identidad</option>
+                  <option value="LICENCIA_CONDUCIR" disabled={documentosRegistrados.includes('LICENCIA_CONDUCIR')}>Licencia De Conducir</option>
+                  <option value="CARTA_MEDICA" disabled={documentosRegistrados.includes('CARTA_MEDICA')}>Carta Medica</option>
                 </select>
                 {!tipoDocumento && (
                   <div className="error-message">Campo requerido</div>
                 )}
               </div>
 
-              <div className="registroDocumentosVehiculos-field">
+              <div className="registroDocumentoChoferes-field">
                 <label>Número de Documento</label>
                 <input
                   type="text"
                   value={documentNumber}
                   onChange={(e) => setDocumentNumber(e.target.value)}
-                  placeholder="Ej: TP-123456789"
+                  placeholder="Ej: ABC-123456"
                   aria-required="true"
                 />
               </div>
 
-              <div className="registroDocumentosVehiculos-row">
-                <div className="registroDocumentosVehiculos-field">
+              <div className="registroDocumentoChoferes-row">
+                <div className="registroDocumentoChoferes-field">
                   <label>Fecha de Emisión</label>
                   <input
                     type="date"
@@ -409,7 +367,7 @@ const RegistroDocumentosVehiculos = () => {
                     max={new Date().toISOString().split('T')[0]}
                   />
                 </div>
-                <div className="registroDocumentosVehiculos-field">
+                <div className="registroDocumentoChoferes-field">
                   <label>Fecha de Caducidad</label>
                   <input
                     type="date"
@@ -426,10 +384,10 @@ const RegistroDocumentosVehiculos = () => {
               )}
             </section>
 
-            <section className="registroDocumentosVehiculos-section">
-              <h2 className="registroDocumentosVehiculos-sectionTitle">Documento Digital</h2>
+            <section className="registroDocumentoChoferes-section">
+              <h2 className="registroDocumentoChoferes-sectionTitle">Documento Digital</h2>
               
-              <div className="registroDocumentosVehiculos-field">
+              <div className="registroDocumentoChoferes-field">
                 <label>Subir Documento (PDF/JPG/PNG)</label>
                 <input
                   type="file"
@@ -450,10 +408,10 @@ const RegistroDocumentosVehiculos = () => {
               </div>
             </section>
 
-            <div className="registroDocumentosVehiculos-actions">
+            <div className="registroDocumentoChoferes-actions">
               <button 
                 type="submit" 
-                className="registroDocumentosVehiculos-submitBtn"
+                className="registroDocumentoChoferes-submitBtn"
               >
                 Registrar Documento
               </button>
@@ -464,4 +422,5 @@ const RegistroDocumentosVehiculos = () => {
     </div>
   );
 };
-export default RegistroDocumentosVehiculos;
+
+export default RegistroDocumentoChoferes; 

@@ -3,11 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faSearch, faCar, faSpinner, faPlus, faEdit } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import "../../styles/DetalleMantenimiento.css";
-import bgImage from '../../assets/bg-login.jpg';
-import Header from '../header';
+import "../../../styles/DetalleMantenimiento.css";
+import bgImage from '../../../assets/bg-login.jpg';
+import Header from '../../header';
 import { useNavigate, useParams } from "react-router-dom";
-import { verifyToken } from "../../services/auth";
+import { verifyToken } from "../../../services/auth";
 
 const DetalleMantenimiento = () => {
   // --- Manejo de sesión e inactividad ---

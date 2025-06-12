@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
-import '../../styles/GestionEmpleados.css';
+import '../../../styles/GestionEmpleados.css';
 import { useNavigate } from 'react-router-dom';
-import Header from '../header';
-import bgImage from '../../assets/bg-login.jpg';
+import Header from '../../header';
+import bgImage from '../../../assets/bg-login.jpg';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { verifyToken } from '../../services/auth';
+import { verifyToken } from "../../../services/auth";
 
 const PAGE_SIZE = 5;
 
