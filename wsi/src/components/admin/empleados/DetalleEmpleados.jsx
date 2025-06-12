@@ -3,11 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faPen, faTrashAlt, faEnvelope, faPhone, faIdCard, faUserTie, faCalendar } from '@fortawesome/free-solid-svg-icons';
 import Header from '../../header';
-import '../../styles/DetalleEmpleados.css';
-import bgImage from '../../assets/bg-login.jpg';
+import '../../../styles/DetalleEmpleados.css';
+import bgImage from '../../../assets/bg-login.jpg';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { verifyToken } from '../../../services/auth';
+import { verifyToken } from "../../../services/auth";
 
 const DetalleEmpleado = () => {
   const { id } = useParams();

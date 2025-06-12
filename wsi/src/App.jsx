@@ -3,24 +3,24 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import RecuperarContraseña from './components/RecuperarContraseña';
 import Home from './components/admin/Home';
-import RegistroEmpleado from './components/admin/RegistroEmpleado';
-import RegistroVehiculo from './components/admin/RegistroVehiculo';
-import VerVehiculos from './components/admin/VerVehiculos';
-import DetalleVehiculo from './components/admin/DetallesVehiculo';
-import RegistroMantenimiento from './components/admin/RegistroMantenimiento';
-import GestionEmpleados from './components/admin/GestionEmpleados';
-import GestionMantenimiento from './components/admin/GestionManteminimento';
-import EditarVehiculo from './components/admin/EditarVehiculo';
+import RegistroEmpleado from './components/admin/empleados/RegistroEmpleado';
+import RegistroVehiculo from './components/admin/vehiculos/RegistroVehiculo';
+import VerVehiculos from './components/admin/vehiculos/VerVehiculos';
+import DetalleVehiculo from './components/admin/vehiculos/DetallesVehiculo';
+import RegistroMantenimiento from './components/admin/mantenimientos/RegistroMantenimiento';
+import GestionEmpleados from './components/admin/empleados/GestionEmpleados';
+import GestionMantenimiento from './components/admin/mantenimientos/GestionManteminimento';
+import EditarVehiculo from './components/admin/vehiculos/EditarVehiculo';
 import MenuDocumentos from './components/admin/MenuDocumentos';
-import RegistroDocumentoChoferes from './components/admin/RegistroDocumentoChoferes';
-import RegistroDocumentosVehiculos from './components/admin/RegistroDocumentosVehiculos';
+import RegistroDocumentoChoferes from './components/admin/documentos-choferes/RegistroDocumentoChoferes';
+import RegistroDocumentosVehiculos from './components/admin/documentos-vehiculos/RegistroDocumentosVehiculos';
 import HomeSupervisor from './components/supervisor/HomeSupervisor';
 import Estadisticas from './components/admin/Estadisticas';
 import MenuGestionDocumentos from './components/admin/MenuGestionDocumentos';
-import DetalleMantenimiento from './components/admin/DetalleMantenimiento';
-import DetalleEmpleado from './components/admin/DetalleEmpleados';
+import DetalleMantenimiento from './components/admin/mantenimientos/DetalleMantenimiento';
+import DetalleEmpleado from './components/admin/empleados/DetalleEmpleados';
 import Notificaciones from './components/Notificaciones';
-import GestionDocumentoChoferes from './components/admin/GestionDocumentoChoferes';
+import GestionDocumentoChoferes from './components/admin/documentos-choferes/GestionDocumentoChoferes';
 
 const App = () => {
   return (

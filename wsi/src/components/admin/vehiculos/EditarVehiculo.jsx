@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import Header from '../../header';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import bgImage from '../../assets/bg-login.jpg';
-import '../../styles/RegistroVehiculo.css';
+import bgImage from '../../../assets/bg-login.jpg';
+import '../../../styles/RegistroVehiculo.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { verifyToken } from '../../../services/auth';
+import { verifyToken } from "../../../services/auth";
 
 const EditarVehiculo = () => {
   const navigate = useNavigate();

@@ -11,7 +11,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Header from '../../header';
 import { verifyToken } from '../../../services/auth';
-import '../../styles/DetalleVehiculo.css';
+import '../../../styles/DetalleVehiculo.css';
 
 const DetalleVehiculo = () => {
   const { id } = useParams();
