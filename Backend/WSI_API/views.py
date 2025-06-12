@@ -373,25 +373,6 @@ class VehiculoCreateView(CreateAPIView):
     queryset = Vehiculo.objects.all()
     serializer_class = VehiculoSerializer
 
-class DocumentosVehiculoListAPIView(ListAPIView):
-    serializer_class = DocumentoVehiculoSerializer
-
-    def get_queryset(self):
-        vehiculo_id = self.request.query_params.get('vehiculo')
-        queryset = DocumentoVehiculo.objects.all()
-        if vehiculo_id:
-            queryset = queryset.filter(vehiculo_id=vehiculo_id)
-        return queryset
-
-class DocumentosVehiculoListAPIView(ListAPIView):
-    serializer_class = DocumentoVehiculoSerializer
-
-    def get_queryset(self):
-        vehiculo_id = self.request.query_params.get('vehiculo')
-        queryset = DocumentoVehiculo.objects.all()
-        if vehiculo_id:
-            queryset = queryset.filter(vehiculo_id=vehiculo_id)
-        return queryset
 
 
 

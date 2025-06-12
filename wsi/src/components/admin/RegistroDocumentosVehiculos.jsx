@@ -97,7 +97,7 @@ const RegistroDocumentosVehiculos = () => {
     setIsSearching(true);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/vehiculos/?placa=${placaLimpia}`, {
+      const response = await fetch(`http://localhost:8000/api/vehiculos/buscar/?placa=${placaLimpia}`, {
         headers: {
           'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
@@ -110,19 +110,20 @@ const RegistroDocumentosVehiculos = () => {
       }
       if (response.ok) {
         const data = await response.json();
+        console.log('Respuesta del backend:', data);
         // Si el backend devuelve una lista, toma el primer elemento
         const vehiculo = Array.isArray(data) ? data[0] : data;
-        if (vehiculo && vehiculo.id && vehiculo.marca && vehiculo.modelo) {
+        if (vehiculo && vehiculo.id_vehiculo && vehiculo.marca && vehiculo.modelo) {
           setVehiculoInfo({
-            id: vehiculo.id,
+            id: vehiculo.id_vehiculo,
             marca: vehiculo.marca,
             modelo: vehiculo.modelo,
-            año: vehiculo.año
+            año: vehiculo.anio
           });
           toast.success("Vehículo encontrado");
 
           // Consultar documentos ya registrados por el vehículo
-          const docsResponse = await fetch(`http://localhost:8000/api/documentos-vehiculos-verificar/?vehiculo=${vehiculo.id}`, {
+          const docsResponse = await fetch(`http://localhost:8000/api/documentos-vehiculos-verificar/?vehiculo=${vehiculo.id_vehiculo}`, {
             headers: {
               'Authorization': `Token ${token}`,
               'Content-Type': 'application/json'
