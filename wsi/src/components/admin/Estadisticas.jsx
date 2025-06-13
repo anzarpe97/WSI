@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { toast } from 'react-toastify';
 import { 
   faChartPie, faChartBar, faChartLine, faCar, faWrench, faGasPump, 
-  faGaugeHigh, faCarSide, faGears, faClock, faDollarSign, faArrowLeft
+  faGaugeHigh, faCarSide, faGears, faClock, faDollarSign, faUserCog, faCheckCircle, faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
 import { verifyToken } from '../../services/auth';
 import Header from '../header';
@@ -13,38 +11,45 @@ import bgImage from '../../assets/bg-login.jpg';
 import '../../styles/Estadisticas.css';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
+const COLORS = ['#FF6A00', '#36A2EB', '#4CAF50', '#FFCE56', '#9966FF', '#FF6384', '#4BC0C0', '#F7464A', '#949FB1', '#D4CCC5'];
+
 const Estadisticas = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState({ nombre: '', apellido: '' });
   const [loading, setLoading] = useState(true);
-  
-  // Datos de ejemplo para gráficos (en un sistema real, estos vendrían de una API)
+
+  // Datos de vehículos y mantenimientos
+  const [vehiculos, setVehiculos] = useState([]);
+  const [mantenimientos, setMantenimientos] = useState([]);
+  const [topVehiculos, setTopVehiculos] = useState([]);
+
+  // Estadísticas calculadas
   const [stats, setStats] = useState({
     vehiculosPorEstado: [],
     tiposCombustible: [],
     kilometrajeFlota: {},
     distribucionMarcas: [],
     capacidadCarga: [],
-    mantenimientosFrecuentes: [],
+    totalMantenimientos: 0,
+    mantenimientosPorEstado: [],
     mantenimientosPorTipo: [],
+    mantenimientosPorVehiculo: [],
     historialMantenimientos: [],
-    tiemposResolucion: {},
-    estadoMantenimientos: [],
-    costosMantenimientos: []
+    tiempoResolucion: {},
+    mantenimientosPorMecanico: [],
+    mantenimientosPorMotivo: [],
+    culminadosATiempo: 0,
+    retrasados: 0,
+    gastosMensuales: [],
+    promedioGastoMantenimiento: 0
   });
-
-  // Colores para gráficos
-  const COLORS = ['#FF6A00', '#36A2EB', '#4CAF50', '#FFCE56', '#9966FF', '#FF6384', '#4BC0C0', '#F7464A', '#949FB1', '#D4CCC5'];
 
   useEffect(() => {
     document.title = "WSI - Estadísticas";
-    
-    const checkAuth = async () => {
+    const checkAuthAndFetch = async () => {
       try {
         const result = await verifyToken();
-        
         if (result.isValid && result.user) {
-          // Si el rol no es 0, redirige al home correspondiente
           if (String(result.user.rol) !== "0") {
             if (String(result.user.rol) === "1") {
               navigate('/supervisorHome', { replace: true });
@@ -59,89 +64,218 @@ const Estadisticas = () => {
             nombre: result.user.nombre,
             apellido: result.user.apellido
           });
-          
-          // Simular carga de datos estadísticos
-          setTimeout(() => {
-            setStats({
-              vehiculosPorEstado: [
-                { name: 'Activo', value: 42 },
-                { name: 'Inactivo', value: 15 },
-                { name: 'En Mantenimiento', value: 8 }
-              ],
-              tiposCombustible: [
-                { name: 'Gasolina', value: 35 },
-                { name: 'Diésel', value: 25 },
-                { name: 'Híbrido', value: 8 },
-                { name: 'Eléctrico', value: 2 }
-              ],
-              kilometrajeFlota: {
-                promedio: 12500,
-                maximo: 87000
-              },
-              distribucionMarcas: [
-                { marca: 'Toyota', cantidad: 12 },
-                { marca: 'Ford', cantidad: 8 },
-                { marca: 'Chevrolet', cantidad: 7 },
-                { marca: 'Nissan', cantidad: 6 },
-                { marca: 'Volkswagen', cantidad: 4 }
-              ],
-              capacidadCarga: [
-                { tipo: 'Pickup', capacidad: 1.5 },
-                { tipo: 'Camión Ligero', capacidad: 3.2 },
-                { tipo: 'Furgón', capacidad: 2.8 },
-                { tipo: 'Camión Pesado', capacidad: 15.0 }
-              ],
-              mantenimientosFrecuentes: [
-                { vehiculo: 'Ford F-150', mantenimientos: 8 },
-                { vehiculo: 'Toyota Hilux', mantenimientos: 7 },
-                { vehiculo: 'Chevrolet Silverado', mantenimientos: 6 },
-                { vehiculo: 'Nissan Frontier', mantenimientos: 5 },
-                { vehiculo: 'Volkswagen Amarok', mantenimientos: 4 }
-              ],
-              mantenimientosPorTipo: [
-                { name: 'Preventivo', value: 65 },
-                { name: 'Correctivo', value: 25 },
-                { name: 'Predictivo', value: 10 }
-              ],
-              historialMantenimientos: [
-                { mes: 'Ene', cantidad: 12 },
-                { mes: 'Feb', cantidad: 15 },
-                { mes: 'Mar', cantidad: 18 },
-                { mes: 'Abr', cantidad: 14 },
-                { mes: 'May', cantidad: 20 },
-                { mes: 'Jun', cantidad: 22 }
-              ],
-              tiemposResolucion: {
-                promedio: 2.5,
-                maximo: 7
-              },
-              estadoMantenimientos: [
-                { name: 'Activos', value: 8 },
-                { name: 'Finalizados', value: 32 },
-                { name: 'Pendientes', value: 5 },
-                { name: 'Cancelados', value: 3 }
-              ],
-              costosMantenimientos: [
-                { mes: 'Ene', costo: 4200 },
-                { mes: 'Feb', costo: 5800 },
-                { mes: 'Mar', costo: 3500 },
-                { mes: 'Abr', costo: 6200 },
-                { mes: 'May', costo: 7800 },
-                { mes: 'Jun', costo: 4500 }
-              ]
+
+          // Obtener vehículos, mantenimientos y top vehículos con más mantenimientos
+          const token = localStorage.getItem('token');
+          const [vehiculosRes, mantenimientosRes, topVehiculosRes] = await Promise.all([
+            fetch('http://localhost:8000/api/vehiculos/', {
+              headers: { 'Authorization': `Token ${token}` }
+            }),
+            fetch('http://localhost:8000/api/mantenimientos/', {
+              headers: { 'Authorization': `Token ${token}` }
+            }),
+            fetch('http://localhost:8000/api/vehiculos-mas-mantenimientos/', {
+              headers: { 'Authorization': `Token ${token}` }
+            })
+          ]);
+          const vehiculosData = await vehiculosRes.json();
+          const mantenimientosData = await mantenimientosRes.json();
+          const topVehiculosData = await topVehiculosRes.json();
+          setVehiculos(vehiculosData);
+          setMantenimientos(mantenimientosData);
+          setTopVehiculos(topVehiculosData);
+
+          // ---- Estadísticas de vehículos ----
+          // Por estado
+          const estados = {};
+          vehiculosData.forEach(v => {
+            const estado = v.estado || 'Desconocido';
+            estados[estado] = (estados[estado] || 0) + 1;
+          });
+          const vehiculosPorEstado = Object.entries(estados).map(([name, value]) => ({ name, value }));
+
+          // Por tipo de combustible
+          const combustibles = {};
+          vehiculosData.forEach(v => {
+            const tipo = v.tipo_combustible || 'Desconocido';
+            combustibles[tipo] = (combustibles[tipo] || 0) + 1;
+          });
+          const tiposCombustible = Object.entries(combustibles).map(([name, value]) => ({ name, value }));
+
+          // Por marca
+          const marcas = {};
+          vehiculosData.forEach(v => {
+            const marca = v.marca || 'Desconocido';
+            marcas[marca] = (marcas[marca] || 0) + 1;
+          });
+          const distribucionMarcas = Object.entries(marcas).map(([marca, cantidad]) => ({ marca, cantidad }));
+
+          // Capacidad de carga (si existe el campo)
+          let capacidadCarga = [];
+          if (vehiculosData.some(v => v.capacidad_carga && v.tipo)) {
+            const tipos = {};
+            vehiculosData.forEach(v => {
+              if (v.tipo && v.capacidad_carga) {
+                if (!tipos[v.tipo]) tipos[v.tipo] = [];
+                tipos[v.tipo].push(Number(v.capacidad_carga));
+              }
             });
-            setLoading(false);
-          }, 1000);
+            capacidadCarga = Object.entries(tipos).map(([tipo, capacidades]) => ({
+              tipo,
+              capacidad: (capacidades.reduce((a, b) => a + b, 0) / capacidades.length).toFixed(2)
+            }));
+          }
+
+          // Kilometraje (si existe el campo)
+          let kilometrajes = vehiculosData.map(v => Number(v.kilometraje)).filter(km => !isNaN(km));
+          const kilometrajeFlota = {
+            promedio: kilometrajes.length ? Math.round(kilometrajes.reduce((a, b) => a + b, 0) / kilometrajes.length) : 0,
+            maximo: kilometrajes.length ? Math.max(...kilometrajes) : 0
+          };
+
+          // ---- Estadísticas de mantenimientos ----
+          // Total
+          const totalMantenimientos = mantenimientosData.length;
+
+          // Por estado
+          const estadosMant = {};
+          mantenimientosData.forEach(m => {
+            const estado = m.estado || 'Desconocido';
+            estadosMant[estado] = (estadosMant[estado] || 0) + 1;
+          });
+          const mantenimientosPorEstado = Object.entries(estadosMant).map(([name, value]) => ({ name, value }));
+
+          // Por tipo
+          const tiposMant = {};
+          mantenimientosData.forEach(m => {
+            const tipo = m.tipo_mantenimiento || 'Desconocido';
+            tiposMant[tipo] = (tiposMant[tipo] || 0) + 1;
+          });
+          const mantenimientosPorTipo = Object.entries(tiposMant).map(([name, value]) => ({ name, value }));
+
+          // Por vehículo (usando id)
+          const mantPorVehiculo = {};
+          mantenimientosData.forEach(m => {
+            const id = m.vehiculo?.id || m.id_vehiculo?.id || m.vehiculo || m.id_vehiculo || 'Desconocido';
+            mantPorVehiculo[id] = (mantPorVehiculo[id] || 0) + 1;
+          });
+          const mantenimientosPorVehiculo = Object.entries(mantPorVehiculo).map(([id, cantidad]) => ({ id, cantidad }));
+
+          // Historial por mes (últimos 12 meses)
+          const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+          const historial = {};
+          mantenimientosData.forEach(m => {
+            if (m.fecha_programada) {
+              const fecha = new Date(m.fecha_programada);
+              const mes = meses[fecha.getMonth()];
+              historial[mes] = (historial[mes] || 0) + 1;
+            }
+          });
+          const historialMantenimientos = meses.map(mes => ({
+            mes,
+            cantidad: historial[mes] || 0
+          }));
+
+          // Tiempo de resolución (promedio y máximo en días)
+          let tiempos = [];
+          mantenimientosData.forEach(m => {
+            if (m.fecha_programada && (m.fecha_finalizado || m.fecha_terminado)) {
+              const inicio = new Date(m.fecha_programada);
+              const fin = new Date(m.fecha_finalizado || m.fecha_terminado);
+              const diff = (fin - inicio) / (1000 * 60 * 60 * 24);
+              if (!isNaN(diff) && diff >= 0) tiempos.push(diff);
+            }
+          });
+          const tiempoResolucion = {
+            promedio: tiempos.length ? (tiempos.reduce((a, b) => a + b, 0) / tiempos.length).toFixed(2) : 0,
+            maximo: tiempos.length ? Math.max(...tiempos).toFixed(2) : 0
+          };
+
+          // Por mecánico
+          const mantPorMecanico = {};
+          mantenimientosData.forEach(m => {
+            const mecanico = m.mecanico?.nombre ? `${m.mecanico.nombre} ${m.mecanico.apellido}` : 'Desconocido';
+            mantPorMecanico[mecanico] = (mantPorMecanico[mecanico] || 0) + 1;
+          });
+          const mantenimientosPorMecanico = Object.entries(mantPorMecanico).map(([mecanico, cantidad]) => ({ mecanico, cantidad }));
+
+          // Por motivo
+          const mantPorMotivo = {};
+          mantenimientosData.forEach(m => {
+            const motivo = m.motivo || 'Desconocido';
+            mantPorMotivo[motivo] = (mantPorMotivo[motivo] || 0) + 1;
+          });
+          const mantenimientosPorMotivo = Object.entries(mantPorMotivo).map(([motivo, cantidad]) => ({ motivo, cantidad }));
+
+          // --- Mantenimientos culminados a tiempo y retrasados ---
+          let culminadosATiempo = 0;
+          let retrasados = 0;
+          mantenimientosData.forEach(m => {
+            if (m.fecha_finalizado && m.fecha_terminado && m.estado === "FINALIZADO") {
+              const fechaFinalizado = new Date(m.fecha_finalizado);
+              const fechaTerminado = new Date(m.fecha_terminado);
+              if (fechaTerminado <= fechaFinalizado) {
+                culminadosATiempo += 1;
+              } else {
+                retrasados += 1;
+              }
+            }
+          });
+
+          // --- GASTOS POR MES Y PROMEDIO ---
+          const gastosPorMes = Array(12).fill(0);
+          let totalGasto = 0;
+          let totalConCosto = 0;
+          mantenimientosData.forEach(m => {
+            const costo = Number(m.costo_total);
+            if (
+              m.fecha_terminado &&
+              !isNaN(costo) &&
+              costo > 0
+            ) {
+              const fecha = new Date(m.fecha_terminado);
+              const mesIdx = fecha.getMonth();
+              gastosPorMes[mesIdx] += costo;
+              totalGasto += costo;
+              totalConCosto += 1;
+            }
+          });
+          const gastosMensuales = meses.map((mes, idx) => ({
+            mes,
+            gasto: gastosPorMes[idx]
+          }));
+          const promedioGastoMantenimiento = totalConCosto > 0 ? totalGasto / totalConCosto : 0;
+
+          setStats({
+            vehiculosPorEstado,
+            tiposCombustible,
+            kilometrajeFlota,
+            distribucionMarcas,
+            capacidadCarga,
+            totalMantenimientos,
+            mantenimientosPorEstado,
+            mantenimientosPorTipo,
+            mantenimientosPorVehiculo,
+            historialMantenimientos,
+            tiempoResolucion,
+            mantenimientosPorMecanico,
+            mantenimientosPorMotivo,
+            culminadosATiempo,
+            retrasados,
+            gastosMensuales,
+            promedioGastoMantenimiento
+          });
+          setLoading(false);
         } else {
           navigate('/login');
         }
       } catch (error) {
-        console.error("Error verificando token:", error);
+        console.error("Error verificando token o cargando datos:", error);
         navigate('/login');
       }
     };
 
-    checkAuth();
+    checkAuthAndFetch();
   }, [navigate]);
 
   if (loading) {
@@ -154,9 +288,9 @@ const Estadisticas = () => {
   }
 
   // Componente para mostrar estadísticas en tarjetas
-  const StatCard = ({ icon, title, value, unit, description }) => (
+  const StatCard = ({ icon, title, value, unit, description, color }) => (
     <div className="stat-card">
-      <div className="stat-icon">
+      <div className="stat-icon" style={color ? {color} : {}}>
         <FontAwesomeIcon icon={icon} size="2x" />
       </div>
       <div className="stat-content">
@@ -172,76 +306,66 @@ const Estadisticas = () => {
      <Header title="WSI" />
 
       <div className="estadisticas-content">
-        <div className="estadisticas-header">
-        </div>
+        <div className="estadisticas-header"></div>
 
         <div className="stats-overview">
           <StatCard 
             icon={faCar} 
             title="Total Vehículos" 
-            value={65} 
+            value={vehiculos.length} 
             unit="unidades"
             description="Flota total operativa"
           />
           <StatCard 
             icon={faWrench} 
-            title="Mantenimientos" 
-            value={48} 
-            unit="este año"
-            description="Mantenimientos realizados"
+            title="Total Mantenimientos" 
+            value={stats.totalMantenimientos} 
+            unit=""
+            description="Mantenimientos registrados"
           />
           <StatCard 
-            icon={faDollarSign} 
-            title="Costo Promedio" 
-            value={245} 
-            unit="USD/mes"
-            description="Por vehículo"
+            icon={faCheckCircle}
+            title="Culminados a Tiempo"
+            value={stats.culminadosATiempo}
+            unit=""
+            description="Mantenimientos terminados antes o en la fecha prevista"
+            color="#4CAF50"
           />
           <StatCard 
-            icon={faClock} 
-            title="Tiempo Resolución" 
-            value={2.5} 
-            unit="días"
-            description="Promedio mantenimientos"
+            icon={faExclamationTriangle}
+            title="Retrasados"
+            value={stats.retrasados}
+            unit=""
+            description="Mantenimientos terminados después de la fecha prevista"
+            color="#FF6A00"
           />
         </div>
 
         <div className="charts-section">
           <div className="chart-container">
-            <h2><FontAwesomeIcon icon={faCar} /> Distribución de Vehículos por Estado</h2>
+            <h2><FontAwesomeIcon icon={faDollarSign} /> Gastos de Mantenimiento por Mes</h2>
             <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={stats.vehiculosPorEstado}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {stats.vehiculosPorEstado.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
+              <BarChart data={stats.gastosMensuales}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="mes" />
+                <YAxis />
+                <Tooltip formatter={v => `$${Number(v).toFixed(2)}`} />
+                <Legend />
+                <Bar dataKey="gasto" name="Gasto ($)" fill="#4CAF50" />
+              </BarChart>
             </ResponsiveContainer>
           </div>
 
           <div className="chart-container">
-            <h2><FontAwesomeIcon icon={faGasPump} /> Tipos de Combustible</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stats.tiposCombustible}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value" name="Cantidad" fill="#FF6A00" />
-              </BarChart>
-            </ResponsiveContainer>
+            <h2><FontAwesomeIcon icon={faDollarSign} /> Promedio de Gasto por Mantenimiento</h2>
+            <div className="promedio-gasto">
+              <div className="promedio-valor">
+                ${Number(stats.promedioGastoMantenimiento || 0).toFixed(2)}
+              </div>
+              <p className="promedio-desc">
+                Costo promedio por cada mantenimiento realizado
+              </p>
+            </div>
           </div>
 
           <div className="chart-container">
@@ -277,6 +401,46 @@ const Estadisticas = () => {
             </ResponsiveContainer>
           </div>
 
+          {stats.capacidadCarga.length > 0 && (
+            <div className="chart-container">
+              <h2><FontAwesomeIcon icon={faCarSide} /> Capacidad de Carga Promedio por Tipo</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={stats.capacidadCarga}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="tipo" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="capacidad" name="Capacidad Promedio (toneladas)" fill="#4CAF50" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* Estadísticas de mantenimientos */}
+          <div className="chart-container">
+            <h2><FontAwesomeIcon icon={faGears} /> Mantenimientos por Estado</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={stats.mantenimientosPorEstado}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {stats.mantenimientosPorEstado.map((entry, index) => (
+                    <Cell key={`cell-mant-estado-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
           <div className="chart-container">
             <h2><FontAwesomeIcon icon={faGears} /> Mantenimientos por Tipo</h2>
             <ResponsiveContainer width="100%" height={300}>
@@ -292,7 +456,7 @@ const Estadisticas = () => {
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
                   {stats.mantenimientosPorTipo.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-mant-tipo-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -301,7 +465,7 @@ const Estadisticas = () => {
           </div>
 
           <div className="chart-container">
-            <h2><FontAwesomeIcon icon={faChartLine} /> Historial de Mantenimientos</h2>
+            <h2><FontAwesomeIcon icon={faChartLine} /> Historial de Mantenimientos (por mes)</h2>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={stats.historialMantenimientos}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -314,31 +478,46 @@ const Estadisticas = () => {
             </ResponsiveContainer>
           </div>
 
+          {/* Vehículos con más mantenimientos usando la API */}
           <div className="chart-container">
-            <h2><FontAwesomeIcon icon={faDollarSign} /> Costos de Mantenimiento</h2>
+            <h2><FontAwesomeIcon icon={faWrench} /> Vehículos con Más Mantenimientos</h2>
+            <div className="top-vehicles">
+              {topVehiculos.slice(0, 5).map((item, index) => (
+                <div key={item.id} className="vehicle-item">
+                  <span className="vehicle-rank">{index + 1}</span>
+                  <span className="vehicle-name">{item.placa} - {item.marca} {item.modelo}</span>
+                  <span className="vehicle-count">{item.cantidad_mantenimientos} mantenimientos</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="chart-container">
+            <h2><FontAwesomeIcon icon={faUserCog} /> Mantenimientos por Mecánico</h2>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stats.costosMantenimientos}>
+              <BarChart data={stats.mantenimientosPorMecanico}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mes" />
+                <XAxis dataKey="mecanico" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Costo']} />
+                <Tooltip />
                 <Legend />
-                <Bar dataKey="costo" name="Costo (USD)" fill="#4CAF50" />
+                <Bar dataKey="cantidad" name="Mantenimientos" fill="#9966FF" />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           <div className="chart-container">
-            <h2><FontAwesomeIcon icon={faWrench} /> Vehículos con Más Mantenimientos</h2>
-            <div className="top-vehicles">
-              {stats.mantenimientosFrecuentes.map((item, index) => (
-                <div key={index} className="vehicle-item">
-                  <span className="vehicle-rank">{index + 1}</span>
-                  <span className="vehicle-name">{item.vehiculo}</span>
-                  <span className="vehicle-count">{item.mantenimientos} mantenimientos</span>
-                </div>
-              ))}
-            </div>
+            <h2><FontAwesomeIcon icon={faChartBar} /> Mantenimientos por Motivo</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={stats.mantenimientosPorMotivo}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="motivo" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="cantidad" name="Mantenimientos" fill="#FF6384" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>

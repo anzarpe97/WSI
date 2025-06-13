@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import RecuperarContraseña from './components/RecuperarContraseña';
 import Home from './components/admin/Home';
+import DetalleDocumentoChofer from './components/admin/documentos-choferes/DetalleDocmentoChofer';
 import RegistroEmpleado from './components/admin/empleados/RegistroEmpleado';
 import RegistroVehiculo from './components/admin/vehiculos/RegistroVehiculo';
 import VerVehiculos from './components/admin/vehiculos/VerVehiculos';
@@ -21,6 +22,8 @@ import DetalleMantenimiento from './components/admin/mantenimientos/DetalleMante
 import DetalleEmpleado from './components/admin/empleados/DetalleEmpleados';
 import Notificaciones from './components/Notificaciones';
 import GestionDocumentoChoferes from './components/admin/documentos-choferes/GestionDocumentoChoferes';
+import FinalizarMantenimiento from './components/admin/mantenimientos/FinalizarMantinimento';
+import PerfilUsuario from './components/PerfilUsuario';
 
 const App = () => {
   return (
@@ -36,6 +39,7 @@ const App = () => {
         <Route path="/gestion-empleados" element={<GestionEmpleados />} />
         <Route path="/detalle-empleado/:id" element={<DetalleEmpleado />} />
         {/* RUTAS DOCUMENTOS ADMINISTRADOR*/}
+        <Route path="/detalle-documento-chofer/:id" element={<DetalleDocumentoChofer />} />
         <Route path="/menu-documentos" element={<MenuDocumentos />} />
         <Route path="/menu-gestion-documentos" element={<MenuGestionDocumentos />} />
         <Route path="/gestion-documento-choferes" element={<GestionDocumentoChoferes />} />
@@ -46,7 +50,8 @@ const App = () => {
         <Route path="/editar-vehiculo/:id" element={<EditarVehiculo />} />
         <Route path="/ver-vehiculos" element={<VerVehiculos />} />
         <Route path="/detalle-vehiculo/:id" element={<DetalleVehiculo />} />
-        {/* RUTAS MANTENIMIENTO ADMINISTRADOR*/}        
+        {/* RUTAS MANTENIMIENTO ADMINISTRADOR*/}     
+        <Route path="/finalizar-mantenimiento/:id" element={<FinalizarMantenimiento />} />   
         <Route path="/registro-mantenimiento" element={<RegistroMantenimiento />} />
         <Route path="/gestion-mantenimiento" element={<GestionMantenimiento />} />
         <Route path="/detalle-mantenimiento/:id" element={<DetalleMantenimiento />} />
@@ -56,6 +61,8 @@ const App = () => {
         {/* RUTAS SUPERVISOR*/}     
         <Route path="/supervisorHome" element={<HomeSupervisor />} />
         {/* RUTAS USUARIO*/}
+        <Route path="/perfil-usuario" element={<PerfilUsuario />} />
+        {/* RUTAS NOTIFICACIONES*/}
         <Route path="/notificaciones" element={<Notificaciones />} />
 
       </Routes>

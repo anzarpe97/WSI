@@ -18,6 +18,14 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
 
   const [notifications, setNotifications] = useState([]);
 
+  // Definición de estilos para el ícono de usuario
+  const iconStyle = {
+    fontSize: "2rem",
+    color: "#222",
+    cursor: "pointer",
+    marginLeft: "18px"
+  };
+
   // Obtener notificaciones del backend
   useEffect(() => {
     fetch('http://localhost:8000/api/notificaciones/', {
@@ -178,11 +186,13 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
           </div>
           
           <div className="icon-wrapper">
-            <FontAwesomeIcon 
-              icon={faUserCircle} 
-              className="header-icon" 
+            <FontAwesomeIcon
+              icon={faUserCircle}
+              style={iconStyle}
+              className="header-icon"
               title="Perfil"
-              aria-label="Perfil de usuario" 
+              aria-label="Perfil de usuario"
+              onClick={() => navigate('/perfil-usuario')}
             />
           </div>
           

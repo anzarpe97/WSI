@@ -110,7 +110,6 @@ const RegistroDocumentosVehiculos = () => {
       }
       if (response.ok) {
         const data = await response.json();
-        console.log('Respuesta del backend:', data);
         // Si el backend devuelve una lista, toma el primer elemento
         const vehiculo = Array.isArray(data) ? data[0] : data;
         if (vehiculo && vehiculo.id_vehiculo && vehiculo.marca && vehiculo.modelo) {
@@ -164,10 +163,8 @@ const RegistroDocumentosVehiculos = () => {
     if (!tipo || !emision) return '';
     const fecha = new Date(emision);
     let anios = 0;
-    if (tipo === 'TARJETA_PROPIEDAD') anios = 10;
-    if (tipo === 'SOAT') anios = 1;
-    if (tipo === 'TECNOMECANICA') anios = 1;
-    if (tipo === 'SEGURO') anios = 1;
+    if (tipo === 'RCV') anios = 1;
+    if (tipo === 'TRIMESTRES') anios = 1;
     fecha.setFullYear(fecha.getFullYear() + anios);
     return fecha.toISOString().split('T')[0];
   };
@@ -250,10 +247,10 @@ const RegistroDocumentosVehiculos = () => {
 
     const formData = new FormData();
     formData.append('placa', placaLimpia);
-    formData.append('vehiculo', vehiculoInfo.id);
+    formData.append('Vehiculo', vehiculoInfo.id);
     formData.append('marca', vehiculoInfo.marca);
     formData.append('modelo', vehiculoInfo.modelo);
-    formData.append('año', vehiculoInfo.año);
+    formData.append('anio', vehiculoInfo.anio);
     formData.append('tipo_documento', tipoDocumentoLimpio);
     formData.append('numero_documento', numeroDocumentoLimpio);
     formData.append('fecha_emision', fechaEmision);
@@ -295,11 +292,11 @@ const RegistroDocumentosVehiculos = () => {
         setFormSubmitted(false);
       } else {
         const errorData = await response.json();
-        console.log(errorData);
+
+    console.log('Error backend:', errorData)
         toast.error('Error al registrar el documento');
       }
     } catch (error) {
-      console.log(error);
       toast.error('Error de conexión con el servidor');
     }
   };

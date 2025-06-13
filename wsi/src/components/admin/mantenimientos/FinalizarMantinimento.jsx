@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt, faSearch, faCar, faSpinner, faPlus, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt, faCar, faSpinner, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "../../../styles/DetalleMantenimiento.css";
 import bgImage from '../../../assets/bg-login.jpg';
-import Header from '../../../header';
+import Header from '../../header';
 import { useNavigate, useParams } from "react-router-dom";
 import { verifyToken } from "../../../services/auth";
 
@@ -71,7 +71,7 @@ const FinalizarMantenimiento = () => {
   // Estado para mantenimiento
   const [maintenance, setMaintenance] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Estados para nuevos suministros
   const [newSupplies, setNewSupplies] = useState([{
     detalle: '',
@@ -79,6 +79,12 @@ const FinalizarMantenimiento = () => {
     precio: '',
     total: '0.00'
   }]);
+
+  // Estado para observaciones editables
+  const [observaciones, setObservaciones] = useState('');
+
+  // Modal de confirmación
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // Obtener datos del mantenimiento
   useEffect(() => {
@@ -88,35 +94,36 @@ const FinalizarMantenimiento = () => {
         const response = await fetch(`http://localhost:8000/api/detalle-mantenimiento/${id}/`, {
           headers: { Authorization: `Token ${token}` }
         });
-        
+
         if (!response.ok) {
           throw new Error('Error al obtener el mantenimiento');
         }
-        
+
         const data = await response.json();
         setMaintenance(data);
+        setObservaciones(data.observaciones || "");
         setLoading(false);
       } catch (error) {
         toast.error(error.message || 'Error al cargar el mantenimiento');
         setLoading(false);
       }
     };
-    
+
     fetchMaintenance();
   }, [id]);
 
   // Manejar cambios en nuevos suministros
   const handleNewSupplyChange = (index, field, value) => {
-    const newSupplies = [...newSupplies];
-    newSupplies[index][field] = value;
+    const newSuppliesCopy = [...newSupplies];
+    newSuppliesCopy[index][field] = value;
 
     if (field === 'cantidad' || field === 'precio') {
-      const cantidad = parseFloat(newSupplies[index].cantidad) || 0;
-      const precio = parseFloat(newSupplies[index].precio) || 0;
-      newSupplies[index].total = (cantidad * precio).toFixed(2);
+      const cantidad = parseFloat(newSuppliesCopy[index].cantidad) || 0;
+      const precio = parseFloat(newSuppliesCopy[index].precio) || 0;
+      newSuppliesCopy[index].total = (cantidad * precio).toFixed(2);
     }
 
-    setNewSupplies(newSupplies);
+    setNewSupplies(newSuppliesCopy);
   };
 
   // Agregar nuevo suministro
@@ -148,7 +155,7 @@ const FinalizarMantenimiento = () => {
     });
   };
 
-  // Guardar nuevos suministros
+  // Guardar nuevos suministros y observaciones
   const saveNewSupplies = async () => {
     if (!validateNewSupplies()) {
       toast.error('Complete todos los campos de los nuevos suministros');
@@ -157,7 +164,7 @@ const FinalizarMantenimiento = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/mantenimientos/${id}/agregar_suministros/`, {
+      const response = await fetch(`http://localhost:8000/api/mantenimientos/${id}/finalizar/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -168,19 +175,15 @@ const FinalizarMantenimiento = () => {
             motivo: s.detalle,
             cantidad: s.cantidad,
             precio_und: s.precio
-          }))
+          })),
+          observaciones: observaciones 
         })
       });
 
       if (response.ok) {
-        toast.success('Suministros agregados correctamente');
-        // Actualizar mantenimiento
-        const updatedResponse = await fetch(`http://localhost:8000/api/mantenimientos/${id}/`, {
-          headers: { Authorization: `Token ${token}` }
-        });
-        const updatedData = await updatedResponse.json();
-        setMaintenance(updatedData);
-        // Limpiar nuevos suministros
+        toast.success('Mantenimiento finalizado correctamente');
+        // Opcional: podrías actualizar el estado localmente si lo deseas
+        setMaintenance(prev => prev ? { ...prev, estado: 'FINALIZADO', observaciones } : prev);
         setNewSupplies([{
           detalle: '',
           cantidad: '',
@@ -195,6 +198,14 @@ const FinalizarMantenimiento = () => {
       toast.error('Error de conexión al agregar suministros');
     }
   };
+
+  // Modal handlers
+  const handleFinalizarClick = () => setShowConfirmModal(true);
+  const handleConfirmFinalizar = () => {
+    setShowConfirmModal(false);
+    saveNewSupplies();
+  };
+  const handleCancelFinalizar = () => setShowConfirmModal(false);
 
   if (loading) {
     return (
@@ -222,6 +233,9 @@ const FinalizarMantenimiento = () => {
     );
   }
 
+  // Determinar si el mantenimiento está finalizado
+  const isFinalizado = maintenance.estado === 'FINALIZADO' || maintenance.estado === 'COMPLETADO';
+
   // Formatear fechas para mostrar
   const formatDate = (dateString) => {
     if (!dateString) return 'No especificada';
@@ -239,19 +253,17 @@ const FinalizarMantenimiento = () => {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <div className="detalle-mantenimiento-bg">
-          <img
-            src={bgImage}
-            alt="Fondo Detalle Mantenimiento"
-            onError={(e) => (e.target.style.display = 'none')}
-          />
-        </div>
+        <img
+          src={bgImage}
+          alt="Fondo Detalle Mantenimiento"
+          onError={(e) => (e.target.style.display = 'none')}
+        />
+      </div>
 
       <div className="detalle-mantenimiento-content">
-        
-
         <div className="detalle-mantenimiento-container">
           <div className="detalle-mantenimiento-header">
-            <h1 className="detalle-mantenimiento-title">Detalle de Mantenimiento</h1>
+            <h1 className="detalle-mantenimiento-title">Finalizar Mantenimiento</h1>
           </div>
 
           <div className="detalle-mantenimiento-form">
@@ -358,99 +370,103 @@ const FinalizarMantenimiento = () => {
               )}
             </div>
 
-            {/* Sección para añadir nuevos suministros */}
-            <div className="detalle-mantenimiento-section detalle-mantenimiento-new-supplies">
-              <h3 className="detalle-mantenimiento-section-title">Agregar Nuevos Suministros</h3>
-
-              <div className="detalle-mantenimiento-supplies">
-                {newSupplies.map((suministro, index) => (
-                  <div key={index} className="detalle-mantenimiento-supply-item">
-                    <div className="detalle-mantenimiento-supply-field">
-                      <label>Detalle</label>
-                      <input
-                        type="text"
-                        value={suministro.detalle}
-                        onChange={(e) => handleNewSupplyChange(index, 'detalle', e.target.value)}
-                        placeholder="Descripción del material"
-                        required
-                      />
-                    </div>
-
-                    <div className="detalle-mantenimiento-supply-field">
-                      <label>Cantidad</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={suministro.cantidad}
-                        onChange={(e) => handleNewSupplyChange(index, 'cantidad', e.target.value)}
-                        placeholder="0"
-                        required
-                      />
-                    </div>
-
-                    <div className="detalle-mantenimiento-supply-field">
-                      <label>Precio Unitario</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={suministro.precio}
-                        onChange={(e) => handleNewSupplyChange(index, 'precio', e.target.value)}
-                        placeholder="0.00"
-                        required
-                      />
-                    </div>
-
-                    <div className="detalle-mantenimiento-supply-field detalle-mantenimiento-total">
-                      <label>Total</label>
-                      <div className="detalle-mantenimiento-total-display">
-                        ${suministro.total}
+            {/* Sección para añadir nuevos suministros SOLO si NO está finalizado */}
+            {!isFinalizado && (
+              <div className="detalle-mantenimiento-section detalle-mantenimiento-new-supplies">
+                <h3 className="detalle-mantenimiento-section-title">Agregar Nuevos Suministros</h3>
+                <div className="detalle-mantenimiento-supplies">
+                  {newSupplies.map((suministro, index) => (
+                    <div key={index} className="detalle-mantenimiento-supply-item">
+                      <div className="detalle-mantenimiento-supply-field">
+                        <label>Detalle</label>
+                        <input
+                          type="text"
+                          value={suministro.detalle}
+                          onChange={(e) => handleNewSupplyChange(index, 'detalle', e.target.value)}
+                          placeholder="Descripción del material"
+                          required
+                        />
                       </div>
+                      <div className="detalle-mantenimiento-supply-field">
+                        <label>Cantidad</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={suministro.cantidad}
+                          onChange={(e) => handleNewSupplyChange(index, 'cantidad', e.target.value)}
+                          placeholder="0"
+                          required
+                        />
+                      </div>
+                      <div className="detalle-mantenimiento-supply-field">
+                        <label>Precio Unitario</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={suministro.precio}
+                          onChange={(e) => handleNewSupplyChange(index, 'precio', e.target.value)}
+                          placeholder="0.00"
+                          required
+                        />
+                      </div>
+                      <div className="detalle-mantenimiento-supply-field detalle-mantenimiento-total">
+                        <label>Total</label>
+                        <div className="detalle-mantenimiento-total-display">
+                          ${suministro.total}
+                        </div>
+                      </div>
+                      {newSupplies.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeNewSupply(index)}
+                          className="detalle-mantenimiento-delete-btn"
+                          title="Eliminar suministro"
+                        >
+                          <FontAwesomeIcon icon={faTrashAlt} />
+                        </button>
+                      )}
                     </div>
-
-                    {newSupplies.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeNewSupply(index)}
-                        className="detalle-mantenimiento-delete-btn"
-                        title="Eliminar suministro"
-                      >
-                        <FontAwesomeIcon icon={faTrashAlt} />
-                      </button>
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={addNewSupply}
+                  className="detalle-mantenimiento-add-btn"
+                >
+                  <FontAwesomeIcon icon={faPlus} /> Agregar Suministro
+                </button>
               </div>
+            )}
 
-              <button
-                type="button"
-                onClick={addNewSupply}
-                className="detalle-mantenimiento-add-btn"
-              >
-                <FontAwesomeIcon icon={faPlus} /> Agregar Suministro
-              </button>
-            </div>
-
-            {/* Sección de observaciones */}
+            {/* Sección de observaciones editable */}
             <div className="detalle-mantenimiento-section">
               <h3 className="detalle-mantenimiento-section-title">Observaciones</h3>
               <div className="detalle-mantenimiento-field">
-                <div className="detalle-mantenimiento-observations">
-                  {maintenance.observaciones || "No se han registrado observaciones."}
-                </div>
+                <textarea
+                  className="detalle-mantenimiento-observations"
+                  value={observaciones}
+                  onChange={e => setObservaciones(e.target.value)}
+                  rows={4}
+                  placeholder="Escriba aquí las observaciones..."
+                  style={{ width: "100%", resize: "vertical" }}
+                  disabled={isFinalizado}
+                />
               </div>
             </div>
 
-            {/* Botón para guardar nuevos suministros */}
+            {/* Botón para finalizar SOLO si NO está finalizado */}
             <div className="detalle-mantenimiento-actions">
-              <button
-                type="button"
-                onClick={saveNewSupplies}
-                className="detalle-mantenimiento-save-btn"
-              >
-                Guardar Nuevos Suministros
-              </button>
+              {!isFinalizado && (
+                <button
+                  type="button"
+                  onClick={handleFinalizarClick}
+                  className="detalle-mantenimiento-save-btn"
+                >
+                  Finalizar manteniminento
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => navigate(-1)}
@@ -462,6 +478,43 @@ const FinalizarMantenimiento = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de confirmación */}
+      {showConfirmModal && (
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <div className="modal-header">
+              <h2>Confirmar finalización</h2>
+            </div>
+            <div className="modal-body">
+              <div className="modal-icon">
+                <div className="modal-icon-inner">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M13,17h-2v-2h2V17z M13,13h-2V7h2V13z"/>
+                  </svg>
+                </div>
+              </div>
+              <p>¿Está seguro que desea finalizar el mantenimiento?</p>
+              <p>Esta acción no se puede deshacer.</p>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="modal-button"
+                onClick={handleConfirmFinalizar}
+              >
+                Sí, finalizar
+              </button>
+              <button 
+                className="modal-button"
+                style={{ background: "#ccc", color: "#222" }}
+                onClick={handleCancelFinalizar}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
