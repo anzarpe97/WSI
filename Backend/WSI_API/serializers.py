@@ -287,10 +287,15 @@ class PlacaSerializer(serializers.ModelSerializer):
 class MantenimientoSerializer(serializers.ModelSerializer):
     motivo = serializers.CharField(source='id_motivo.motivo', read_only=True)
     placa = serializers.CharField(source='id_vehiculo.placa', read_only=True)
+    costo_total = serializers.SerializerMethodField()
 
     class Meta:
         model = Mantenimiento
-        fields = ['id_mantenimiento', 'motivo', 'placa', 'estado', 'fecha_programada']
+        fields = '__all__'
+
+    def get_costo_total(self, obj):
+        detalles = DetalleMantenimiento.objects.filter(id_mantenimiento=obj)
+        return sum([float(det.total) for det in detalles])
 
 class VehiculoSimpleSerializer(serializers.ModelSerializer):
     class Meta:

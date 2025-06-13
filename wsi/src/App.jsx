@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import RecuperarContraseña from './components/RecuperarContraseña';
 import Home from './components/admin/Home';
+import DetalleDocumentoChofer from './components/admin/documentos-choferes/DetalleDocmentoChofer';
 import RegistroEmpleado from './components/admin/empleados/RegistroEmpleado';
 import RegistroVehiculo from './components/admin/vehiculos/RegistroVehiculo';
 import VerVehiculos from './components/admin/vehiculos/VerVehiculos';
@@ -38,6 +39,7 @@ const App = () => {
         <Route path="/gestion-empleados" element={<GestionEmpleados />} />
         <Route path="/detalle-empleado/:id" element={<DetalleEmpleado />} />
         {/* RUTAS DOCUMENTOS ADMINISTRADOR*/}
+        <Route path="/detalle-documento-chofer/:id" element={<DetalleDocumentoChofer />} />
         <Route path="/menu-documentos" element={<MenuDocumentos />} />
         <Route path="/menu-gestion-documentos" element={<MenuGestionDocumentos />} />
         <Route path="/gestion-documento-choferes" element={<GestionDocumentoChoferes />} />

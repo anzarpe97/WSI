@@ -16,6 +16,7 @@ from rest_framework.generics import RetrieveAPIView
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from datetime import date
+from django.db.models import Count
 from django.conf import settings
 
 @api_view(['GET'])
@@ -418,10 +419,58 @@ def finalizar_mantenimiento(request, id):
 
     return Response({'success': 'Mantenimiento finalizado correctamente.'}, status=status.HTTP_200_OK)
 
+class VehiculosMasMantenimientosAPIView(APIView):
+    def get(self, request):
+        # Anota la cantidad de mantenimientos por vehículo y ordena descendente
+        vehiculos = Vehiculo.objects.annotate(
+            cantidad_mantenimientos=Count('mantenimiento')
+        ).order_by('-cantidad_mantenimientos')[:10]  # Top 10
+
+        data = [
+            {
+                "id": v.id_vehiculo,
+                "placa": v.placa,
+                "marca": v.marca,
+                "modelo": v.modelo,
+                "cantidad_mantenimientos": v.cantidad_mantenimientos
+            }
+            for v in vehiculos
+        ]
+        return Response(data)
 
 
+class DocumentoChoferDetailAPIView(RetrieveAPIView):
+    queryset = DocumentoChofer.objects.all()
+    serializer_class = DocumentoChoferSerializer
+    lookup_field = 'id_documento_chofer'
 
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        data = self.get_serializer(instance).data
 
+        # Buscar información del chofer
+        if hasattr(instance, 'chofer_id') and instance.chofer_id:
+            try:
+                chofer = Usuario.objects.get(pk=instance.chofer_id)
+                data['chofer_info'] = {
+                    'id': chofer.id,
+                    'nombre': chofer.nombre,
+                    'apellido': chofer.apellido,
+                    'cedula': chofer.cedula
+                }
+            except Usuario.DoesNotExist:
+                data['chofer_info'] = None
+        else:
+            data['chofer_info'] = None
+
+        # Agregar la ruta del documento (ajusta 'archivo' si tu campo se llama diferente)
+        if hasattr(instance, 'archivo') and instance.archivo:
+            data['ruta_documento'] = request.build_absolute_uri(instance.archivo.url)
+        else:
+            data['ruta_documento'] = None
+
+        return Response(data)
+    
 
 
 

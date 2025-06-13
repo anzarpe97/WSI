@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBell, faUserCircle, faSignOutAlt, faCheckCircle, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import '../styles/header.css';
+import { toast } from 'react-toastify';
 
 const Header = ({
   title = "WSI",
@@ -24,6 +25,7 @@ const Header = ({
   const notificationRef = useRef(null);
   const [notifications, setNotifications] = useState([]);
   const pollingRef = useRef(null);
+  const prevNotificationIds = useRef(new Set());
 
   useEffect(() => {
     if (!showIcons) return;
@@ -37,20 +39,45 @@ const Header = ({
       })
         .then(res => res.json())
         .then(data => {
-          setNotifications(data.map(n => ({
+          const newNotifications = data.map(n => ({
             id: n.id,
             title: n.notificacion.titulo,
             content: n.notificacion.mensaje,
             time: new Date(n.notificacion.fecha_creacion).toLocaleString(),
             read: n.leida
-          })));
+          }));
+
+          // Detectar nuevas notificaciones no leídas
+          const currentUnreadIds = new Set(
+            newNotifications.filter(n => !n.read).map(n => n.id)
+          );
+          const prevUnreadIds = prevNotificationIds.current;
+
+          // Si hay alguna notificación no leída nueva, mostrar toast
+          for (let id of currentUnreadIds) {
+            if (!prevUnreadIds.has(id)) {
+              toast.info('¡Tienes una nueva notificación!', {
+                position: "top-right",
+                autoClose: 4000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+              });
+              break; // Solo mostrar un toast por ciclo de polling
+            }
+          }
+          prevNotificationIds.current = currentUnreadIds;
+
+          setNotifications(newNotifications);
         })
         .catch(error => console.error("Error cargando notificaciones:", error));
     };
 
     fetchNotifications(); // Llama al cargar
 
-    // Polling cada 10 segundos
+    // Polling cada 15 segundos
     pollingRef.current = setInterval(fetchNotifications, 15000);
 
     return () => clearInterval(pollingRef.current);
@@ -147,7 +174,7 @@ const Header = ({
         {showIcons && (
           <>
             {/* Notificaciones */}
-            <div className="icon-wrapper" ref={notificationRef}>
+            <div className="icon-wrapper" ref={notificationRef} style={{ position: 'relative' }}>
               <FontAwesomeIcon
                 icon={faBell}
                 style={iconStyle}
@@ -156,6 +183,10 @@ const Header = ({
                 aria-label="Notificaciones"
                 onClick={toggleNotifications}
               />
+              {/* Badge de notificación nueva */}
+              {notifications.some(n => !n.read) && (
+                <span className="notification-badge"></span>
+              )}
               {notificationsOpen && (
                 <div className="notification-tray">
                   <div className="notification-header">

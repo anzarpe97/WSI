@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from WSI_API.views import finalizar_mantenimiento, DocumentoVehiculoCreateAPIView, UsuarioDetailAPIView, MantenimientoDetailAPIView, MotivoMantenimientoListAPIView, MarcarTodasNotificacionesLeidasView, DocumentosChoferListAPIView, MarcarNotificacionLeidaView, NotificacionesUsuarioView, BuscarChoferPorCedulaAPIView, DocumentoChoferCreateAPIView, VehiculoUpdateView, MantenimientoListAPIView, CrearMantenimientoAPIView,  BuscarVehiculoPorPlacaAPIView, UsuarioListAPIView, VehiculoMecanicoComboAPIView, VehiculoDetailView, VehiculoListView,VehiculoCreateView, CustomLoginView, VerifyTokenView, registrar_usuario, get_csrf_token,RegistroUsuarioAPIView
+from WSI_API.views import DocumentoChoferDetailAPIView,VehiculosMasMantenimientosAPIView, finalizar_mantenimiento, DocumentoVehiculoCreateAPIView, UsuarioDetailAPIView, MantenimientoDetailAPIView, MotivoMantenimientoListAPIView, MarcarTodasNotificacionesLeidasView, DocumentosChoferListAPIView, MarcarNotificacionLeidaView, NotificacionesUsuarioView, BuscarChoferPorCedulaAPIView, DocumentoChoferCreateAPIView, VehiculoUpdateView, MantenimientoListAPIView, CrearMantenimientoAPIView,  BuscarVehiculoPorPlacaAPIView, UsuarioListAPIView, VehiculoMecanicoComboAPIView, VehiculoDetailView, VehiculoListView,VehiculoCreateView, CustomLoginView, VerifyTokenView, registrar_usuario, get_csrf_token,RegistroUsuarioAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -18,6 +18,7 @@ urlpatterns = [
     path('api/usuarios/', UsuarioListAPIView.as_view(), name='usuarios-list'),
     path('api/mantenimientos/', MantenimientoListAPIView.as_view(), name='listar-mantenimientos'),
     path('api/detalle-mantenimiento/<int:pk>/', MantenimientoDetailAPIView.as_view(), name='mantenimiento-detail'),
+    path('api/documentos-chofer/<int:id_documento_chofer>/', DocumentoChoferDetailAPIView.as_view(), name='documento-chofer-detalle'),
     path('api/mantenimientos/crear/', CrearMantenimientoAPIView.as_view(), name='crear-mantenimiento'),
     path('api/documentos-choferes/', DocumentoChoferCreateAPIView.as_view(), name='documentos-choferes-create'),
     path('api/vehiculos/registrar/', VehiculoCreateView.as_view(), name='registrar-vehiculo'),
@@ -32,6 +33,10 @@ urlpatterns = [
     path('api/notificaciones/', NotificacionesUsuarioView.as_view(), name='notificaciones-usuario'),
     path('api/notificaciones/<int:pk>/marcar-leida/', MarcarNotificacionLeidaView.as_view(), name='marcar-notificacion-leida'),
     path('api/notificaciones/marcar-todas-leidas/', MarcarTodasNotificacionesLeidasView.as_view(), name='marcar-todas-notificaciones-leidas'),
+
+    #ESTADISTICAS
+    path('api/vehiculos-mas-mantenimientos/', VehiculosMasMantenimientosAPIView.as_view(), name='vehiculos-mas-mantenimientos'),
+
 
 ]   
 
