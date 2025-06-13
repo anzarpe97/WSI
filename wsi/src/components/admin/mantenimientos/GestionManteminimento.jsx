@@ -108,8 +108,11 @@ const GestionMantenimiento = () => {
   };
 
   // Redirige al formulario de finalización
-  const handleTerminarMantenimiento = (id) => {
-    navigate(`/finalizar-mantenimiento/${id}`);
+  const handleTerminarMantenimiento = (id, estado) => {
+    // Solo permite si no está finalizado
+    if (estado !== 'FINALIZADO' && estado !== 'COMPLETADO') {
+      navigate(`/finalizar-mantenimiento/${id}`);
+    }
   };
 
   // Envía el id del mantenimiento seleccionado a la ruta de detalles
@@ -202,54 +205,64 @@ const GestionMantenimiento = () => {
                   <td colSpan="6" style={{ textAlign: 'center' }}>No hay mantenimientos registrados.</td>
                 </tr>
               ) : (
-                mantenimientosPagina.map((mantenimiento) => (
-                  <tr key={mantenimiento.id_mantenimiento}>
-                    <td data-label="N° Orden">{formatNumeroOrden(mantenimiento.id_mantenimiento)}</td>
-                    <td data-label="Motivo">
-                      {mantenimiento.id_motivo?.motivo || mantenimiento.motivo || 'N/A'}
-                    </td>
-                    <td data-label="Placa">
-                      {mantenimiento.id_vehiculo?.placa || mantenimiento.placa || 'N/A'}
-                    </td>
-                    <td data-label="Estado">
-                      <span className={`mantenimiento-estado-badge estado-${mantenimiento.estado?.toLowerCase()}`}>
-                        {traducirEstado(mantenimiento.estado)}
-                      </span>
-                    </td>
-                    <td data-label="Fecha Inicio">
-                      {new Date(mantenimiento.fecha_programada || mantenimiento.fecha_inicio).toLocaleDateString('es-ES', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric'
-                      })}
-                    </td>
-                    <td data-label="Acciones">
-                      <div className="mantenimiento-acciones">
-                        <FontAwesomeIcon
-                          icon={faEye}
-                          size="lg"
-                          className="mantenimiento-accion-icon"
-                          title="Ver detalles"
-                          onClick={() => handleVerDetalles(mantenimiento.id_mantenimiento)}
-                        />
-                        <FontAwesomeIcon 
-                          icon={faCheck} 
-                          size="lg" 
-                          className="mantenimiento-accion-icon" 
-                          title="Marcar como terminado"
-                          onClick={() => handleTerminarMantenimiento(mantenimiento.id_mantenimiento)}
-                        />
-                        <FontAwesomeIcon 
-                          icon={faTrashAlt} 
-                          size="lg" 
-                          className="mantenimiento-accion-icon" 
-                          title="Eliminar mantenimiento"
-                          onClick={() => handleEliminarMantenimiento(mantenimiento.id_mantenimiento)}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                mantenimientosPagina.map((mantenimiento) => {
+                  const isFinalizado = 
+                    mantenimiento.estado === 'FINALIZADO' || 
+                    mantenimiento.estado === 'COMPLETADO';
+                   
+                  return (
+                    <tr key={mantenimiento.id_mantenimiento}>
+                      <td data-label="N° Orden">{formatNumeroOrden(mantenimiento.id_mantenimiento)}</td>
+                      <td data-label="Motivo">
+                        {mantenimiento.id_motivo?.motivo || mantenimiento.motivo || 'N/A'}
+                      </td>
+                      <td data-label="Placa">
+                        {mantenimiento.id_vehiculo?.placa || mantenimiento.placa || 'N/A'}
+                      </td>
+                      <td data-label="Estado">
+                        <span className={`mantenimiento-estado-badge estado-${mantenimiento.estado?.toLowerCase()}`}>
+                          {traducirEstado(mantenimiento.estado)}
+                        </span>
+                      </td>
+                      <td data-label="Fecha Inicio">
+                        {new Date(mantenimiento.fecha_programada || mantenimiento.fecha_inicio).toLocaleDateString('es-ES', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        })}
+                      </td>
+                      <td data-label="Acciones">
+                        <div className="mantenimiento-acciones">
+                          <FontAwesomeIcon
+                            icon={faEye}
+                            size="lg"
+                            className="mantenimiento-accion-icon"
+                            title="Ver detalles"
+                            onClick={() => handleVerDetalles(mantenimiento.id_mantenimiento)}
+                          />
+                          <FontAwesomeIcon 
+                            icon={faCheck} 
+                            size="lg" 
+                            className={`mantenimiento-accion-icon${isFinalizado ? ' disabled' : ''}`} 
+                            title={isFinalizado ? "Ya finalizado" : "Marcar como terminado"}
+                            style={{
+                              opacity: isFinalizado ? 0.4 : 1,
+                              cursor: isFinalizado ? 'not-allowed' : 'pointer'
+                            }}
+                            onClick={() => !isFinalizado && handleTerminarMantenimiento(mantenimiento.id_mantenimiento, mantenimiento.estado)}
+                          />
+                          <FontAwesomeIcon 
+                            icon={faTrashAlt} 
+                            size="lg" 
+                            className="mantenimiento-accion-icon" 
+                            title="Eliminar mantenimiento"
+                            onClick={() => handleEliminarMantenimiento(mantenimiento.id_mantenimiento)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -315,5 +328,4 @@ const GestionMantenimiento = () => {
     </div>
   );
 };
-
 export default GestionMantenimiento;

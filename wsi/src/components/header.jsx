@@ -219,6 +219,7 @@ const Header = ({
               className="header-icon"
               title="Perfil"
               aria-label="Perfil de usuario"
+              onClick={() => navigate('/perfil-usuario')}
             />
             <FontAwesomeIcon
               icon={faSignOutAlt}

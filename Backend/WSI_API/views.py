@@ -15,6 +15,7 @@ from django.utils.decorators import method_decorator
 from rest_framework.generics import RetrieveAPIView
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
+from datetime import date
 from django.conf import settings
 
 @api_view(['GET'])
@@ -383,7 +384,39 @@ class DocumentoVehiculoCreateAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def finalizar_mantenimiento(request, id):
+    try:
+        mantenimiento = Mantenimiento.objects.get(pk=id)
+    except Mantenimiento.DoesNotExist:
+        return Response({'error': 'Mantenimiento no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
+    suministros = request.data.get('suministros', [])
+    observaciones = request.data.get('observaciones', '')
+
+    # 1. Insertar suministros en DetalleMantenimiento
+    for s in suministros:
+        DetalleMantenimiento.objects.create(
+            id_mantenimiento=mantenimiento,
+            motivo=s.get('motivo', ''),
+            cantidad=s.get('cantidad', 0),
+            precio_und=s.get('precio_und', 0),
+            total=float(s.get('cantidad', 0)) * float(s.get('precio_und', 0))
+        )
+
+    # 2. Actualizar mantenimiento (estado, fecha_terminado, observaciones)
+    mantenimiento.estado = 'FINALIZADO'
+    mantenimiento.fecha_terminado = date.today()
+    mantenimiento.observaciones = observaciones
+    mantenimiento.save()
+
+    # 3. Actualizar estado del vehículo a ACTIVO
+    vehiculo = mantenimiento.id_vehiculo
+    vehiculo.estado = 'ACTIVO'
+    vehiculo.save()
+
+    return Response({'success': 'Mantenimiento finalizado correctamente.'}, status=status.HTTP_200_OK)
 
 
 

@@ -137,6 +137,7 @@ class Mantenimiento(models.Model):
     id_motivo = models.ForeignKey('MotivoMantenimiento', models.RESTRICT, db_column='id_motivo', blank=True, null=False)
     fecha_programada = models.DateField(null=False)
     fecha_finalizado = models.DateField(blank=True, null=True)
+    fecha_terminado = models.DateField(blank=True, null=True)
     tipo_mantenimiento = models.CharField(max_length=10, choices=TIPO_MANTENIMIENTO_CHOICES)
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='ACTIVO')
     observaciones = models.TextField(blank=True, null=True)

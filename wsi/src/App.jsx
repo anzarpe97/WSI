@@ -22,7 +22,7 @@ import DetalleEmpleado from './components/admin/empleados/DetalleEmpleados';
 import Notificaciones from './components/Notificaciones';
 import GestionDocumentoChoferes from './components/admin/documentos-choferes/GestionDocumentoChoferes';
 import FinalizarMantenimiento from './components/admin/mantenimientos/FinalizarMantinimento';
-
+import PerfilUsuario from './components/PerfilUsuario';
 
 const App = () => {
   return (
@@ -59,6 +59,8 @@ const App = () => {
         {/* RUTAS SUPERVISOR*/}     
         <Route path="/supervisorHome" element={<HomeSupervisor />} />
         {/* RUTAS USUARIO*/}
+        <Route path="/perfil-usuario" element={<PerfilUsuario />} />
+        {/* RUTAS NOTIFICACIONES*/}
         <Route path="/notificaciones" element={<Notificaciones />} />
 
       </Routes>

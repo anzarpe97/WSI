@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt, faSearch, faCar, faSpinner, faPlus, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt, faCar, faSpinner, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "../../../styles/DetalleMantenimiento.css";
@@ -164,7 +164,7 @@ const FinalizarMantenimiento = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/mantenimientos/${id}/agregar_suministros/`, {
+      const response = await fetch(`http://localhost:8000/api/mantenimientos/${id}/finalizar/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -176,20 +176,14 @@ const FinalizarMantenimiento = () => {
             cantidad: s.cantidad,
             precio_und: s.precio
           })),
-          observaciones: observaciones // <-- Enviamos las observaciones editadas
+          observaciones: observaciones 
         })
       });
 
       if (response.ok) {
-        toast.success('Suministros y observaciones actualizados correctamente');
-        // Actualizar mantenimiento
-        const updatedResponse = await fetch(`http://localhost:8000/api/mantenimientos/${id}/`, {
-          headers: { Authorization: `Token ${token}` }
-        });
-        const updatedData = await updatedResponse.json();
-        setMaintenance(updatedData);
-        setObservaciones(updatedData.observaciones || "");
-        // Limpiar nuevos suministros
+        toast.success('Mantenimiento finalizado correctamente');
+        // Opcional: podrías actualizar el estado localmente si lo deseas
+        setMaintenance(prev => prev ? { ...prev, estado: 'FINALIZADO', observaciones } : prev);
         setNewSupplies([{
           detalle: '',
           cantidad: '',
@@ -238,6 +232,9 @@ const FinalizarMantenimiento = () => {
       </div>
     );
   }
+
+  // Determinar si el mantenimiento está finalizado
+  const isFinalizado = maintenance.estado === 'FINALIZADO' || maintenance.estado === 'COMPLETADO';
 
   // Formatear fechas para mostrar
   const formatDate = (dateString) => {
@@ -373,79 +370,75 @@ const FinalizarMantenimiento = () => {
               )}
             </div>
 
-            {/* Sección para añadir nuevos suministros */}
-            <div className="detalle-mantenimiento-section detalle-mantenimiento-new-supplies">
-              <h3 className="detalle-mantenimiento-section-title">Agregar Nuevos Suministros</h3>
-
-              <div className="detalle-mantenimiento-supplies">
-                {newSupplies.map((suministro, index) => (
-                  <div key={index} className="detalle-mantenimiento-supply-item">
-                    <div className="detalle-mantenimiento-supply-field">
-                      <label>Detalle</label>
-                      <input
-                        type="text"
-                        value={suministro.detalle}
-                        onChange={(e) => handleNewSupplyChange(index, 'detalle', e.target.value)}
-                        placeholder="Descripción del material"
-                        required
-                      />
-                    </div>
-
-                    <div className="detalle-mantenimiento-supply-field">
-                      <label>Cantidad</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={suministro.cantidad}
-                        onChange={(e) => handleNewSupplyChange(index, 'cantidad', e.target.value)}
-                        placeholder="0"
-                        required
-                      />
-                    </div>
-
-                    <div className="detalle-mantenimiento-supply-field">
-                      <label>Precio Unitario</label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={suministro.precio}
-                        onChange={(e) => handleNewSupplyChange(index, 'precio', e.target.value)}
-                        placeholder="0.00"
-                        required
-                      />
-                    </div>
-
-                    <div className="detalle-mantenimiento-supply-field detalle-mantenimiento-total">
-                      <label>Total</label>
-                      <div className="detalle-mantenimiento-total-display">
-                        ${suministro.total}
+            {/* Sección para añadir nuevos suministros SOLO si NO está finalizado */}
+            {!isFinalizado && (
+              <div className="detalle-mantenimiento-section detalle-mantenimiento-new-supplies">
+                <h3 className="detalle-mantenimiento-section-title">Agregar Nuevos Suministros</h3>
+                <div className="detalle-mantenimiento-supplies">
+                  {newSupplies.map((suministro, index) => (
+                    <div key={index} className="detalle-mantenimiento-supply-item">
+                      <div className="detalle-mantenimiento-supply-field">
+                        <label>Detalle</label>
+                        <input
+                          type="text"
+                          value={suministro.detalle}
+                          onChange={(e) => handleNewSupplyChange(index, 'detalle', e.target.value)}
+                          placeholder="Descripción del material"
+                          required
+                        />
                       </div>
+                      <div className="detalle-mantenimiento-supply-field">
+                        <label>Cantidad</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={suministro.cantidad}
+                          onChange={(e) => handleNewSupplyChange(index, 'cantidad', e.target.value)}
+                          placeholder="0"
+                          required
+                        />
+                      </div>
+                      <div className="detalle-mantenimiento-supply-field">
+                        <label>Precio Unitario</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={suministro.precio}
+                          onChange={(e) => handleNewSupplyChange(index, 'precio', e.target.value)}
+                          placeholder="0.00"
+                          required
+                        />
+                      </div>
+                      <div className="detalle-mantenimiento-supply-field detalle-mantenimiento-total">
+                        <label>Total</label>
+                        <div className="detalle-mantenimiento-total-display">
+                          ${suministro.total}
+                        </div>
+                      </div>
+                      {newSupplies.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeNewSupply(index)}
+                          className="detalle-mantenimiento-delete-btn"
+                          title="Eliminar suministro"
+                        >
+                          <FontAwesomeIcon icon={faTrashAlt} />
+                        </button>
+                      )}
                     </div>
-
-                    {newSupplies.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeNewSupply(index)}
-                        className="detalle-mantenimiento-delete-btn"
-                        title="Eliminar suministro"
-                      >
-                        <FontAwesomeIcon icon={faTrashAlt} />
-                      </button>
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={addNewSupply}
+                  className="detalle-mantenimiento-add-btn"
+                >
+                  <FontAwesomeIcon icon={faPlus} /> Agregar Suministro
+                </button>
               </div>
-
-              <button
-                type="button"
-                onClick={addNewSupply}
-                className="detalle-mantenimiento-add-btn"
-              >
-                <FontAwesomeIcon icon={faPlus} /> Agregar Suministro
-              </button>
-            </div>
+            )}
 
             {/* Sección de observaciones editable */}
             <div className="detalle-mantenimiento-section">
@@ -458,19 +451,22 @@ const FinalizarMantenimiento = () => {
                   rows={4}
                   placeholder="Escriba aquí las observaciones..."
                   style={{ width: "100%", resize: "vertical" }}
+                  disabled={isFinalizado}
                 />
               </div>
             </div>
 
-            {/* Botón para guardar nuevos suministros */}
+            {/* Botón para finalizar SOLO si NO está finalizado */}
             <div className="detalle-mantenimiento-actions">
-              <button
-                type="button"
-                onClick={handleFinalizarClick}
-                className="detalle-mantenimiento-save-btn"
-              >
-                Finalizar manteniminento
-              </button>
+              {!isFinalizado && (
+                <button
+                  type="button"
+                  onClick={handleFinalizarClick}
+                  className="detalle-mantenimiento-save-btn"
+                >
+                  Finalizar manteniminento
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => navigate(-1)}
