@@ -1,128 +1,114 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import '../../styles/home.css';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCar, faUser, faWrench, faChartBar, faBell, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
-import bgImage from '../../assets/bg-login.jpg';
+import { 
+  faCar, 
+  faUser, 
+  faWrench, 
+  faChartBar, 
+  faIdCardClip, 
+  faIdCard, 
+  faCarBurst, 
+  faPeopleGroup, 
+  faScrewdriverWrench, 
+  faFileContract, 
+  faCog,
+  faExclamationTriangle,
+  faClipboard,
+  faFileAlt,
+  faTools,
+  faUsers,
+  faFileSignature
+} from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 import UserHeader from '../Home-Header';
-import { verifyToken } from '../../services/auth';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import bgImage from '../../assets/bg-login.jpg';
 
-const HomeSupervisor = () => {
+const SupervisorHome = () => {
   const navigate = useNavigate();
-  const inactivityTimer = useRef(null);
-  const [user, setUser] = useState(null);
-
-  // Cerrar sesión
-  const logout = (isInactivityLogout = false) => {
-    localStorage.removeItem('token');
-    navigate('/login', {
-      replace: true,
-      state: isInactivityLogout ? { sessionExpired: true } : undefined
-    });
-  };
-
-  // Verificar token y rol al montar
-  useEffect(() => {
-    document.title = "WSI - Supervisor";
-    const checkAuth = async () => {
-      try {
-        const result = await verifyToken();
-        if (result.isValid && result.user) {
-          setUser(result.user);
-          // Si el rol no es 1, redirige al home correspondiente
-          if (String(result.user.rol) !== "1") {
-            if (String(result.user.rol) === "0") {
-              navigate('/adminHome', { replace: true });
-            } else if (String(result.user.rol) === "2") {
-              navigate('/employee-dashboard', { replace: true });
-            } else {
-              logout();
-            }
-            return;
-          }
-        } else {
-          logout();
-        }
-      } catch (error) {
-        logout();
-      }
-    };
-    checkAuth();
-
-    // --- Temporizador de inactividad ---
-    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
-    const resetTimer = () => {
-      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
-      inactivityTimer.current = setTimeout(() => {
-        toast.info('Sesión cerrada por inactividad');
-        logout(true);
-      }, 1200000); // 20 minutos
-    };
-    events.forEach(event => window.addEventListener(event, resetTimer));
-    resetTimer();
-
-    return () => {
-      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
-      events.forEach(event => window.removeEventListener(event, resetTimer));
-    };
-    // --- Fin temporizador ---
-  }, [navigate]);
-
-  // Manejar logout desde el icono
-  const handleLogoutClick = () => {
-    logout();
-  };
-
-  if (!user) {
-    return (
-      <div className="loader-container">
-        <div className="loader"></div>
-        <p>Cargando...</p>
-      </div>
-    );
-  }
+  const [user, setUser] = useState({ nombre: 'Supervisor', apellido: '' });
 
   return (
     <div className="home-wrapper">
-      <ToastContainer position="top-right" autoClose={3000} />
+      {/* Header con Home-Header */}
       <UserHeader 
-        userName={`${user.nombre}`} 
+        userName={user.nombre} 
         title="WSI"
         showIcons={true}
       />
 
+      {/* Contenido principal */}
       <div className="home-content">
         <div className="home-grid">
-          <div className="home-card">
+          {/* Gestión de Vehículos */}
+          <Link to="/gestion-vehiculos" className="home-card">
             <FontAwesomeIcon icon={faCar} size="3x" />
-            <p>Registro de vehículos</p>
-          </div>
-          <div className="home-card">
+            <p>Gestionar Vehículos</p>
+          </Link>
+
+          {/* Gestión de Mantenimiento */}
+          <Link to="/gestion-mantenimiento" className="home-card">
+            <FontAwesomeIcon icon={faTools} size="3x" />
+            <p>Gestionar Mantenimiento</p>
+          </Link>
+
+          {/* Gestión Documentos Choferes */}
+          <Link to="/gestion-documentos-choferes" className="home-card">
+            <FontAwesomeIcon icon={faUsers} size="3x" />
+            <p>Documentos de Choferes</p>
+          </Link>
+
+          {/* Gestión Documentos Vehículos */}
+          <Link to="/gestion-documentos-vehiculos" className="home-card">
+            <FontAwesomeIcon icon={faFileSignature} size="3x" />
+            <p>Documentos de Vehículos</p>
+          </Link>
+
+          {/* Reportar Falla */}
+          <Link to="/reportar-falla" className="home-card">
+            <FontAwesomeIcon icon={faExclamationTriangle} size="3x" />
+            <p>Reportar Falla</p>
+          </Link>
+
+          {/* Generar Reporte */}
+          <Link to="/generar-reporte" className="home-card">
+            <FontAwesomeIcon icon={faClipboard} size="3x" />
+            <p>Generar Reporte</p>
+          </Link>
+
+          {/* Visualizar Vehículos */}
+          <Link to="/visualizar-vehiculos" className="home-card">
+            <FontAwesomeIcon icon={faCar} size="3x" />
+            <p>Visualizar Vehículos</p>
+          </Link>
+
+          {/* Visualizar Documentos */}
+          <Link to="/visualizar-documentos" className="home-card">
+            <FontAwesomeIcon icon={faFileAlt} size="3x" />
+            <p>Visualizar Documentos</p>
+          </Link>
+
+          {/* Visualizar Mantenimiento */}
+          <Link to="/visualizar-mantenimiento" className="home-card">
             <FontAwesomeIcon icon={faWrench} size="3x" />
-            <p>Visualizar estadísticas</p>
-          </div>
-          <div className="home-card">
+            <p>Visualizar Mantenimiento</p>
+          </Link>
+
+          {/* Visualizar Estadísticas */}
+          <Link to="/visualizar-estadisticas" className="home-card">
             <FontAwesomeIcon icon={faChartBar} size="3x" />
-            <p>Visualizar Registros</p>
-          </div>
-          <div className="home-card">
-            <FontAwesomeIcon icon={faChartBar} size="3x" />
-            <p>Reportar falla</p>
-          </div>
-          <div className="home-card">
-            <FontAwesomeIcon icon={faChartBar} size="3x" />
-            <p>Reportes</p>
-          </div>
+            <p>Visualizar Estadísticas</p>
+          </Link>
         </div>
       </div>
 
+      {/* Fondo */}
       <div className="home-bg">
-        <img src={bgImage} alt="Fondo Home" onError={e => e.target.style.display = 'none'} />
+        <img src={bgImage} alt="Fondo Home" onError={(e) => (e.target.style.display = 'none')} />
       </div>
     </div>
   );
 };
 
-export default HomeSupervisor;
+export default SupervisorHome;

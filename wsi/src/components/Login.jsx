@@ -133,7 +133,7 @@ const Login = () => {
               navigate('/adminHome', { state: { data } });
               break;
             case 1:
-              navigate('/supervisor-dashboard', { state: { data } });
+              navigate('/supervisorHome', { state: { data } });
               break;
             case 2:
               navigate('/employee-dashboard', { state: { data } });

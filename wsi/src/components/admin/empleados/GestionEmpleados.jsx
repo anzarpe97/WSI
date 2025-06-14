@@ -216,12 +216,6 @@ const empleadosFiltradosRol = empleados.filter(e =>
                           onClick={() => handleVerDetalles(empleado.id)}
                         />
                         <FontAwesomeIcon 
-                          icon={faPen} 
-                          size="lg" 
-                          className="empleados-accion-icon" 
-                          title="Editar empleado"
-                        />
-                        <FontAwesomeIcon 
                           icon={faTrashAlt} 
                           size="lg" 
                           className="empleados-accion-icon" 

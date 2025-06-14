@@ -9,7 +9,6 @@ import {
   faCheckCircle, 
   faTimesCircle,
   faClock,
-  faIdCard,
   faDownload
 } from '@fortawesome/free-solid-svg-icons';
 import Header from '../../header';
@@ -54,24 +53,21 @@ const DetalleDocumentoChofer = () => {
         return res.json();
       })
       .then(data => {
-         console.log('Datos recibidos del backend:', data);
-            setDocumento({
-            id: data.id_documento_chofer || id,
-            tipo: data.tipo_documento || 'Documento',
-            estado: data.estado || 'Desconocido',
-            fechaEmision: data.fecha_emision,
-            fechaVencimiento: data.fecha_caducidad,
-            chofer: data.chofer_info || {
-                nombre: data.chofer_nombre,
-                apellido: data.chofer_apellido,
-                cedula: data.numero_documento,
-                id: data.chofer
-            },
-            observaciones: data.observaciones || '',
-            archivoUrl: data.ruta_documento || data.archivo || '',
-            formato: '', // Si tienes un campo para el formato, ponlo aquí
-            tamaño: '',  // Si tienes un campo para el tamaño, ponlo aquí
-            });
+        setDocumento({
+          id: data.id_documento_chofer || id,
+          tipo: data.tipo_documento || 'Documento',
+          estado: data.estado || 'Desconocido',
+          fechaEmision: data.fecha_emision,
+          fechaVencimiento: data.fecha_caducidad,
+          chofer: data.chofer_info || {
+            nombre: data.chofer_nombre,
+            apellido: data.chofer_apellido,
+            cedula: data.numero_documento,
+            id: data.chofer
+          },
+          observaciones: data.observaciones || '',
+          archivoUrl: data.ruta_documento || data.archivo || '',
+        });
         setLoading(false);
       })
       .catch(err => {
@@ -112,10 +108,6 @@ const DetalleDocumentoChofer = () => {
     }
   };
 
-  const handleVolver = () => {
-    navigate(-1);
-  };
-
   const handleDescargar = () => {
     if (documento?.archivoUrl) {
       window.open(documento.archivoUrl, '_blank');
@@ -142,10 +134,6 @@ const DetalleDocumentoChofer = () => {
           <div className="detalle-documento-chofer-card">
             <h2 className="detalle-documento-chofer-titulo">Error al cargar el documento</h2>
             <p>{error || "No se pudo cargar la información del documento solicitado."}</p>
-            <button className="detalle-documento-chofer-boton-volver" onClick={handleVolver}>
-              <FontAwesomeIcon icon={faArrowLeft} style={{ marginRight: '8px' }} />
-              Volver
-            </button>
           </div>
         </div>
       </div>
@@ -157,6 +145,16 @@ const DetalleDocumentoChofer = () => {
   const estadoBgColor = documento.estado === 'Vigente' ? '#f6ffed' : '#fff2f0';
   const estadoBorde = documento.estado === 'Vigente' ? '#b7eb8f' : '#ffccc7';
 
+  // Detectar si el archivo es una imagen por extensión
+  const esImagen = documento.archivoUrl && (
+    documento.archivoUrl.toLowerCase().endsWith('.jpg') ||
+    documento.archivoUrl.toLowerCase().endsWith('.jpeg') ||
+    documento.archivoUrl.toLowerCase().endsWith('.png') ||
+    documento.archivoUrl.toLowerCase().endsWith('.gif') ||
+    documento.archivoUrl.toLowerCase().endsWith('.bmp') ||
+    documento.archivoUrl.toLowerCase().endsWith('.webp')
+  );
+
   return (
     <div className="detalle-documento-chofer-home-wrapper">
       {/* Fondo con efecto sutil */}
@@ -167,12 +165,8 @@ const DetalleDocumentoChofer = () => {
       
       <div className="detalle-documento-chofer-container">
         <div className="detalle-documento-chofer-card">
-          {/* Header con botón de volver y título */}
+          {/* Header con título */}
           <div className="detalle-documento-chofer-header">
-            <button className="detalle-documento-chofer-boton-volver" onClick={handleVolver}>
-              <FontAwesomeIcon icon={faArrowLeft} style={{ marginRight: '8px' }} />
-              Volver
-            </button>
             <h2 className="detalle-documento-chofer-titulo">Documento del Chofer</h2>
           </div>
           
@@ -183,27 +177,17 @@ const DetalleDocumentoChofer = () => {
             </div>
             <div className="detalle-documento-chofer-info-basica">
               <h3>{documento.tipo}</h3>
-              <div className="detalle-documento-chofer-estado" style={{
-                backgroundColor: estadoBgColor,
-                color: estadoColor,
-                border: `1px solid ${estadoBorde}`
-              }}>
-                <FontAwesomeIcon 
-                  icon={documento.estado === 'Vigente' ? faCheckCircle : faTimesCircle} 
-                  style={{ marginRight: '6px' }} 
-                />
-                {documento.estado}
-              </div>
+
             </div>
           </div>
           
           {/* Visualizador de documentos */}
           <div className="detalle-documento-chofer-visualizador">
             <div className="detalle-documento-chofer-visualizador-contenedor">
-              {documento.formato && documento.formato.includes('image') && documento.archivoUrl ? (
+              {esImagen ? (
                 <img 
                   src={documento.archivoUrl} 
-                  alt={documento.tipo} 
+                  alt={documento.tipo}
                   className="detalle-documento-chofer-imagen"
                 />
               ) : (
@@ -278,40 +262,6 @@ const DetalleDocumentoChofer = () => {
                     {diasRestantes} días
                   </span>
                 </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Información adicional */}
-          <div className="detalle-documento-chofer-info-adicional">
-            <div className="detalle-documento-chofer-detalle-icono">
-              <FontAwesomeIcon icon={faIdCard} />
-            </div>
-            <div className="detalle-documento-chofer-info-adicional-contenido">
-              <h3>Detalles Adicionales</h3>
-              <div className="detalle-documento-chofer-info-adicional-fila">
-                <span className="detalle-documento-chofer-info-adicional-etiqueta">ID Documento:</span>
-                <span className="detalle-documento-chofer-info-adicional-valor">
-                  {documento.id}
-                </span>
-              </div>
-              <div className="detalle-documento-chofer-info-adicional-fila">
-                <span className="detalle-documento-chofer-info-adicional-etiqueta">Formato:</span>
-                <span className="detalle-documento-chofer-info-adicional-valor">
-                  {documento.formato || "No disponible"}
-                </span>
-              </div>
-              <div className="detalle-documento-chofer-info-adicional-fila">
-                <span className="detalle-documento-chofer-info-adicional-etiqueta">Tamaño:</span>
-                <span className="detalle-documento-chofer-info-adicional-valor">
-                  {documento.tamaño || "No disponible"}
-                </span>
-              </div>
-              <div className="detalle-documento-chofer-info-adicional-fila">
-                <span className="detalle-documento-chofer-info-adicional-etiqueta">Observaciones:</span>
-                <span className="detalle-documento-chofer-info-adicional-valor">
-                  {documento.observaciones || "No disponible"}
-                </span>
               </div>
             </div>
           </div>
