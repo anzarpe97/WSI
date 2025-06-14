@@ -1,15 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faChartPie, faChartBar, faChartLine, faCar, faWrench, faGasPump, 
-  faGaugeHigh, faCarSide, faGears, faClock, faDollarSign, faUserCog, faCheckCircle, faExclamationTriangle
+  faGaugeHigh, faCarSide, faGears, faClock, faDollarSign, faUserCog, 
+  faCheckCircle, faExclamationTriangle, faFilePdf
 } from '@fortawesome/free-solid-svg-icons';
 import { verifyToken } from '../../services/auth';
 import Header from '../header';
 import bgImage from '../../assets/bg-login.jpg';
 import '../../styles/Estadisticas.css';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const COLORS = ['#FF6A00', '#36A2EB', '#4CAF50', '#FFCE56', '#9966FF', '#FF6384', '#4BC0C0', '#F7464A', '#949FB1', '#D4CCC5'];
 
@@ -17,6 +21,8 @@ const Estadisticas = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState({ nombre: '', apellido: '' });
   const [loading, setLoading] = useState(true);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  const reportRef = useRef(null);
 
   // Datos de vehículos y mantenimientos
   const [vehiculos, setVehiculos] = useState([]);
@@ -278,6 +284,229 @@ const Estadisticas = () => {
     checkAuthAndFetch();
   }, [navigate]);
 
+const generatePDF = () => {
+  setGeneratingPDF(true);
+  
+  try {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const margin = 15;
+    const maxWidth = pageWidth - 2 * margin;
+    
+    // Función para agregar encabezado de sección
+    const addSectionHeader = (title, y) => {
+      pdf.setFontSize(16);
+      pdf.setTextColor(255, 106, 0);
+      pdf.text(title, margin, y);
+      pdf.setDrawColor(255, 106, 0);
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, y + 2, pageWidth - margin, y + 2);
+      return y + 10;
+    };
+    
+    // Función para agregar tabla usando jspdf-autotable
+    const addTable = (headers, data, y) => {
+      pdf.autoTable({
+        startY: y,
+        head: [headers],
+        body: data,
+        theme: 'grid',
+        headStyles: { 
+          fillColor: [255, 106, 0],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        styles: { 
+          fontSize: 10,
+          cellPadding: 3,
+          overflow: 'linebreak'
+        },
+        margin: { left: margin, right: margin }
+      });
+      return pdf.autoTable.previous.finalY + 10;
+    };
+    
+    // Portada
+    pdf.setFontSize(28);
+    pdf.setTextColor(255, 106, 0);
+    pdf.text('Reporte de Estadísticas', pageWidth / 2, 40, null, null, 'center');
+    pdf.setFontSize(18);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('Flota Vehicular', pageWidth / 2, 60, null, null, 'center');
+    
+    const date = new Date().toLocaleDateString();
+    pdf.setFontSize(14);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(`Generado el: ${date}`, pageWidth / 2, 75, null, null, 'center');
+    
+    pdf.setFontSize(12);
+    pdf.setTextColor(120, 120, 120);
+    pdf.text('WSI - Sistema de Gestión de Flota', pageWidth / 2, 85, null, null, 'center');
+    
+    pdf.addPage();
+    
+    // Resumen ejecutivo
+    let yPos = addSectionHeader('Resumen Ejecutivo', margin);
+    pdf.setFontSize(12);
+    pdf.setTextColor(0, 0, 0);
+    
+    // Agregar estadísticas clave
+    const summaryData = [
+      { label: 'Total de Vehículos', value: vehiculos.length },
+      { label: 'Mantenimientos Registrados', value: stats.totalMantenimientos },
+      { label: 'Culminados a Tiempo', value: stats.culminadosATiempo },
+      { label: 'Retrasados', value: stats.retrasados },
+      { label: 'Gasto Promedio', value: `$${Number(stats.promedioGastoMantenimiento || 0).toFixed(2)}` },
+      { label: 'Kilometraje Promedio', value: `${stats.kilometrajeFlota.promedio.toLocaleString()} km` },
+      { label: 'Kilometraje Máximo', value: `${stats.kilometrajeFlota.maximo.toLocaleString()} km` }
+    ];
+    
+    // Crear tabla de resumen
+    const summaryTableData = summaryData.map(item => [item.label, item.value]);
+    yPos = addTable(['Métrica', 'Valor'], summaryTableData, yPos);
+    
+    // Sección de vehículos
+    yPos = addSectionHeader('Estadísticas de Vehículos', yPos);
+    
+    // Distribución por marca
+    pdf.setFontSize(12);
+    pdf.text('Distribución por Marca:', margin, yPos);
+    yPos += 7;
+    
+    const marcasData = stats.distribucionMarcas.map(item => [item.marca, item.cantidad]);
+    yPos = addTable(['Marca', 'Cantidad'], marcasData, yPos);
+    
+    // Vehículos por estado
+    pdf.text('Vehículos por Estado:', margin, yPos);
+    yPos += 7;
+    
+    const estadosData = stats.vehiculosPorEstado.map(item => [item.name, item.value]);
+    yPos = addTable(['Estado', 'Cantidad'], estadosData, yPos);
+    
+    // Tipos de combustible
+    pdf.text('Tipos de Combustible:', margin, yPos);
+    yPos += 7;
+    
+    const combustiblesData = stats.tiposCombustible.map(item => [item.name, item.value]);
+    yPos = addTable(['Combustible', 'Cantidad'], combustiblesData, yPos);
+    
+    if (stats.capacidadCarga.length > 0) {
+      pdf.text('Capacidad de Carga Promedio por Tipo:', margin, yPos);
+      yPos += 7;
+      
+      const capacidadData = stats.capacidadCarga.map(item => [item.tipo, `${item.capacidad} ton`]);
+      yPos = addTable(['Tipo', 'Capacidad Promedio'], capacidadData, yPos);
+    }
+    
+    // Sección de mantenimientos
+    pdf.addPage();
+    yPos = addSectionHeader('Estadísticas de Mantenimientos', margin);
+    
+    // Mantenimientos por estado
+    pdf.setFontSize(12);
+    pdf.text('Mantenimientos por Estado:', margin, yPos);
+    yPos += 7;
+    
+    const mantEstadosData = stats.mantenimientosPorEstado.map(item => [item.name, item.value]);
+    yPos = addTable(['Estado', 'Cantidad'], mantEstadosData, yPos);
+    
+    // Mantenimientos por tipo
+    pdf.text('Mantenimientos por Tipo:', margin, yPos);
+    yPos += 7;
+    
+    const mantTiposData = stats.mantenimientosPorTipo.map(item => [item.name, item.value]);
+    yPos = addTable(['Tipo', 'Cantidad'], mantTiposData, yPos);
+    
+    // Mantenimientos por mecánico
+    pdf.text('Mantenimientos por Mecánico:', margin, yPos);
+    yPos += 7;
+    
+    const mecanicosData = stats.mantenimientosPorMecanico.map(item => [item.mecanico, item.cantidad]);
+    yPos = addTable(['Mecánico', 'Cantidad'], mecanicosData, yPos);
+    
+    // Mantenimientos por motivo
+    pdf.text('Mantenimientos por Motivo:', margin, yPos);
+    yPos += 7;
+    
+    const motivosData = stats.mantenimientosPorMotivo.map(item => [item.motivo, item.cantidad]);
+    yPos = addTable(['Motivo', 'Cantidad'], motivosData, yPos);
+    
+    // Historial mensual
+    pdf.text('Historial Mensual de Mantenimientos:', margin, yPos);
+    yPos += 7;
+    
+    const historialData = stats.historialMantenimientos.map(item => [item.mes, item.cantidad]);
+    yPos = addTable(['Mes', 'Cantidad'], historialData, yPos);
+    
+    // Gastos mensuales
+    pdf.text('Gastos Mensuales de Mantenimiento:', margin, yPos);
+    yPos += 7;
+    
+    const gastosData = stats.gastosMensuales.map(item => [item.mes, `$${Number(item.gasto).toFixed(2)}`]);
+    yPos = addTable(['Mes', 'Gasto'], gastosData, yPos);
+    
+    // Tiempo de resolución
+    pdf.text('Tiempo de Resolución de Mantenimientos:', margin, yPos);
+    yPos += 7;
+    
+    const tiempoData = [
+      ['Promedio', `${stats.tiempoResolucion.promedio} días`],
+      ['Máximo', `${stats.tiempoResolucion.maximo} días`]
+    ];
+    yPos = addTable(['Métrica', 'Valor'], tiempoData, yPos);
+    
+    // Vehículos con más mantenimientos
+    pdf.addPage();
+    yPos = addSectionHeader('Vehículos con Más Mantenimientos', margin);
+    
+    const topVehiculosData = topVehiculos.slice(0, 5).map((item, index) => [
+      index + 1,
+      item.placa,
+      `${item.marca} ${item.modelo}`,
+      item.cantidad_mantenimientos
+    ]);
+    
+    yPos = addTable(['#', 'Placa', 'Vehículo', 'Mantenimientos'], topVehiculosData, yPos);
+    
+    // Análisis y recomendaciones
+    yPos = addSectionHeader('Análisis y Recomendaciones', yPos + 10);
+    pdf.setFontSize(12);
+    pdf.setTextColor(0, 0, 0);
+    
+    const analysisLines = [
+      '1. Vehículos con alto kilometraje:',
+      `   - El vehículo con mayor kilometraje (${stats.kilometrajeFlota.maximo.toLocaleString()} km) requiere atención prioritaria`,
+      '2. Mantenimientos retrasados:',
+      `   - Existen ${stats.retrasados} mantenimientos retrasados que requieren seguimiento`,
+      '3. Distribución de gastos:',
+      `   - El mes con mayor gasto fue ${stats.gastosMensuales.reduce((max, item) => item.gasto > max.gasto ? item : max, stats.gastosMensuales[0]).mes}`,
+      '4. Eficiencia de mecánicos:',
+      `   - El mecánico más productivo realizó ${Math.max(...stats.mantenimientosPorMecanico.map(m => m.cantidad))} mantenimientos`
+    ];
+    
+    analysisLines.forEach(line => {
+      pdf.text(line, margin, yPos);
+      yPos += 7;
+    });
+    
+    // Pie de página en cada página
+    const pageCount = pdf.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Página ${i} de ${pageCount}`, pageWidth - margin - 20, pdf.internal.pageSize.getHeight() - 10);
+      pdf.text('WSI - Sistema de Gestión de Flota', margin, pdf.internal.pageSize.getHeight() - 10);
+    }
+    
+    pdf.save(`reporte_estadisticas_${new Date().toISOString().slice(0, 10)}.pdf`);
+  } catch (error) {
+    console.error("Error al generar PDF:", error);
+  } finally {
+    setGeneratingPDF(false);
+  }
+};
+
   if (loading) {
     return (
       <div className="loader-container">
@@ -303,9 +532,20 @@ const Estadisticas = () => {
 
   return (
     <div className="home-wrapper">
-     <Header title="WSI" />
+      <Header title="WSI" />
 
-      <div className="estadisticas-content">
+      <div className="estadisticas-header-actions">
+        <button 
+          className="pdf-button"
+          onClick={generatePDF}
+          disabled={generatingPDF}
+        >
+          <FontAwesomeIcon icon={faFilePdf} />
+          {generatingPDF ? ' Generando PDF...' : ' Exportar a PDF'}
+        </button>
+      </div>
+
+      <div className="estadisticas-content" ref={reportRef}>
         <div className="estadisticas-header"></div>
 
         <div className="stats-overview">
@@ -521,6 +761,16 @@ const Estadisticas = () => {
           </div>
         </div>
       </div>
+
+      {/* Overlay para generación de PDF */}
+      {generatingPDF && (
+        <div className="pdf-overlay">
+          <div className="pdf-loader">
+            <div className="loader"></div>
+            <p>Generando reporte PDF...</p>
+          </div>
+        </div>
+      )}
 
       <div className="home-bg">
         <img src={bgImage} alt="Fondo Home" onError={(e) => (e.target.style.display = 'none')} />
