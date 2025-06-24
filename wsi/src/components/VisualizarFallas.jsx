@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faCheckCircle, faTrashAlt, faCar, faUser, faCalendarAlt, faExclamationTriangle, faClipboard } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faCheckCircle, faTrashAlt, faCar, faUser, faCalendarAlt, faExclamationTriangle, faClipboard, faPlus } from '@fortawesome/free-solid-svg-icons';
 import Header from './header';
 import bgImage from '../assets/bg-login.jpg';
 import { ToastContainer, toast } from 'react-toastify';
@@ -138,8 +138,27 @@ const VisualizarFallas = () => {
       
       <div className="fallas-container">
         <div className="fallas-card">
-          <div className="fallas-header">
+          <div className="fallas-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h2 className="fallas-titulo">Reportes de Fallas</h2>
+            <button
+              className="fallas-boton-volver"
+              style={{
+                background: '#ff6a00',      // Naranja
+                color: '#fff',              // Blanco
+                border: '1px solid #ff6a00',
+                fontWeight: 600,
+                borderRadius: 8,
+                padding: '8px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                cursor: 'pointer'
+              }}
+              onClick={() => navigate('/reportar-falla')}
+            >
+              <FontAwesomeIcon icon={faPlus} style={{ marginRight: 6 }} />
+              Registrar Falla
+            </button>
           </div>
           
           <div className="fallas-list">

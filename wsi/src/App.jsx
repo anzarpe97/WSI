@@ -18,7 +18,7 @@ import RegistroDocumentosVehiculos from './components/admin/documentos-vehiculos
 import HomeSupervisor from './components/supervisor/HomeSupervisor';
 import VisualizarFallas from './components/VisualizarFallas';
 import Estadisticas from './components/admin/Estadisticas';
-import DocumentosGestion from './components/admin/MenuGestionDocumentos';
+import MenuGestionDocumentos from './components/admin/MenuGestionDocumentos';
 import VerDocumentoVehiculos from './components/admin/documentos-vehiculos/VerDocumentoVehiculos';
 import DetalleMantenimiento from './components/admin/mantenimientos/DetalleMantenimiento';
 import DetalleEmpleado from './components/admin/empleados/DetalleEmpleados';
@@ -44,7 +44,6 @@ const App = () => {
         {/* RUTAS DOCUMENTOS ADMINISTRADOR*/}
         <Route path="/detalle-documento-chofer/:id" element={<DetalleDocumentoChofer />} />
         <Route path="/menu-documentos" element={<MenuDocumentos />} />
-        <Route path="/documentos-gestion" element={<DocumentosGestion />} />
         <Route path="/menu-gestion-documentos" element={<MenuGestionDocumentos />} />
         <Route path="/ver-documentos-vehiculos" element={<VerDocumentoVehiculos />} />
         <Route path="/gestion-documento-choferes" element={<GestionDocumentoChoferes />} />

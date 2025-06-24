@@ -124,18 +124,12 @@ const SupervisorHome = () => {
             <FontAwesomeIcon icon={faUsers} size="3x" />
             <p>Gestion de Documentos</p>
           </Link>
-
-          {/* Reportar Falla */}
-          <Link to="/reportar-falla" className="home-card">
+          
+          <Link to="/ver-fallas" className="home-card">
             <FontAwesomeIcon icon={faExclamationTriangle} size="3x" />
-            <p>Reportar Falla</p>
+            <p>Gestión de Fallas</p>
           </Link>
 
-          {/* Gestión de Documentos Vehículo */}
-          <Link to="/gestion-documentos-vehiculos" className="home-card">
-            <FontAwesomeIcon icon={faFileSignature} size="3x" />
-            <p>Gestión de Documentos Vehículo</p>
-          </Link>
 
           {/* Estadísticas y Reportes */}
           <Link to="/estadisticas" className="home-card">
@@ -143,29 +137,7 @@ const SupervisorHome = () => {
             <p>Estadísticas y Reportes</p>
           </Link>
 
-          {/* Visualizar Vehículos */}
-          <Link to="/ver-vehiculos" className="home-card">
-            <FontAwesomeIcon icon={faCarBurst} size="3x" />
-            <p>Visualizar Vehículos</p>
-          </Link>
 
-          {/* Visualizar Documentos */}
-          <Link to="/ver-documentos-vehiculos" className="home-card">
-            <FontAwesomeIcon icon={faFileAlt} size="3x" />
-            <p>Visualizar Documentos</p>
-          </Link>
-
-          {/* Visualizar Mantenimientos */}
-          <Link to="/visualizar-mantenimiento" className="home-card">
-            <FontAwesomeIcon icon={faWrench} size="3x" />
-            <p>Visualizar Mantenimientos</p>
-          </Link>
-
-          {/* Visualizar Fallas */}
-          <Link to="/ver-fallas" className="home-card">
-            <FontAwesomeIcon icon={faExclamationTriangle} size="3x" />
-            <p>Visualizar Fallas</p>
-          </Link>
         </div>
       </div>
 
