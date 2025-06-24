@@ -39,11 +39,9 @@ const VerVehiculos = () => {
       try {
         const result = await verifyToken();
         if (result.isValid && result.user) {
-          // Si el rol no es 0, redirige al home correspondiente
-          if (String(result.user.rol) !== "0") {
-            if (String(result.user.rol) === "1") {
-              navigate('/supervisorHome', { replace: true });
-            } else if (String(result.user.rol) === "2") {
+          // Solo los roles 0 (admin) y 1 (supervisor) pueden entrar
+          if (String(result.user.rol) !== "0" && String(result.user.rol) !== "1") {
+            if (String(result.user.rol) === "2") {
               navigate('/employee-dashboard', { replace: true });
             } else {
               logout();

@@ -37,25 +37,24 @@ const RegistroDocumentosVehiculos = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const result = await verifyToken();
-        if (result.isValid && result.user) {
-          if (String(result.user.rol) !== "0") {
-            if (String(result.user.rol) === "1") {
-              navigate('/supervisorHome', { replace: true });
-            } else if (String(result.user.rol) === "2") {
-              navigate('/employee-dashboard', { replace: true });
-            } else {
-              logout();
-            }
-            return;
+    try {
+      const result = await verifyToken();
+      if (result.isValid && result.user) {
+        // Solo los roles 0 (admin) y 1 (supervisor) pueden entrar
+        if (String(result.user.rol) !== "0" && String(result.user.rol) !== "1") {
+          if (String(result.user.rol) === "2") {
+            navigate('/employee-dashboard', { replace: true });
+          } else {
+            logout();
           }
-        } else {
-          logout();
+          return;
         }
-      } catch (error) {
+      } else {
         logout();
       }
+    } catch (error) {
+      logout();
+    }
     };
     checkAuth();
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];

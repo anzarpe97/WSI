@@ -10,13 +10,13 @@ import {
 import { useNavigate } from 'react-router-dom';
 import '../styles/home-header.css';
 
-const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) => {
+const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true, userRole: propUserRole }) => {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState(userName);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationRef = useRef(null);
-
   const [notifications, setNotifications] = useState([]);
+  const [userRole, setUserRole] = useState(propUserRole ?? null);
 
   // Definición de estilos para el ícono de usuario
   const iconStyle = {
@@ -43,14 +43,34 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
           read: n.leida
         })));
       });
-  }, []);
+
+    // Si no se recibe el rol por props, obtenerlo de localStorage
+    if (propUserRole === undefined) {
+      const tokenUser = localStorage.getItem('user');
+      if (tokenUser) {
+        try {
+          const userObj = JSON.parse(tokenUser);
+          setUserRole(String(userObj.rol));
+        } catch (e) {
+          setUserRole(null);
+        }
+      } else {
+        setUserRole(null);
+      }
+    }
+  }, [propUserRole]);
 
   useEffect(() => {
     function handleResize() {
+      let roleLabel = '';
+      if (userRole === "0") roleLabel = 'Administrador';
+      else if (userRole === "1") roleLabel = 'Supervisor';
+      else if (userRole === "2") roleLabel = 'Usuario';
+      else roleLabel = '';
       if (window.innerWidth <= 541) {
-        setDisplayName('Admin');
+        setDisplayName(roleLabel || userName);
       } else {
-        setDisplayName(`${userName} (Administrador)`);
+        setDisplayName(roleLabel ? `${userName} (${roleLabel})` : userName);
       }
     }
     
@@ -68,7 +88,7 @@ const UserHeader = ({ userName = "Usuario", title = "WSI", showIcons = true }) =
       window.removeEventListener('resize', handleResize);
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [userName]);
+  }, [userName, userRole]);
 
   const toggleNotifications = () => {
     setNotificationsOpen(!notificationsOpen);

@@ -39,6 +39,7 @@ const SupervisorHome = () => {
       try {
         const result = await verifyToken();
         if (result.isValid && result.user) {
+          // Permitir solo rol 1 (supervisor)
           if (String(result.user.rol) !== "1") {
             if (String(result.user.rol) === "0") {
               navigate('/home', { replace: true });
@@ -96,32 +97,32 @@ const SupervisorHome = () => {
 
   return (
     <div className="home-wrapper">
-      {/* Header con Home-Header */}
       <UserHeader 
-        userName={user.nombre} 
+        userName={`${user.nombre}`} 
         title="WSI"
         showIcons={true}
+        userRole={user.rol} 
       />
 
-      {/* Contenido principal */}
       <div className="home-content">
         <div className="home-grid">
-          {/* Gestión de Vehículos */}
-          <Link to="/registro-vehiculo" className="home-card">
+
+          {/* Registro de Vehículos */}
+          <Link to="/ver-vehiculos" className="home-card">
             <FontAwesomeIcon icon={faCar} size="3x" />
-            <p>Registro de Vehículos</p>
+            <p>Gestión de Vehículos</p>
           </Link>
 
-          {/* Gestión de Mantenimiento */}
+          {/* Gestionar Mantenimiento */}
           <Link to="/gestion-mantenimiento" className="home-card">
             <FontAwesomeIcon icon={faTools} size="3x" />
-            <p>Gestionar Mantenimiento</p>
+            <p>Gestion de Mantenimiento</p>
           </Link>
 
-          {/* Gestión Documentos Choferes */}
-          <Link to="/gestion-documentos-choferes" className="home-card">
+          {/* Registro de Documentos Choferes */}
+          <Link to="/menu-gestion-documentos" className="home-card">
             <FontAwesomeIcon icon={faUsers} size="3x" />
-            <p>Registro de Documentos</p>
+            <p>Gestion de Documentos</p>
           </Link>
 
           {/* Reportar Falla */}
@@ -130,7 +131,7 @@ const SupervisorHome = () => {
             <p>Reportar Falla</p>
           </Link>
 
-          {/* Gestión Documentos Vehículos */}
+          {/* Gestión de Documentos Vehículo */}
           <Link to="/gestion-documentos-vehiculos" className="home-card">
             <FontAwesomeIcon icon={faFileSignature} size="3x" />
             <p>Gestión de Documentos Vehículo</p>
@@ -143,21 +144,27 @@ const SupervisorHome = () => {
           </Link>
 
           {/* Visualizar Vehículos */}
-          <Link to="/visualizar-vehiculos" className="home-card">
+          <Link to="/ver-vehiculos" className="home-card">
             <FontAwesomeIcon icon={faCarBurst} size="3x" />
             <p>Visualizar Vehículos</p>
           </Link>
 
           {/* Visualizar Documentos */}
-          <Link to="/visualizar-documentos" className="home-card">
+          <Link to="/ver-documentos-vehiculos" className="home-card">
             <FontAwesomeIcon icon={faFileAlt} size="3x" />
             <p>Visualizar Documentos</p>
           </Link>
 
-          {/* Visualizar Mantenimiento */}
+          {/* Visualizar Mantenimientos */}
           <Link to="/visualizar-mantenimiento" className="home-card">
             <FontAwesomeIcon icon={faWrench} size="3x" />
             <p>Visualizar Mantenimientos</p>
+          </Link>
+
+          {/* Visualizar Fallas */}
+          <Link to="/ver-fallas" className="home-card">
+            <FontAwesomeIcon icon={faExclamationTriangle} size="3x" />
+            <p>Visualizar Fallas</p>
           </Link>
         </div>
       </div>
