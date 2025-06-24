@@ -270,7 +270,29 @@ class NotificacionUsuario(models.Model):
         db_table = 'notificacion_usuario'
         unique_together = ('notificacion', 'usuario')
 
+class ReporteFalla(models.Model):
+    ESTADO_CHOICES = [
+        ('Operativo', 'Operativo'),
+        ('No Operativo', 'No Operativo'),
+    ]
 
+    id_reporte = models.AutoField(primary_key=True)
+    id_vehiculo = models.ForeignKey('Vehiculo', on_delete=models.RESTRICT, db_column='id_vehiculo')
+    id_usuario = models.ForeignKey('Usuario', on_delete=models.RESTRICT, db_column='id_usuario')
+    motivo_falla = models.CharField('Mmotivo_de_falla', max_length=60, null=False)
+    fecha_reporte = models.DateField(auto_now_add=True)
+    observaciones = models.TextField(blank=True, null=True)
+    estado = models.CharField(max_length=15, choices=ESTADO_CHOICES, default='Operativo')
+    revisada = models.BooleanField(default=False)
+    eliminada = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Reporte {self.id_reporte} - Vehículo {self.id_vehiculo.placa} - Estado {self.estado}"
+
+    class Meta:
+        verbose_name = 'Reporte de Falla'
+        verbose_name_plural = 'Reportes de Fallas'
+        db_table = 'reportes_falla'
 
 
 

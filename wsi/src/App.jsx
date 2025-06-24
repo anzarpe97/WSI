@@ -16,6 +16,7 @@ import MenuDocumentos from './components/admin/MenuDocumentos';
 import RegistroDocumentoChoferes from './components/admin/documentos-choferes/RegistroDocumentoChoferes';
 import RegistroDocumentosVehiculos from './components/admin/documentos-vehiculos/RegistroDocumentosVehiculos';
 import HomeSupervisor from './components/supervisor/HomeSupervisor';
+import VisualizarFallas from './components/VisualizarFallas';
 import Estadisticas from './components/admin/Estadisticas';
 import MenuGestionDocumentos from './components/admin/MenuGestionDocumentos';
 import VerDocumentoVehiculos from './components/admin/documentos-vehiculos/VerDocumentoVehiculos';
@@ -25,6 +26,7 @@ import Notificaciones from './components/Notificaciones';
 import GestionDocumentoChoferes from './components/admin/documentos-choferes/GestionDocumentoChoferes';
 import FinalizarMantenimiento from './components/admin/mantenimientos/FinalizarMantinimento';
 import PerfilUsuario from './components/PerfilUsuario';
+import ReporteFallas from './components/supervisor/ReporteFallas.jsx/ReporteFallas';
 
 const App = () => {
   return (
@@ -62,6 +64,13 @@ const App = () => {
         {/* RUTAS DOCUMENTOS VEHICULOS ADMINISTRADOR*/}      
         {/* RUTAS SUPERVISOR*/}     
         <Route path="/supervisorHome" element={<HomeSupervisor />} />
+        <Route path="/reportar-falla" element={<ReporteFallas />} />
+        {/* RUTAS VEHICULOS SUPERVISOR*/}
+        <Route path="/ver-fallas" element={<VisualizarFallas />} />
+
+        {/* RUTAS VEHICULOS SUPERVISOR*/}
+        {/* RUTAS DOCUMENTOS VEHICULOS SUPERVISOR*/}
+
         {/* RUTAS USUARIO*/}
         <Route path="/perfil-usuario" element={<PerfilUsuario />} />
         {/* RUTAS NOTIFICACIONES*/}
