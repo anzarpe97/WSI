@@ -25,7 +25,12 @@ const MenuGestionDocumentos = () => {
     const check = async () => {
       try {
         const result = await verifyToken();
-        if (!result.isValid) {
+        // Solo los roles 0 (admin) y 1 (supervisor) pueden entrar
+        if (
+          !result.isValid ||
+          !result.user ||
+          (String(result.user.rol) !== "0" && String(result.user.rol) !== "1")
+        ) {
           logout();
         }
       } catch {
@@ -41,7 +46,7 @@ const MenuGestionDocumentos = () => {
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 1200000); // 5 minutos = 300,000 ms
+      }, 1200000); // 20 minutos
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();

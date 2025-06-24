@@ -94,6 +94,7 @@ const Home = () => {
         userName={`${user.nombre}`} 
         title="WSI"
         showIcons={true}
+        userRole={user.rol} // <-- Envía el rol aquí
       />
 
       <div className="home-content">

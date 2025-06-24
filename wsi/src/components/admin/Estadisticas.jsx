@@ -53,23 +53,22 @@ const Estadisticas = () => {
   useEffect(() => {
     document.title = "WSI - Estadísticas";
     const checkAuthAndFetch = async () => {
-      try {
-        const result = await verifyToken();
-        if (result.isValid && result.user) {
-          if (String(result.user.rol) !== "0") {
-            if (String(result.user.rol) === "1") {
-              navigate('/supervisorHome', { replace: true });
-            } else if (String(result.user.rol) === "2") {
-              navigate('/employee-dashboard', { replace: true });
-            } else {
-              navigate('/login', { replace: true });
-            }
-            return;
-          }
-          setUser({
-            nombre: result.user.nombre,
-            apellido: result.user.apellido
-          });
+try {
+  const result = await verifyToken();
+  if (result.isValid && result.user) {
+    // Solo los roles 0 (admin) y 1 (supervisor) pueden entrar
+    if (String(result.user.rol) !== "0" && String(result.user.rol) !== "1") {
+      if (String(result.user.rol) === "2") {
+        navigate('/employee-dashboard', { replace: true });
+      } else {
+        navigate('/login', { replace: true });
+      }
+      return;
+    }
+    setUser({
+      nombre: result.user.nombre,
+      apellido: result.user.apellido
+    });
 
           // Obtener vehículos, mantenimientos y top vehículos con más mantenimientos
           const token = localStorage.getItem('token');

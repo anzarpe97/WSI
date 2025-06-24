@@ -1,105 +1,143 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import '../../styles/home.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faCar, 
-  faUser, 
   faWrench, 
   faChartBar, 
-  faIdCardClip, 
-  faIdCard, 
   faCarBurst, 
-  faPeopleGroup, 
-  faScrewdriverWrench, 
-  faFileContract, 
-  faCog,
   faExclamationTriangle,
-  faClipboard,
   faFileAlt,
   faTools,
   faUsers,
   faFileSignature
 } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
 import UserHeader from '../Home-Header';
 import bgImage from '../../assets/bg-login.jpg';
+import { toast } from 'react-toastify';
+import { verifyToken } from '../../services/auth';
 
 const SupervisorHome = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({ nombre: 'Supervisor', apellido: '' });
+  const [user, setUser] = useState({ nombre: '', apellido: '', rol: 1 });
+  const [loading, setLoading] = useState(true);
+  const inactivityTimer = useRef(null);
+
+  const logout = (isInactivityLogout = false) => {
+    localStorage.removeItem('token');
+    navigate('/login', {
+      replace: true,
+      state: isInactivityLogout ? { sessionExpired: true } : undefined
+    });
+  };
+
+  // Verificar token al montar el componente
+  useEffect(() => {
+    document.title = "WSI - Supervisor";
+    const checkAuth = async () => {
+      try {
+        const result = await verifyToken();
+        if (result.isValid && result.user) {
+          // Permitir solo rol 1 (supervisor)
+          if (String(result.user.rol) !== "1") {
+            if (String(result.user.rol) === "0") {
+              navigate('/home', { replace: true });
+            } else if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
+          }
+          setUser({
+            nombre: result.user.nombre,
+            apellido: result.user.apellido,
+            rol: result.user.rol
+          });
+        } else {
+          logout();
+        }
+      } catch (error) {
+        console.error("Error verifying token:", error);
+        logout();
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  // Manejar inactividad
+  useEffect(() => {
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    const resetTimer = () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = setTimeout(() => {
+        toast.info('Sesión cerrada por inactividad');
+        logout(true);
+      }, 1200000); // 20 minutos
+    };
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+    return () => {
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+  }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="loader-container">
+        <div className="loader"></div>
+        <p>Cargando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="home-wrapper">
-      {/* Header con Home-Header */}
       <UserHeader 
-        userName={user.nombre} 
+        userName={`${user.nombre}`} 
         title="WSI"
         showIcons={true}
+        userRole={user.rol} 
       />
 
-      {/* Contenido principal */}
       <div className="home-content">
         <div className="home-grid">
-          {/* Gestión de Vehículos */}
-          <Link to="/gestion-vehiculos" className="home-card">
+
+          {/* Registro de Vehículos */}
+          <Link to="/ver-vehiculos" className="home-card">
             <FontAwesomeIcon icon={faCar} size="3x" />
-            <p>Gestionar Vehículos</p>
+            <p>Gestión de Vehículos</p>
           </Link>
 
-          {/* Gestión de Mantenimiento */}
+          {/* Gestionar Mantenimiento */}
           <Link to="/gestion-mantenimiento" className="home-card">
             <FontAwesomeIcon icon={faTools} size="3x" />
-            <p>Gestionar Mantenimiento</p>
+            <p>Gestion de Mantenimiento</p>
           </Link>
 
-          {/* Gestión Documentos Choferes */}
-          <Link to="/gestion-documentos-choferes" className="home-card">
+          {/* Registro de Documentos Choferes */}
+          <Link to="/menu-gestion-documentos" className="home-card">
             <FontAwesomeIcon icon={faUsers} size="3x" />
-            <p>Documentos de Choferes</p>
+            <p>Gestion de Documentos</p>
           </Link>
-
-          {/* Gestión Documentos Vehículos */}
-          <Link to="/gestion-documentos-vehiculos" className="home-card">
-            <FontAwesomeIcon icon={faFileSignature} size="3x" />
-            <p>Documentos de Vehículos</p>
-          </Link>
-
-          {/* Reportar Falla */}
-          <Link to="/reportar-falla" className="home-card">
+          
+          <Link to="/ver-fallas" className="home-card">
             <FontAwesomeIcon icon={faExclamationTriangle} size="3x" />
-            <p>Reportar Falla</p>
+            <p>Gestión de Fallas</p>
           </Link>
 
-          {/* Generar Reporte */}
-          <Link to="/generar-reporte" className="home-card">
-            <FontAwesomeIcon icon={faClipboard} size="3x" />
-            <p>Generar Reporte</p>
-          </Link>
 
-          {/* Visualizar Vehículos */}
-          <Link to="/visualizar-vehiculos" className="home-card">
-            <FontAwesomeIcon icon={faCar} size="3x" />
-            <p>Visualizar Vehículos</p>
-          </Link>
-
-          {/* Visualizar Documentos */}
-          <Link to="/visualizar-documentos" className="home-card">
-            <FontAwesomeIcon icon={faFileAlt} size="3x" />
-            <p>Visualizar Documentos</p>
-          </Link>
-
-          {/* Visualizar Mantenimiento */}
-          <Link to="/visualizar-mantenimiento" className="home-card">
-            <FontAwesomeIcon icon={faWrench} size="3x" />
-            <p>Visualizar Mantenimiento</p>
-          </Link>
-
-          {/* Visualizar Estadísticas */}
-          <Link to="/visualizar-estadisticas" className="home-card">
+          {/* Estadísticas y Reportes */}
+          <Link to="/estadisticas" className="home-card">
             <FontAwesomeIcon icon={faChartBar} size="3x" />
-            <p>Visualizar Estadísticas</p>
+            <p>Estadísticas y Reportes</p>
           </Link>
+
+
         </div>
       </div>
 
