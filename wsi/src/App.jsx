@@ -17,6 +17,7 @@ import RegistroDocumentoChoferes from './components/admin/documentos-choferes/Re
 import RegistroDocumentosVehiculos from './components/admin/documentos-vehiculos/RegistroDocumentosVehiculos';
 import HomeSupervisor from './components/supervisor/HomeSupervisor';
 import VisualizarFallas from './components/VisualizarFallas';
+import PerfilUsuario from './components/PerfilUsuario';
 import Estadisticas from './components/admin/Estadisticas';
 import MenuGestionDocumentos from './components/admin/MenuGestionDocumentos';
 import VerDocumentoVehiculos from './components/admin/documentos-vehiculos/VerDocumentoVehiculos';
@@ -25,7 +26,7 @@ import DetalleEmpleado from './components/admin/empleados/DetalleEmpleados';
 import Notificaciones from './components/Notificaciones';
 import GestionDocumentoChoferes from './components/admin/documentos-choferes/GestionDocumentoChoferes';
 import FinalizarMantenimiento from './components/admin/mantenimientos/FinalizarMantinimento';
-import PerfilUsuario from './components/PerfilUsuario';
+import HomeUsuario from './components/usuario/HomeUsuario';
 import ReporteFallas from './components/supervisor/ReporteFallas.jsx/ReporteFallas';
 
 const App = () => {
@@ -75,6 +76,9 @@ const App = () => {
         <Route path="/perfil-usuario" element={<PerfilUsuario />} />
         {/* RUTAS NOTIFICACIONES*/}
         <Route path="/notificaciones" element={<Notificaciones />} />
+
+        {/* RUTAS USUARIO*/}  
+        <Route path="/home-usuario" element={<HomeUsuario />} />
 
       </Routes>
     </Router>

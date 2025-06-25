@@ -35,31 +35,31 @@ const VerVehiculos = () => {
 
   useEffect(() => {
     document.title = "WSI - Vehículos";
-    const check = async () => {
-      try {
-        const result = await verifyToken();
-        if (result.isValid && result.user) {
-          // Solo los roles 0 (admin) y 1 (supervisor) pueden entrar
-          if (String(result.user.rol) !== "0" && String(result.user.rol) !== "1") {
-            if (String(result.user.rol) === "2") {
-              navigate('/employee-dashboard', { replace: true });
-            } else {
-              logout();
-            }
-            return;
-          }
-        } else {
+  const check = async () => {
+    try {
+      const result = await verifyToken();
+      if (result.isValid && result.user) {
+        // Permitir roles 0 (admin), 1 (supervisor) y 2 (usuario)
+        if (
+          String(result.user.rol) !== "0" &&
+          String(result.user.rol) !== "1" &&
+          String(result.user.rol) !== "2"
+        ) {
           logout();
           return;
         }
-        const data = await getVehiculos();
-        setVehiculos(data);
-      } catch (error) {
-        setError('No se pudieron cargar los vehículos');
-      } finally {
-        setLoading(false);
+      } else {
+        logout();
+        return;
       }
-    };
+      const data = await getVehiculos();
+      setVehiculos(data);
+    } catch (error) {
+      setError('No se pudieron cargar los vehículos');
+    } finally {
+      setLoading(false);
+    }
+  };
     check();
 
     // --- Temporizador de inactividad ---

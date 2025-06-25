@@ -30,14 +30,10 @@ const DetalleMantenimiento = () => {
     try {
       const result = await verifyToken();
       if (result.isValid && result.user) {
-        // Solo los roles 0 (admin) y 1 (supervisor) pueden entrar
-        if (String(result.user.rol) !== "0" && String(result.user.rol) !== "1") {
-          if (String(result.user.rol) === "2") {
-            navigate('/employee-dashboard', { replace: true });
-          } else {
-            logout();
-          }
-          return;
+        // Permitir acceso a roles 0, 1 y 2
+        const rol = String(result.user.rol);
+        if (rol !== "0" && rol !== "1" && rol !== "2") {
+          logout();
         }
       } else {
         logout();
