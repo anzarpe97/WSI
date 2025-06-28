@@ -57,10 +57,15 @@ try {
   const result = await verifyToken();
   if (result.isValid && result.user) {
     // Solo los roles 0 (admin) y 1 (supervisor) pueden entrar
-    if (String(result.user.rol) !== "0" && String(result.user.rol) !== "1") {
-      if (String(result.user.rol) === "2") {
+    if (String(result.user.rol) !== "0"  && String(result.user.rol) !== "1" && String(result.user.rol) !== "2") {
+      
+      if (String(result.user.rol) === "3") {
+
         navigate('/employee-dashboard', { replace: true });
-      } else {
+
+      } 
+      
+      else {
         navigate('/login', { replace: true });
       }
       return;
