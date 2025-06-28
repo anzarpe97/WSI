@@ -16,15 +16,18 @@ const VisualizarFallas = () => {
   // Verificar token y rol del usuario
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const result = await verifyToken();
-        if (result.isValid && result.user) {
-          // Permitir acceso a todos los roles
-          return;
-        } else {
+    try {
+      const result = await verifyToken();
+      if (result.isValid && result.user) {
+        // Permitir acceso a roles 0, 1 y 2
+        const rol = String(result.user.rol);
+        if (rol !== "0" && rol !== "1" && rol !== "2") {
           logout();
         }
-      } catch (error) {
+      } else {
+        logout();
+      }
+    }catch (error) {
         logout();
       }
     };
@@ -58,7 +61,7 @@ const VisualizarFallas = () => {
         {
           id_reporte: 3,
           id_vehiculo: { id: 103, placa: 'JKL-456' },
-          id_usuario: { id: 3, nombre: 'José González' },
+          id_usuario: { id: 3, nombre: 'José angulo' },
           motivo_falla: 'Neumáticos desgastados',
           fecha_reporte: '2024-06-15',
           observaciones: 'Necesita cambio de neumáticos',

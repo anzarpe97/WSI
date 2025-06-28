@@ -46,7 +46,7 @@ const Login = () => {
                 navigate('/supervisorHome', { replace: true });
                 break;
               case 2:
-                navigate('/employee-dashboard', { replace: true });
+                navigate('/home-usuario', { replace: true });
                 break;
               default:
                 localStorage.removeItem('token');
@@ -136,7 +136,7 @@ const Login = () => {
               navigate('/supervisorHome', { state: { data } });
               break;
             case 2:
-              navigate('/employee-dashboard', { state: { data } });
+              navigate('/home-usuario', { state: { data } });
               break;
             default:
               toast.error('Rol no reconocido');

@@ -21,6 +21,7 @@ const VerVehiculos = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState(null);
   const [deleteReason, setDeleteReason] = useState('');
+  const [userRol, setUserRol] = useState(null);
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
@@ -39,13 +40,14 @@ const VerVehiculos = () => {
       try {
         const result = await verifyToken();
         if (result.isValid && result.user) {
-          // Solo los roles 0 (admin) y 1 (supervisor) pueden entrar
-          if (String(result.user.rol) !== "0" && String(result.user.rol) !== "1") {
-            if (String(result.user.rol) === "2") {
-              navigate('/employee-dashboard', { replace: true });
-            } else {
-              logout();
-            }
+          setUserRol(String(result.user.rol)); // Guardar el rol del usuario
+          // Permitir roles 0 (admin), 1 (supervisor) y 2 (usuario)
+          if (
+            String(result.user.rol) !== "0" &&
+            String(result.user.rol) !== "1" &&
+            String(result.user.rol) !== "2"
+          ) {
+            logout();
             return;
           }
         } else {
@@ -128,11 +130,9 @@ const VerVehiculos = () => {
     }
     try {
       const response = await fetch(`http://localhost:8000/api/vehiculos/${vehicleToDelete.id_vehiculo}/`, {
-        method: 'PATCH', // Or 'PUT' if you update the whole object
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          // Include Authorization header if your API requires it
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
           borrado: true,
@@ -141,33 +141,21 @@ const VerVehiculos = () => {
       });
 
       if (!response.ok) {
-        // Try to get more specific error from backend
         const errorData = await response.json().catch(() => ({ message: "Error al actualizar el vehículo." }));
         throw new Error(errorData.message || `Error del servidor: ${response.status}`);
       }
 
-      // Update the local state to reflect the deletion
       setVehiculos(prevVehiculos =>
         prevVehiculos.map(v =>
           v.id_vehiculo === vehicleToDelete.id_vehiculo ? { ...v, borrado: true, motivo_borrado: deleteReason } : v
         )
       );
-      // Or, if you prefer to filter out "deleted" items from the main list:
-      // setVehiculos(prevVehiculos => prevVehiculos.filter(v => v.id_vehiculo !== vehicleToDelete.id_vehiculo));
 
-
-      console.log('Vehículo marcado como borrado:', vehicleToDelete.id_vehiculo, 'Motivo:', deleteReason);
       handleCloseDeleteModal();
-      // Optionally, show a success message to the user
-      // alert('Vehículo eliminado con éxito.');
-
     } catch (error) {
-      console.error("Error al marcar el vehículo como borrado:", error);
       alert(`Error al eliminar el vehículo: ${error.message}`);
-      // Handle error (e.g., show error message to user)
     }
   };
-
 
   // Resetear página al cambiar filtros
   useEffect(() => {
@@ -197,13 +185,15 @@ const VerVehiculos = () => {
       <div className="ver-vehiculos-container">
         <div className="titulo-container">
           <h2 className="titulo">Vehículos Registrados</h2>
-          <button
-            className="boton-crear-vehiculo"
-            onClick={handleRegistroVehiculoClick}
-          >
-            <FontAwesomeIcon icon={faPlus} className="icono-boton" />
-            Registrar Vehículo
-          </button>
+          {userRol === "0" || userRol === "1" ? (
+            <button
+              className="boton-crear-vehiculo"
+              onClick={handleRegistroVehiculoClick}
+            >
+              <FontAwesomeIcon icon={faPlus} className="icono-boton" />
+              Registrar Vehículo
+            </button>
+          ) : null}
         </div>
 
         {/* Filtros */}
@@ -269,10 +259,37 @@ const VerVehiculos = () => {
                     </td>
                     <td data-label="Acciones">
                       <div className="acciones">
-                        <FontAwesomeIcon icon={faEye} size="lg" className="accion-icon" title="Ver detalles" style={{ cursor: 'pointer' }} onClick={() => handleVerDetalles(vehiculo.id_vehiculo)}/>
-                        <FontAwesomeIcon icon={faPen} size="lg" className="accion-icon" title="Editar vehículo" style={{ cursor: 'pointer' }} onClick={() => navigate(`/editar-vehiculo/${vehiculo.id_vehiculo}`)}/>
-                        <FontAwesomeIcon icon={faTrashAlt} size="lg" className="accion-icon" onClick={() => handleOpenDeleteModal(vehiculo)} style={{ cursor: 'pointer'}} title="Eliminar Vehículo"
+                        {/* Ver detalles: todos los roles */}
+                        <FontAwesomeIcon
+                          icon={faEye}
+                          size="lg"
+                          className="accion-icon"
+                          title="Ver detalles"
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => handleVerDetalles(vehiculo.id_vehiculo)}
                         />
+                        {/* Editar: solo admin (0) y supervisor (1) */}
+                        {(userRol === "0" || userRol === "1") && (
+                          <FontAwesomeIcon
+                            icon={faPen}
+                            size="lg"
+                            className="accion-icon"
+                            title="Editar vehículo"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => navigate(`/editar-vehiculo/${vehiculo.id_vehiculo}`)}
+                          />
+                        )}
+                        {/* Eliminar: solo admin (0) */}
+                        {userRol === "0" && (
+                          <FontAwesomeIcon
+                            icon={faTrashAlt}
+                            size="lg"
+                            className="accion-icon"
+                            onClick={() => handleOpenDeleteModal(vehiculo)}
+                            style={{ cursor: 'pointer' }}
+                            title="Eliminar Vehículo"
+                          />
+                        )}
                       </div>
                     </td>
                   </tr>

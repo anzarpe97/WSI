@@ -25,23 +25,18 @@ const ReporteFallas = () => {
   useEffect(() => {
     document.title = "WSI - Reporte de Fallas";
     const check = async () => {
-      try {
-        const result = await verifyToken();
-        if (result.isValid && result.user) {
-          if (String(result.user.rol) !== "1") {
-            if (String(result.user.rol) === "0") {
-              navigate('/supervisorHome', { replace: true });
-            } else if (String(result.user.rol) === "2") {
-              navigate('/employee-dashboard', { replace: true });
-            } else {
-              logout();
-            }
-            return;
-          }
-        } else {
+    try {
+      const result = await verifyToken();
+      if (result.isValid && result.user) {
+        // Permitir acceso a roles 0, 1 y 2
+        const rol = String(result.user.rol);
+        if (rol !== "0" && rol !== "1" && rol !== "2") {
           logout();
         }
-      } catch (error) {
+      } else {
+        logout();
+      }
+    } catch (error) {
         logout();
       }
     };
