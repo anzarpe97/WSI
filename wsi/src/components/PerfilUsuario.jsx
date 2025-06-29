@@ -13,15 +13,14 @@ import { verifyToken } from "../services/auth";
 const PerfilUsuario = () => {
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  const inactivityTimer = useRef(null);
-  
-  // Estados para los campos editables
   const [email, setEmail] = useState('');
+  const [telefono, setTelefono] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
+  const inactivityTimer = useRef(null);
   
   // Verificar token y rol del usuario
   useEffect(() => {
@@ -41,7 +40,7 @@ const PerfilUsuario = () => {
     checkAuth();
   }, [navigate]);
 
-  // Obtener datos del usuario actual
+  // Obtener datos del usuario actual desde la API
   useEffect(() => {
     setLoading(true);
     const token = localStorage.getItem("token");
@@ -49,24 +48,37 @@ const PerfilUsuario = () => {
       logout();
       return;
     }
-    
-    // Simular obtención de datos del usuario (en un caso real sería una API)
-    setTimeout(() => {
-      const userData = {
-        id: 1,
-        nombre: 'Carlos',
-        apellido: 'Rodríguez',
-        tipoCedula: 'V',
-        cedula: '25.678.901',
-        email: 'carlos.rodriguez@ejemplo.com',
-        telefono: '+58 412 5551234',
-        rol: '2', // Empleado
-        fechaRegistro: '2024-01-15T08:30:00Z'
-      };
-      setUsuario(userData);
-      setEmail(userData.email);
-      setLoading(false);
-    }, 800);
+    // Usar verifyToken para obtener el id del usuario logueado
+    verifyToken().then(result => {
+      if (result.isValid && result.user && result.user.id) {
+        fetch(`http://localhost:8000/api/detalle-usuarios/${result.user.id}/`, {
+          headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(res => {
+            if (!res.ok) throw new Error('No se pudo obtener el perfil');
+            return res.json();
+          })
+          .then(data => {
+            setUsuario(data);
+            setEmail(data.email);
+            setTelefono(data.telefono);
+            setLoading(false);
+          })
+          .catch(() => {
+            setLoading(false);
+            toast.error('No se pudo cargar la información del usuario');
+          });
+      } else {
+        toast.error('No se pudo identificar el usuario.');
+        logout();
+      }
+    }).catch(() => {
+      toast.error('No se pudo identificar el usuario.');
+      logout();
+    });
   }, []);
 
   const logout = (isInactivityLogout = false) => {
@@ -111,26 +123,57 @@ const PerfilUsuario = () => {
     navigate(-1); // Volver a la página anterior
   };
 
-  const handleSubmit = (e) => {
+  // Actualizar datos del usuario
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    if (!usuario) return;
     // Validaciones
     if (password && password !== confirmPassword) {
       toast.error('Las contraseñas no coinciden');
       return;
     }
-    
     if (password && password.length < 6) {
       toast.error('La contraseña debe tener al menos 6 caracteres');
       return;
     }
-    
-    // Simular actualización exitosa
-    toast.success('Cambios guardados con éxito');
-    
-    // Resetear campos de contraseña
-    setPassword('');
-    setConfirmPassword('');
+    if (!email) {
+      toast.error('El correo electrónico es obligatorio');
+      return;
+    }
+    if (!telefono) {
+      toast.error('El número de teléfono es obligatorio');
+      return;
+    }
+    setLoading(true);
+    const token = localStorage.getItem('token');
+    const payload = {
+      email,
+      telefono,
+    };
+    if (password) payload.password = password;
+    try {
+      const res = await fetch(`http://localhost:8000/api/detalle-usuarios/${usuario.id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Error al actualizar el perfil');
+      }
+      const updated = await res.json();
+      setUsuario(updated);
+      setPassword('');
+      setConfirmPassword('');
+      toast.success('Cambios guardados con éxito');
+    } catch (err) {
+      toast.error(err.message || 'Error al actualizar el perfil');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -308,8 +351,9 @@ const PerfilUsuario = () => {
               <input
                 type="tel"
                 className="perfil-form-input"
-                value={usuario.telefono}
-                readOnly
+                value={telefono}
+                onChange={e => setTelefono(e.target.value)}
+                required
               />
             </div>
             

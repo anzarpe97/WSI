@@ -361,7 +361,7 @@ class MantenimientoDetailAPIView(APIView):
         except Mantenimiento.DoesNotExist:
             return Response({'error': 'Mantenimiento no encontrado'}, status=status.HTTP_404_NOT_FOUND)
     
-class UsuarioDetailAPIView(RetrieveAPIView):
+class UsuarioDetailAPIView(RetrieveUpdateAPIView):
     queryset = Usuario.objects.all()
     serializer_class = EmpleadoSerializer
     permission_classes = [IsAuthenticated]
@@ -470,7 +470,7 @@ class DocumentoChoferDetailAPIView(RetrieveAPIView):
             data['ruta_documento'] = None
 
         return Response(data)
-    
+
 
 
 

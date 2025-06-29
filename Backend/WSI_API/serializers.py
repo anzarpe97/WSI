@@ -277,8 +277,22 @@ class MecanicoSerializer(serializers.ModelSerializer):
 class EmpleadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ['id', 'nombre', 'apellido', 'cedula', 'telefono', 'email', 'rol']
+        fields = ['id', 'nombre', 'apellido', 'email', 'telefono', 'password', 'tipoCedula', 'cedula', 'rol', 'fechaRegistro']
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': False},
+            'email': {'required': False},
+            'telefono': {'required': False},
+        }
 
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
+    
 class PlacaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehiculo
