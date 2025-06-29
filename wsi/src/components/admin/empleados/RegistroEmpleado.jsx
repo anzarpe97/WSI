@@ -18,12 +18,38 @@ const RegistroEmpleado = () => {
     telefono: "",
     rol: "",
     email: "",
-    password: "",
+    // Eliminado el campo de contraseña del estado
   });
 
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
+
+  // Función para generar contraseña aleatoria segura
+  const generatePassword = () => {
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const numbers = '0123456789';
+    const specials = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    
+    // Asegurar al menos un carácter de cada tipo
+    const randomUpper = uppercase[Math.floor(Math.random() * uppercase.length)];
+    const randomLower = lowercase[Math.floor(Math.random() * lowercase.length)];
+    const randomNumber = numbers[Math.floor(Math.random() * numbers.length)];
+    const randomSpecial = specials[Math.floor(Math.random() * specials.length)];
+    
+    // Combinar todos los caracteres
+    const allChars = uppercase + lowercase + numbers + specials;
+    let password = randomUpper + randomLower + randomNumber + randomSpecial;
+    
+    // Completar la contraseña a 12 caracteres
+    for (let i = password.length; i < 12; i++) {
+      password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+    
+    // Mezclar los caracteres para mayor aleatoriedad
+    return password.split('').sort(() => 0.5 - Math.random()).join('');
+  };
 
   // Función para cerrar sesión
   const logout = (isInactivityLogout = false) => {
@@ -119,19 +145,7 @@ const RegistroEmpleado = () => {
       newErrors.email = "Correo inválido";
     }
 
-    if (!formData.password) {
-      newErrors.password = "La contraseña es requerida";
-    } else {
-      if (formData.password.length < 8) {
-        newErrors.password = "Mínimo 8 caracteres";
-      } else if (!/[A-Z]/.test(formData.password)) {
-        newErrors.password = "Debe tener al menos una mayúscula";
-      } else if (!/[0-9]/.test(formData.password)) {
-        newErrors.password = "Debe tener al menos un número";
-      } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password)) {
-        newErrors.password = "Debe tener al menos un carácter especial";
-      }
-    }
+    // Eliminadas todas las validaciones de contraseña
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -147,9 +161,12 @@ const RegistroEmpleado = () => {
 
     try {
       const token = localStorage.getItem("token");
+      // Generar contraseña automáticamente
+      const password = generatePassword();
+      
       await axios.post(
         "http://localhost:8000/api/registro/",
-        formData,
+        {...formData, password}, // Añadir la contraseña generada
         {
           headers: {
             Authorization: `Token ${token}`,
@@ -165,7 +182,7 @@ const RegistroEmpleado = () => {
         telefono: "",
         rol: "",
         email: "",
-        password: "",
+        // No se incluye password en el reset
       });
       setErrors({});
     } catch (error) {
@@ -312,18 +329,7 @@ const RegistroEmpleado = () => {
               />
               {errors.email && <small className="error">{errors.email}</small>}
             </div>
-            <div className="campo">
-              <label htmlFor="password">Contraseña</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Mínimo 8 caracteres"
-              />
-              {errors.password && <small className="error">{errors.password}</small>}
-            </div>
+            {/* Eliminado el campo de contraseña */}
           </div>
 
           <button type="submit" className="boton-registrar">
