@@ -388,7 +388,16 @@ class ReporteFallaSerializer(serializers.ModelSerializer):
             'id_usuario': {'read_only': True}
         }
 
+class ReporteFallaSerializer(serializers.ModelSerializer):
+    id_vehiculo = PlacaSerializer(read_only=True)
+    id_usuario = UsuarioSerializer(read_only=True)
 
+    class Meta:
+        model = ReporteFalla
+        fields = '__all__'
+        extra_kwargs = {
+            'id_usuario': {'read_only': True}
+        }
 
 
 

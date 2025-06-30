@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
-from .models import DocumentoVehiculo, MotivoMantenimiento, Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
+from .models import  ReporteFalla, MotivoMantenimiento, Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
 from .serializers import (ReporteFallaSerializer, DocumentoVehiculoSerializer, DetalleMantenimientoSerializer, MotivoMantenimientoSerializer, NotificacionUsuarioSerializer,DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
 from django.utils.decorators import method_decorator
 from rest_framework.generics import RetrieveAPIView
@@ -482,7 +482,13 @@ class CrearReporteFallaAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ReporteFallaListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        reportes = ReporteFalla.objects.select_related('id_vehiculo', 'id_usuario').all().order_by('-fecha_reporte')
+        serializer = ReporteFallaSerializer(reportes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 

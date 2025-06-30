@@ -12,65 +12,56 @@ const VisualizarFallas = () => {
   const [fallas, setFallas] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  
+
   // Verificar token y rol del usuario
   useEffect(() => {
     const checkAuth = async () => {
-    try {
-      const result = await verifyToken();
-      if (result.isValid && result.user) {
-        // Permitir acceso a roles 0, 1 y 2
-        const rol = String(result.user.rol);
-        if (rol !== "0" && rol !== "1" && rol !== "2") {
+      try {
+        const result = await verifyToken();
+        if (result.isValid && result.user) {
+          // Permitir acceso a roles 0, 1 y 2
+          const rol = String(result.user.rol);
+          if (rol !== "0" && rol !== "1" && rol !== "2") {
+            logout();
+          }
+        } else {
           logout();
         }
-      } else {
-        logout();
-      }
-    }catch (error) {
+      } catch (error) {
         logout();
       }
     };
     checkAuth();
+    // eslint-disable-next-line
   }, [navigate]);
 
-  // Obtener datos de las fallas
+  // Obtener datos de las fallas desde el backend
   useEffect(() => {
-    setLoading(true);
-    // Simular llamada a API
-    setTimeout(() => {
-      const mockFallas = [
-        {
-          id_reporte: 1,
-          id_vehiculo: { id: 101, placa: 'ABC-123' },
-          id_usuario: { id: 1, nombre: 'Carlos Rodríguez' },
-          motivo_falla: 'Falla en el motor',
-          fecha_reporte: '2024-06-01',
-          observaciones: 'El vehículo no enciende',
-          estado: 'Operativo'
-        },
-        {
-          id_reporte: 2,
-          id_vehiculo: { id: 102, placa: 'XYZ-789' },
-          id_usuario: { id: 2, nombre: 'María Pérez' },
-          motivo_falla: 'Frenos desgastados',
-          fecha_reporte: '2024-06-10',
-          observaciones: 'El vehículo tiene problemas al frenar',
-          estado: 'En revisión'
-        },
-        {
-          id_reporte: 3,
-          id_vehiculo: { id: 103, placa: 'JKL-456' },
-          id_usuario: { id: 3, nombre: 'José angulo' },
-          motivo_falla: 'Neumáticos desgastados',
-          fecha_reporte: '2024-06-15',
-          observaciones: 'Necesita cambio de neumáticos',
-          estado: 'Inoperativo'
+    const fetchFallas = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:8000/api/reportes-fallas/', {
+          headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setFallas(data);
+        } else {
+          toast.error('No se pudieron cargar los reportes de fallas');
+          setFallas([]);
         }
-      ];
-      setFallas(mockFallas);
-      setLoading(false);
-    }, 1000);
+      } catch (error) {
+        toast.error('Error de conexión al cargar las fallas');
+        setFallas([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFallas();
   }, []);
 
   const logout = () => {
@@ -82,18 +73,51 @@ const VisualizarFallas = () => {
     navigate(-1);
   };
 
-  const handleAtendido = (id) => {
-    // Actualizar el estado a 'Atendido'
-    setFallas(fallas.map(falla => 
-      falla.id_reporte === id ? { ...falla, estado: 'Atendido' } : falla
-    ));
-    toast.success('Reporte marcado como atendido');
+  const handleAtendido = async (id) => {
+    // Actualizar el estado a 'Atendido' en el backend (opcional)
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/reportes-fallas/${id}/marcar-atendido/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ estado: 'Atendido' })
+      });
+      if (response.ok) {
+        setFallas(fallas.map(falla =>
+          falla.id_reporte === id ? { ...falla, estado: 'Atendido' } : falla
+        ));
+        toast.success('Reporte marcado como atendido');
+      } else {
+        toast.error('No se pudo marcar como atendido');
+      }
+    } catch (error) {
+      toast.error('Error de conexión al actualizar el estado');
+    }
   };
 
-  const handleEliminar = (id) => {
-    // Eliminar el reporte
-    setFallas(fallas.filter(falla => falla.id_reporte !== id));
-    toast.info('Reporte eliminado');
+  const handleEliminar = async (id) => {
+    // Eliminar el reporte en el backend (opcional)
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/reportes-fallas/${id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok || response.status === 204) {
+        setFallas(fallas.filter(falla => falla.id_reporte !== id));
+        toast.info('Reporte eliminado');
+      } else {
+        toast.error('No se pudo eliminar el reporte');
+      }
+    } catch (error) {
+      toast.error('Error de conexión al eliminar el reporte');
+    }
   };
 
   const formatFecha = (fechaString) => {
@@ -110,7 +134,7 @@ const VisualizarFallas = () => {
   };
 
   const getEstadoClass = (estado) => {
-    switch(estado) {
+    switch (estado) {
       case 'Operativo': return 'estado-operativo';
       case 'Inoperativo': return 'estado-inoperativo';
       case 'En revisión': return 'estado-revision';
@@ -138,7 +162,7 @@ const VisualizarFallas = () => {
 
       {/* Header */}
       <Header title="WSI" />
-      
+
       <div className="fallas-container">
         <div className="fallas-card">
           <div className="fallas-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -146,8 +170,8 @@ const VisualizarFallas = () => {
             <button
               className="fallas-boton-volver"
               style={{
-                background: '#ff6a00',      // Naranja
-                color: '#fff',              // Blanco
+                background: '#ff6a00',
+                color: '#fff',
                 border: '1px solid #ff6a00',
                 fontWeight: 600,
                 borderRadius: 8,
@@ -163,7 +187,7 @@ const VisualizarFallas = () => {
               Registrar Falla
             </button>
           </div>
-          
+
           <div className="fallas-list">
             {fallas.length === 0 ? (
               <p className="fallas-sin-datos">No hay reportes de fallas registrados.</p>
@@ -176,32 +200,32 @@ const VisualizarFallas = () => {
                       {falla.estado}
                     </span>
                   </div>
-                  
+
                   <div className="falla-content">
                     <div className="falla-info-row">
                       <FontAwesomeIcon icon={faCar} className="falla-icon" />
                       <span className="falla-label">Vehículo:</span>
-                      <span className="falla-value">{falla.id_vehiculo.placa}</span>
+                      <span className="falla-value">{falla.id_vehiculo?.placa}</span>
                     </div>
-                    
+
                     <div className="falla-info-row">
                       <FontAwesomeIcon icon={faUser} className="falla-icon" />
                       <span className="falla-label">Reportado por:</span>
-                      <span className="falla-value">{falla.id_usuario.nombre}</span>
+                      <span className="falla-value">{falla.id_usuario?.nombre}</span>
                     </div>
-                    
+
                     <div className="falla-info-row">
                       <FontAwesomeIcon icon={faCalendarAlt} className="falla-icon" />
                       <span className="falla-label">Fecha de reporte:</span>
                       <span className="falla-value">{formatFecha(falla.fecha_reporte)}</span>
                     </div>
-                    
+
                     <div className="falla-info-row">
                       <FontAwesomeIcon icon={faExclamationTriangle} className="falla-icon" />
                       <span className="falla-label">Motivo:</span>
                       <span className="falla-value">{falla.motivo_falla}</span>
                     </div>
-                    
+
                     {falla.observaciones && (
                       <div className="falla-info-row">
                         <FontAwesomeIcon icon={faClipboard} className="falla-icon" />
@@ -210,17 +234,17 @@ const VisualizarFallas = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="falla-actions">
-                    <button 
+                    <button
                       className="falla-btn-atendido"
                       onClick={() => handleAtendido(falla.id_reporte)}
                       disabled={falla.estado === 'Atendido'}
                     >
-                      <FontAwesomeIcon icon={faCheckCircle} /> 
+                      <FontAwesomeIcon icon={faCheckCircle} />
                       {falla.estado === 'Atendido' ? 'Atendido' : 'Marcar como atendido'}
                     </button>
-                    <button 
+                    <button
                       className="falla-btn-eliminar"
                       onClick={() => handleEliminar(falla.id_reporte)}
                     >
