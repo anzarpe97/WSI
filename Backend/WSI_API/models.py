@@ -278,7 +278,7 @@ class ReporteFalla(models.Model):
 
     id_reporte = models.AutoField(primary_key=True)
     id_vehiculo = models.ForeignKey('Vehiculo', on_delete=models.RESTRICT, db_column='id_vehiculo')
-    id_usuario = models.ForeignKey('Usuario', on_delete=models.RESTRICT, db_column='id_usuario')
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     motivo_falla = models.CharField('Mmotivo_de_falla', max_length=60, null=False)
     fecha_reporte = models.DateField(auto_now_add=True)
     observaciones = models.TextField(blank=True, null=True)

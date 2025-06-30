@@ -168,9 +168,8 @@ const ReporteFallas = () => {
         },
         body: JSON.stringify({
           id_vehiculo: vehiculoInfo.id,
-          motivo: motivoFalla,
+          motivo_falla: motivoFalla,
           estado: estadoVehiculo,
-          fecha_reporte: fechaReporte || getCurrentDate(),
           observaciones
         })
       });
@@ -180,6 +179,7 @@ const ReporteFallas = () => {
         resetForm();
       } else {
         const errorData = await response.json();
+        console.log(errorData); 
         const errorMessage = errorData.detail || 'Error al crear el reporte';
         toast.error(errorMessage);
       }
@@ -272,8 +272,8 @@ const ReporteFallas = () => {
                     required
                   >
                     <option value="">Seleccione estado...</option>
-                    <option value="OPERATIVO">Operativo</option>
-                    <option value="NO_OPERATIVO">No operativo</option>
+                    <option value="Operativo">Operativo</option>
+                <option value="No Operativo">No Operativo</option>
                   </select>
                 </div>
               </div>

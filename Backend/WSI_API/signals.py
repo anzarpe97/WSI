@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
-from .models import (Mantenimiento, Vehiculo, NotificacionGlobal, NotificacionUsuario, Usuario, DocumentoChofer, DocumentoVehiculo)
+from .models import (ReporteFalla, Mantenimiento, Vehiculo, NotificacionGlobal, NotificacionUsuario, Usuario, DocumentoChofer, DocumentoVehiculo)
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
@@ -103,7 +103,23 @@ def notificar_mantenimiento_finalizado(sender, instance, created, **kwargs):
                 usuario=usuario
             )           
             
-            
+@receiver(post_save, sender=ReporteFalla)
+def crear_notificacion_reporte_falla(sender, instance, created, **kwargs):
+    if created:
+        placa = getattr(instance.id_vehiculo, 'placa', 'Desconocida')
+        motivo = getattr(instance, 'motivo_falla', 'Sin motivo')
+        notificacion = NotificacionGlobal.objects.create(
+            titulo="Nuevo Reporte de Falla",
+            mensaje=f"Se ha reportado una falla en el vehículo {placa}: {motivo}",
+            tipo="REPORTE_FALLA",
+            rol_destino='0,1,2'
+        )
+        usuarios = Usuario.objects.filter(rol__in=['0', '1', '2'])
+        for usuario in usuarios:
+            NotificacionUsuario.objects.create(
+                notificacion=notificacion,
+                usuario=usuario
+            )            
             
             
             

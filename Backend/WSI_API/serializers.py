@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
-from .models import DocumentoVehiculo, DetalleMantenimiento, MotivoMantenimiento, Usuario, Vehiculo, Mantenimiento, DocumentoChofer, NotificacionUsuario, NotificacionGlobal
+from .models import ReporteFalla, DocumentoVehiculo, DetalleMantenimiento, MotivoMantenimiento, Usuario, Vehiculo, Mantenimiento, DocumentoChofer, NotificacionUsuario, NotificacionGlobal
 import re
 
 User = get_user_model()
@@ -380,9 +380,13 @@ class DocumentoVehiculoSerializer(serializers.ModelSerializer):
         model = DocumentoVehiculo
         fields = '__all__'
 
-
-
-
+class ReporteFallaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReporteFalla
+        fields = '__all__'
+        extra_kwargs = {
+            'id_usuario': {'read_only': True}
+        }
 
 
 

@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
 from .models import DocumentoVehiculo, MotivoMantenimiento, Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
-from .serializers import (DocumentoVehiculoSerializer, DetalleMantenimientoSerializer, MotivoMantenimientoSerializer, NotificacionUsuarioSerializer,DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
+from .serializers import (ReporteFallaSerializer, DocumentoVehiculoSerializer, DetalleMantenimientoSerializer, MotivoMantenimientoSerializer, NotificacionUsuarioSerializer,DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
 from django.utils.decorators import method_decorator
 from rest_framework.generics import RetrieveAPIView
 from django.views.decorators.csrf import csrf_exempt
@@ -470,16 +470,16 @@ class DocumentoChoferDetailAPIView(RetrieveAPIView):
             data['ruta_documento'] = None
 
         return Response(data)
+    
+class CrearReporteFallaAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
-
-
-
-
-
-
-
-
-
+    def post(self, request):
+        serializer = ReporteFallaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(id_usuario=request.user)
+            return Response({'message': 'Reporte de falla creado correctamente'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
