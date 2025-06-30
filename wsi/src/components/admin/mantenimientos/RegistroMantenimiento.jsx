@@ -26,24 +26,24 @@ const RegistroMantenimiento = () => {
   useEffect(() => {
     document.title = "WSI - Registro Mantenimiento";
     const check = async () => {
-    try {
-      const result = await verifyToken();
-      if (result.isValid && result.user) {
-        // Solo los roles 0 (admin) y 1 (supervisor) pueden entrar
-        if (String(result.user.rol) !== "0" && String(result.user.rol) !== "1") {
-          if (String(result.user.rol) === "2") {
-            navigate('/employee-dashboard', { replace: true });
-          } else {
-            logout();
+      try {
+        const result = await verifyToken();
+        if (result.isValid && result.user) {
+          // Solo los roles 0 (admin) y 1 (supervisor) pueden entrar
+          if (String(result.user.rol) !== "0" && String(result.user.rol) !== "1") {
+            if (String(result.user.rol) === "2") {
+              navigate('/employee-dashboard', { replace: true });
+            } else {
+              logout();
+            }
+            return;
           }
-          return;
+        } else {
+          logout();
         }
-      } else {
+      } catch (error) {
         logout();
       }
-    } catch (error) {
-      logout();
-    }
     };
     check();
 
@@ -80,6 +80,10 @@ const RegistroMantenimiento = () => {
   const [vehiculoInfo, setVehiculoInfo] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const [placaError, setPlacaError] = useState('');
+
+  // Estado para kilometraje
+  const [kilometraje, setKilometraje] = useState('');
+  const [kilometrajeError, setKilometrajeError] = useState('');
 
   // Estados para fechas
   const [fechaInicio, setFechaInicio] = useState('');
@@ -134,11 +138,13 @@ const RegistroMantenimiento = () => {
     if (!placa.trim()) {
       setPlacaError('Por favor ingrese una placa');
       setVehiculoInfo(null);
+      setKilometraje('');
       return;
     }
     if (!validarPlaca(placa)) {
       setPlacaError('Formato de placa inválido (solo letras mayúsculas y números, 6 o 7 caracteres)');
       setVehiculoInfo(null);
+      setKilometraje('');
       return;
     }
 
@@ -159,17 +165,23 @@ const RegistroMantenimiento = () => {
           placa: data.placa,
           marca: data.marca,
           modelo: data.modelo,
+          kilometraje: data.kilometraje
         });
+        setKilometraje(data.kilometraje ? String(data.kilometraje) : '');
+        setKilometrajeError('');
       } else if (data.detail === "Placa no registrada") {
         toast.error("La placa no está registrada");
         setVehiculoInfo(null);
+        setKilometraje('');
       } else {
         setPlacaError('No se encontró un vehículo con esa placa');
         setVehiculoInfo(null);
+        setKilometraje('');
       }
     } catch (error) {
       setPlacaError('Error al buscar la placa');
       setVehiculoInfo(null);
+      setKilometraje('');
     } finally {
       setIsSearching(false);
     }
@@ -192,7 +204,6 @@ const RegistroMantenimiento = () => {
     };
     fetchMecanicos();
   }, []);
-
 
   // Validar fechas
   const validateDates = () => {
@@ -226,6 +237,24 @@ const RegistroMantenimiento = () => {
     setFechaLimite(e.target.value);
   };
 
+  // Validar kilometraje antes de enviar
+  const validarKilometraje = () => {
+    if (!kilometraje) {
+      setKilometrajeError('Ingrese el kilometraje');
+      return false;
+    }
+    if (!/^\d+$/.test(kilometraje)) {
+      setKilometrajeError('Solo se permiten números');
+      return false;
+    }
+    if (vehiculoInfo && Number(kilometraje) < Number(vehiculoInfo.kilometraje)) {
+      setKilometrajeError(`El kilometraje no puede ser menor al actual (${vehiculoInfo.kilometraje})`);
+      return false;
+    }
+    setKilometrajeError('');
+    return true;
+  };
+
   // Función para resetear el formulario
   const resetForm = () => {
     setPlaca('');
@@ -239,6 +268,8 @@ const RegistroMantenimiento = () => {
     setMecanico('');
     setObservaciones('');
     setSuministros([{ detalle: '', cantidad: '', precio: '', total: '0.00' }]);
+    setKilometraje('');
+    setKilometrajeError('');
   };
 
   // Manejar envío del formulario
@@ -264,8 +295,14 @@ const RegistroMantenimiento = () => {
       return;
     }
 
+    if (!validarKilometraje()) {
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
+      // 1. Registrar el mantenimiento
       const response = await fetch('http://localhost:8000/api/mantenimientos/crear/', {
         method: 'POST',
         headers: {
@@ -285,7 +322,21 @@ const RegistroMantenimiento = () => {
       });
 
       if (response.ok) {
-        toast.success('Orden de mantenimiento creada correctamente');
+        // 2. Actualizar el kilometraje del vehículo
+        const updateResponse = await fetch(`http://localhost:8000/api/vehiculos/${vehiculoInfo.id}/`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`
+          },
+          body: JSON.stringify({ kilometraje: Number(kilometraje) })
+        });
+
+        if (!updateResponse.ok) {
+          toast.warn('Mantenimiento registrado, pero no se pudo actualizar el kilometraje');
+        } else {
+          toast.success('Orden de mantenimiento creada y kilometraje actualizado');
+        }
         resetForm();
       } else {
         let errorMessage = 'Error al crear la orden. Intente nuevamente.';
@@ -391,6 +442,31 @@ const RegistroMantenimiento = () => {
                     <div><strong>Placa:</strong> {vehiculoInfo.placa}</div>
                     <div><strong>Marca:</strong> {vehiculoInfo.marca}</div>
                     <div><strong>Modelo:</strong> {vehiculoInfo.modelo}</div>
+                    <div><strong>Kilometraje actual:</strong> {vehiculoInfo.kilometraje}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Input de kilometraje */}
+              {vehiculoInfo && (
+                <div className="registroMantenimiento-row">
+                  <div className="registroMantenimiento-field">
+                    <label htmlFor="registroMantenimiento-kilometraje">Kilometraje actual</label>
+                    <input
+                      type="text"
+                      id="registroMantenimiento-kilometraje"
+                      value={kilometraje}
+                      onChange={e => {
+                        // Solo permitir números
+                        const val = e.target.value.replace(/\D/g, '');
+                        setKilometraje(val);
+                        setKilometrajeError('');
+                      }}
+                      min={vehiculoInfo.kilometraje || 0}
+                      placeholder="Ingrese el kilometraje actual"
+                      required
+                    />
+                    {kilometrajeError && <div className="error-message">{kilometrajeError}</div>}
                   </div>
                 </div>
               )}
