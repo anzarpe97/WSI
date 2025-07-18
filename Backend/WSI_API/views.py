@@ -18,6 +18,7 @@ from django.core.mail import send_mail
 from datetime import date
 from django.db.models import Count
 from django.conf import settings
+from django.utils.crypto import get_random_string
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -490,11 +491,46 @@ class ReporteFallaListAPIView(APIView):
         serializer = ReporteFallaSerializer(reportes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def solicitar_restaurar_contraseña(request):
+    email = request.data.get('email')
+    if not email:
+        return Response({'error': 'Debe ingresar un correo electrónico.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        usuario = Usuario.objects.get(email=email)
+        # Generar token único (puedes usar tu modelo o un campo temporal)
+        token = get_random_string(48)
+        usuario.reset_token = token
+        usuario.save()
+        # Construir enlace de restablecimiento
+        reset_url = f"{request.build_absolute_uri('/')}reset-password/{token}/"
+        send_mail(
+            subject='Restablecimiento de contraseña - WSI',
+            message=f'Hola {usuario.nombre},\n\nPara restablecer tu contraseña haz clic en el siguiente enlace:\n{reset_url}\n\nSi no solicitaste este cambio, ignora este correo.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[usuario.email],
+            fail_silently=False,
+        )
+        return Response({'message': 'Se ha enviado un enlace de restablecimiento a tu correo.'}, status=status.HTTP_200_OK)
+    except Usuario.DoesNotExist:
+        return Response({'error': 'Correo no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
-
-
-
-
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def restablecer_contraseña(request):
+    token = request.data.get('token')
+    nueva_contraseña = request.data.get('password')
+    if not token or not nueva_contraseña:
+        return Response({'error': 'Token y nueva contraseña requeridos.'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        usuario = Usuario.objects.get(reset_token=token)
+        usuario.set_password(nueva_contraseña)
+        usuario.reset_token = None
+        usuario.save()
+        return Response({'message': 'Contraseña restablecida correctamente.'}, status=status.HTTP_200_OK)
+    except Usuario.DoesNotExist:
+        return Response({'error': 'Token inválido o expirado.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
