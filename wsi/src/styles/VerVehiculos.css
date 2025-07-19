@@ -7,82 +7,89 @@
 
 body {
   font-family: 'Arial', sans-serif;
-
   overflow-x: hidden;
+  font-size: 16px; /* Base para unidades rem */
 }
 
-
-
-
-/* Header - Ajusta el padding para más espacio */
-.registro-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  background-color: #ff6a00;
-  padding: 10px 20px; /* Ajusta estos valores para más/menos espacio */
+/* Loader */
+.loader-container {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 2;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.registro-header h1 {
-  margin: 0;
-  color: white;
-  font-size: 1.6rem; /* Ajusta el tamaño del título */
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.menu-icon {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 18px; /* Ajusta la altura del menú */
-  width: 24px; /* Ajusta el ancho del menú */
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 1000;
 }
 
-.menu-icon span {
+.loader {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #ff6a00;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Contenedor principal */
+.home-wrapper {
+  position: relative;
+  min-height: 100vh;
   width: 100%;
-  height: 3px; /* Ajusta el grosor de las líneas */
-  background-color: white;
+  padding-top: 100px; /* Espacio para el header */
 }
 
-.header-icons {
-  display: flex;
-  gap: 15px; /* Ajusta el espacio entre iconos */
+.vehiculos-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
 }
 
-.header-icon {
-  color: white;
-  font-size: 1.3rem; /* Ajusta el tamaño de los iconos */
+.vehiculos-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.18;
+  pointer-events: none;
+  user-select: none;
 }
 
-/* Contenedor principal - Ajusta padding para más espacio */
 .ver-vehiculos-container {
-  max-width: 1100px; /* Ajusta el ancho máximo */
+  position: relative;
+  z-index: 2;
   background: white;
   border-radius: 10px;
-  padding: 20px 25px; /* Ajusta estos valores para más/menos espacio */
+  padding: 1.5rem;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
   width: 95%;
-  margin: 70px auto 25px; /* Ajusta el margen superior */
+  max-width: 1200px;
+  margin: 0 auto 2rem;
 }
 
-/* Título y botón - Ajusta márgenes */
+/* Título y botón */
 .titulo-container {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px; /* Ajusta este valor para más/menos espacio */
+  margin-bottom: 1.5rem;
+  gap: 1rem;
 }
 
 .titulo {
-  font-size: 22px; /* Ajusta el tamaño del título */
+  font-size: 1.6rem;
   font-weight: bold;
   color: #333;
 }
@@ -92,12 +99,14 @@ body {
   color: white;
   border: none;
   border-radius: 20px;
-  padding: 10px 18px; /* Ajusta el padding del botón */
-  font-size: 15px; /* Ajusta el tamaño del texto */
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
-  gap: 8px; /* Ajusta el espacio entre icono y texto */
+  gap: 0.5rem;
   transition: all 0.2s;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .boton-crear-vehiculo:hover {
@@ -105,15 +114,67 @@ body {
   transform: translateY(-2px);
 }
 
-.icono-boton {
-  font-size: 13px; /* Ajusta el tamaño del icono */
+/* Filtros */
+.filtros-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
 }
 
-/* Tabla - Ajusta padding de celdas */
+.filtro-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  flex: 1 1 auto;
+}
+
+.filtros-container label {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.mantenimiento-filtro-select,
+.filtro-placa-input {
+  width: 100%;
+  border-radius: 18px;
+  border: 1.5px solid #ff6a00;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  background: white;
+}
+
+.exportar-pdf-btn {
+  background: #ff6a00;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(255,106,0,0.08);
+  margin-top: 1.6rem;
+  white-space: nowrap;
+}
+
+.exportar-pdf-btn:hover {
+  background: #e65500;
+  transform: translateY(-2px);
+}
+
+/* Tabla */
 .table-responsive {
   overflow-x: auto;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
+  margin-bottom: 1.5rem;
 }
 
 .tabla-vehiculos {
@@ -124,17 +185,16 @@ body {
 
 .tabla-vehiculos th,
 .tabla-vehiculos td {
-  padding: 12px 15px; /* Ajusta estos valores para más/menos espacio */
+  padding: 0.8rem 1rem;
   text-align: left;
   border: 1px solid #e0e0e0;
-  font-size: 14px; /* Ajusta el tamaño de fuente */
+  font-size: 0.9rem;
 }
 
 .tabla-vehiculos th {
   background-color: #ff6a00;
   color: white;
   font-weight: bold;
-  font-size: 15px; /* Ajusta el tamaño de fuente */
 }
 
 .tabla-vehiculos tr:nth-child(even) {
@@ -145,11 +205,11 @@ body {
   background-color: #f1f1f1;
 }
 
-/* Estados - Ajusta padding y tamaño */
+/* Estados */
 .estado-badge {
-  padding: 5px 10px; /* Ajusta estos valores */
+  padding: 0.3rem 0.8rem;
   border-radius: 12px;
-  font-size: 12px; /* Ajusta el tamaño de fuente */
+  font-size: 0.8rem;
   font-weight: 600;
   display: inline-block;
 }
@@ -170,19 +230,18 @@ body {
   color: #cc0000;
 }
 
-/* Acciones - Ajusta el ancho y espacio */
+/* Acciones */
 .acciones {
   display: flex;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 110px; /* Ajusta este valor para más/menos espacio entre iconos */
-  margin: 0 auto;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .accion-icon {
   color: #ff6a00;
-  font-size: 14px; /* Ajusta el tamaño de los iconos */
+  font-size: 1rem;
   transition: all 0.2s;
+  cursor: pointer;
 }
 
 .accion-icon:hover {
@@ -190,224 +249,303 @@ body {
   transform: scale(1.1);
 }
 
-/* Media Queries - Responsive Design */
-@media (max-width: 768px) {
-  .ver-vehiculos-container {
-    padding: 15px 18px; /* Ajusta para móviles */
-    margin-top: 65px;
-    width: 98%;
-  }
-
-  .titulo {
-    font-size: 20px; /* Ajuste para móviles */
-  }
-
-  .boton-crear-vehiculo {
-    padding: 8px 15px;
-    font-size: 14px;
-  }
-
-  /* Estilo de tarjetas para móviles */
-  .tabla-vehiculos thead {
-    display: none;
-  }
-
-  .tabla-vehiculos tr {
-    display: block;
-    margin-bottom: 12px; /* Ajusta este valor */
-    border: 1px solid #ddd;
-    border-radius: 6px;
-  }
-
-  .tabla-vehiculos td {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    text-align: right;
-    padding: 10px 12px; /* Ajusta para móviles */
-    border-bottom: 1px solid #eee;
-  }
-
-  .tabla-vehiculos td:last-child {
-    border-bottom: none;
-  }
-
-  .tabla-vehiculos td::before {
-    content: attr(data-label);
-    font-weight: bold;
-    margin-right: auto;
-    padding-right: 15px;
-    color: #ff6a00;
-    font-size: 13px;
-  }
-
-  .acciones {
-    max-width: 100px; /* Ajusta para móviles */
-  }
+/* Paginación */
+.paginacion-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
 }
 
-@media (max-width: 480px) {
-  .registro-header {
-    padding: 8px 12px; /* Ajusta para móviles pequeños */
-  }
-
-  .ver-vehiculos-container {
-    padding: 12px 15px;
-    margin-top: 60px;
-  }
-
-  .titulo-container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px; /* Ajusta este valor */
-    margin-bottom: 15px;
-  }
-
-  .boton-crear-vehiculo {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .tabla-vehiculos td {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 5px; /* Ajusta este valor */
-    padding: 8px 10px;
-  }
-
-  .tabla-vehiculos td::before {
-    align-self: flex-start;
-    margin-bottom: 3px;
-  }
-
-  .acciones {
-    max-width: 90px; /* Ajusta para móviles pequeños */
-    justify-content: space-around;
-  }
+.paginacion-btn {
+  background: #fafafa;
+  border: 1.5px solid #222;
+  color: #ff6a00;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
 }
 
-.vehiculos-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-
+.paginacion-btn.disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
-.vehiculos-bg img {
-  width: 100vw;
-  height: 100vh;
-  object-fit: cover;
-  opacity: 0.18;
-  pointer-events: none;
-  user-select: none;
+.paginacion-btn:not(.disabled):hover {
+  background: #f0f0f0;
 }
 
-.ver-vehiculos-container {
-  position: relative;
-  z-index: 2;
-  background: white;
+.paginacion-numeros {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-/* Modal de Confirmación de Eliminación */
+.paginacion-numero {
+  background: #fafafa;
+  border: 1.5px solid #222;
+  color: #ff6a00;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 40px;
+  font-size: 0.9rem;
+}
+
+.paginacion-numero.active {
+  box-shadow: 0 0 0 2px #ff6a00;
+  border-color: #ff6a00;
+}
+
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black overlay */
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* Ensure it's on top */
+  z-index: 1000;
 }
 
 .modal-content {
   background: white;
-  padding: 25px 30px;
+  padding: 1.5rem;
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   width: 90%;
-  max-width: 450px; /* Max width for the modal */
-  text-align: left; /* Align text to the left by default */
+  max-width: 500px;
+  text-align: left;
 }
 
 .modal-content h2 {
-  font-size: 20px; /* Consistent with .titulo */
+  font-size: 1.4rem;
   font-weight: bold;
   color: #333;
-  margin-bottom: 15px;
-  text-align: center; /* Center the title */
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 .modal-content p {
-  font-size: 15px;
+  font-size: 0.95rem;
   color: #555;
-  margin-bottom: 20px;
+  margin-bottom: 1.2rem;
   line-height: 1.5;
 }
 
-.modal-content .form-group {
-  margin-bottom: 20px;
+.form-group {
+  margin-bottom: 1.2rem;
 }
 
-.modal-content label {
+.form-group label {
   display: block;
-  font-size: 14px;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 }
 
-.modal-content textarea {
+.form-group textarea {
   width: 100%;
-  padding: 10px;
+  padding: 0.8rem;
   border: 1px solid #ccc;
   border-radius: 5px;
-  font-size: 14px;
+  font-size: 0.9rem;
   font-family: 'Arial', sans-serif;
-  resize: vertical; /* Allow vertical resize, disable horizontal */
-  min-height: 80px;
+  resize: vertical;
+  min-height: 100px;
 }
 
 .modal-actions {
   display: flex;
-  justify-content: flex-end; /* Align buttons to the right */
-  gap: 12px; /* Space between buttons */
-  margin-top: 25px;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
 }
 
 .modal-actions .btn {
   border: none;
-  border-radius: 20px; /* Consistent with .boton-crear-vehiculo */
-  padding: 10px 20px; /* Consistent padding */
-  font-size: 15px;
+  border-radius: 20px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.2s;
 }
 
-.modal-actions .btn-confirmar {
-  background-color: #ff6a00; /* Primary action color */
+.btn-confirmar {
+  background-color: #ff6a00;
   color: white;
 }
 
-.modal-actions .btn-confirmar:hover {
-  background-color: #e65500; /* Darker shade on hover */
+.btn-confirmar:hover {
+  background-color: #e65500;
   transform: translateY(-1px);
 }
 
-.modal-actions .btn-cancelar {
-  background-color: #f0f0f0; /* Light grey for cancel */
+.btn-cancelar {
+  background-color: #f0f0f0;
   color: #333;
-  border: 1px solid #ccc;
+  border: 1px solid #ccc !important;
 }
 
-.modal-actions .btn-cancelar:hover {
-  background-color: #e0e0e0; /* Darker grey on hover */
+.btn-cancelar:hover {
+  background-color: #e0e0e0;
   transform: translateY(-1px);
 }
 
+/* Mensajes */
+.error-message {
+  color: red;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.no-vehiculos {
+  text-align: center;
+  padding: 1.5rem;
+  font-style: italic;
+}
+
+/* Media Queries */
+@media (max-width: 992px) {
+  .filtros-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filtro-item {
+    min-width: 100%;
+  }
+  
+  .exportar-pdf-btn {
+    margin-top: 0.5rem;
+    justify-content: center;
+  }
+  
+  .paginacion-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .paginacion-numeros {
+    margin: 0.5rem 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .ver-vehiculos-container {
+    padding: 1rem;
+    width: 98%;
+  }
+  
+  .titulo-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+  
+  .boton-crear-vehiculo {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Estilo de tarjetas para móviles */
+  .tabla-vehiculos thead {
+    display: none;
+  }
+  
+  .tabla-vehiculos tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+  }
+  
+  .tabla-vehiculos td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+    padding: 0.8rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .tabla-vehiculos td:last-child {
+    border-bottom: none;
+    justify-content: center;
+  }
+  
+  .tabla-vehiculos td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    margin-right: auto;
+    padding-right: 1rem;
+    color: #ff6a00;
+    font-size: 0.9rem;
+    text-align: left;
+  }
+  
+  .acciones {
+    max-width: 100%;
+    justify-content: space-around;
+    padding: 0.5rem 0;
+  }
+  
+  .paginacion-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .paginacion-numero {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    min-width: 35px;
+  }
+}
+
+@media (max-width: 480px) {
+  .titulo {
+    font-size: 1.4rem;
+  }
+  
+  .tabla-vehiculos td {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+  
+  .tabla-vehiculos td::before {
+    margin-bottom: 0.3rem;
+  }
+  
+  .estado-badge {
+    align-self: flex-start;
+  }
+  
+  .modal-content {
+    padding: 1.2rem;
+  }
+  
+  .modal-content h2 {
+    font-size: 1.3rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .modal-actions .btn {
+    width: 100%;
+  }
+}

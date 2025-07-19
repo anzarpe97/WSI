@@ -48,6 +48,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     telefono = models.CharField('teléfono', max_length=11, null=False)
     fechaRegistro = models.DateTimeField('fecha de registro', auto_now_add=True)
     rol = models.CharField('rol', max_length=1, null=False)
+    reset_token = models.CharField(max_length=100, null=True, blank=True)
 
     # Django Admin
     is_active = models.BooleanField('activo', default=True)
