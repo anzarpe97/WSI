@@ -1,3 +1,4 @@
+from rest_framework.generics import DestroyAPIView
 from django.http import JsonResponse
 from django.utils import timezone
 from django.middleware.csrf import get_token
@@ -228,7 +229,8 @@ class UsuarioListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        usuarios = Usuario.objects.filter(rol__in=['1', '2'])
+        # Solo usuarios activos (no borrados)
+        usuarios = Usuario.objects.filter(rol__in=['1', '2']).filter(borrado__isnull=True)
         serializer = EmpleadoSerializer(usuarios, many=True)
         return Response(serializer.data)
     
@@ -532,7 +534,17 @@ def restablecer_contraseña(request):
     except Usuario.DoesNotExist:
         return Response({'error': 'Token inválido o expirado.'}, status=status.HTTP_400_BAD_REQUEST)
 
+# Vista para borrado lógico de empleados
+class UsuarioDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def delete(self, request, id):
+        try:
+            usuario = Usuario.objects.get(id=id)
+            usuario.delete()  # Esto marca como borrado
+            return Response({'success': 'Empleado eliminado correctamente.'}, status=status.HTTP_204_NO_CONTENT)
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Empleado no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 

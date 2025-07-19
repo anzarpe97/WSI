@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from WSI_API.views import restablecer_contraseña, solicitar_restaurar_contraseña, ReporteFallaListAPIView, CrearReporteFallaAPIView, DocumentoChoferDetailAPIView,VehiculosMasMantenimientosAPIView, finalizar_mantenimiento, DocumentoVehiculoCreateAPIView, UsuarioDetailAPIView, MantenimientoDetailAPIView, MotivoMantenimientoListAPIView, MarcarTodasNotificacionesLeidasView, DocumentosChoferListAPIView, MarcarNotificacionLeidaView, NotificacionesUsuarioView, BuscarChoferPorCedulaAPIView, DocumentoChoferCreateAPIView, VehiculoUpdateView, MantenimientoListAPIView, CrearMantenimientoAPIView,  BuscarVehiculoPorPlacaAPIView, UsuarioListAPIView, VehiculoMecanicoComboAPIView, VehiculoDetailView, VehiculoListView,VehiculoCreateView, CustomLoginView, VerifyTokenView, registrar_usuario, get_csrf_token,RegistroUsuarioAPIView
+from WSI_API.views import restablecer_contraseña, solicitar_restaurar_contraseña, ReporteFallaListAPIView, CrearReporteFallaAPIView, DocumentoChoferDetailAPIView,VehiculosMasMantenimientosAPIView, finalizar_mantenimiento, DocumentoVehiculoCreateAPIView, UsuarioDetailAPIView, MantenimientoDetailAPIView, MotivoMantenimientoListAPIView, MarcarTodasNotificacionesLeidasView, DocumentosChoferListAPIView, MarcarNotificacionLeidaView, NotificacionesUsuarioView, BuscarChoferPorCedulaAPIView, DocumentoChoferCreateAPIView, VehiculoUpdateView, MantenimientoListAPIView, CrearMantenimientoAPIView,  BuscarVehiculoPorPlacaAPIView, UsuarioListAPIView, VehiculoMecanicoComboAPIView, VehiculoDetailView, VehiculoListView,VehiculoCreateView, CustomLoginView, VerifyTokenView, registrar_usuario, get_csrf_token,RegistroUsuarioAPIView, UsuarioDeleteAPIView
+    
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -15,6 +16,7 @@ urlpatterns = [
     path('api/vehiculos/', VehiculoListView.as_view(), name='listar-vehiculos'),
     path('api/vehiculos/<int:id_vehiculo>/', VehiculoUpdateView.as_view(), name='vehiculo-detail-update'), # Changed name for clarity, this handles GET, PUT, PATCH
     path('api/vehiculos/buscar/', BuscarVehiculoPorPlacaAPIView.as_view(), name='buscar-vehiculo-por-placa'),
+    path('api/usuarios/<int:id>/', UsuarioDeleteAPIView.as_view(), name='usuario-delete'),
     path('api/usuarios/', UsuarioListAPIView.as_view(), name='usuarios-list'),
     path('api/mantenimientos/', MantenimientoListAPIView.as_view(), name='listar-mantenimientos'),
     path('api/detalle-mantenimiento/<int:pk>/', MantenimientoDetailAPIView.as_view(), name='mantenimiento-detail'),
@@ -39,7 +41,7 @@ urlpatterns = [
     path('api/reportes-fallas/', ReporteFallaListAPIView.as_view(), name='listar-reportes-fallas'),
     path('api/solicitar-restablecimiento/', solicitar_restaurar_contraseña, name='solicitar-restablecimiento'),
     path('api/reset-password/', restablecer_contraseña, name='restablecer-contraseña'),
-
+    path('api/usuarios/<int:id>/', UsuarioDeleteAPIView.as_view(), name='usuario-delete'),
 
 ]   
 

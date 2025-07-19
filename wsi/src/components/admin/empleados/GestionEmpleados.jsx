@@ -16,6 +16,39 @@ const GestionEmpleados = () => {
   const [loading, setLoading] = useState(true);
   const [filtroCedula, setFiltroCedula] = useState('');
   const [paginaActual, setPaginaActual] = useState(1);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [empleadoToDelete, setEmpleadoToDelete] = useState(null);
+  // Eliminar empleado
+  const handleOpenDeleteModal = (empleado) => {
+    setEmpleadoToDelete(empleado);
+    setShowDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setEmpleadoToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!empleadoToDelete) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/usuarios/${empleadoToDelete.id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('No se pudo eliminar el empleado');
+      }
+      setEmpleados(prev => prev.filter(e => e.id !== empleadoToDelete.id));
+      toast.success('Empleado eliminado correctamente');
+      handleCloseDeleteModal();
+    } catch (error) {
+      toast.error(error.message || 'Error al eliminar el empleado');
+    }
+  };
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
@@ -220,7 +253,24 @@ const empleadosFiltradosRol = empleados.filter(e =>
                           size="lg" 
                           className="empleados-accion-icon" 
                           title="Eliminar empleado"
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => handleOpenDeleteModal(empleado)}
                         />
+                          {/* Modal de Confirmación de Eliminación */}
+                          {showDeleteModal && empleadoToDelete && (
+                            <div className="modal-overlay">
+                              <div className="modal-content" style={{ maxWidth: 420, borderRadius: 10, padding: '1.5rem', boxShadow: '0 5px 15px rgba(0,0,0,0.3)', background: 'white', textAlign: 'left' }}>
+                                <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#333', marginBottom: '1rem', textAlign: 'center' }}>Confirmar Eliminación</h2>
+                                <p style={{ fontSize: '0.95rem', color: '#555', marginBottom: '1.2rem', lineHeight: 1.5, textAlign: 'center' }}>
+                                  ¿Está seguro de que desea eliminar al empleado <strong>{empleadoToDelete.nombre} {empleadoToDelete.apellido}</strong>?
+                                </p>
+                                <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.8rem', marginTop: '1.2rem' }}>
+                                  <button onClick={handleConfirmDelete} className="btn btn-confirmar" style={{ backgroundColor: '#ff6a00', color: 'white', border: 'none', borderRadius: 20, padding: '0.6rem 1.2rem', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'background-color 0.2s, transform 0.2s' }}>Aceptar</button>
+                                  <button onClick={handleCloseDeleteModal} className="btn btn-cancelar" style={{ backgroundColor: '#f0f0f0', color: '#333', border: '1px solid #ccc', borderRadius: 20, padding: '0.6rem 1.2rem', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'background-color 0.2s, transform 0.2s' }}>Cancelar</button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                       </div>
                     </td>
                   </tr>
