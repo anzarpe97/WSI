@@ -504,7 +504,7 @@ def solicitar_restaurar_contraseña(request):
         usuario.reset_token = token
         usuario.save()
         # Construir enlace de restablecimiento
-        reset_url = f"{request.build_absolute_uri('/')}reset-password/{token}/"
+        reset_url = f"http://localhost:5173/reset-password/{token}"
         send_mail(
             subject='Restablecimiento de contraseña - WSI',
             message=f'Hola {usuario.nombre},\n\nPara restablecer tu contraseña haz clic en el siguiente enlace:\n{reset_url}\n\nSi no solicitaste este cambio, ignora este correo.',
