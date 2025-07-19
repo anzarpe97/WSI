@@ -27,6 +27,7 @@ import Notificaciones from './components/Notificaciones';
 import GestionDocumentoChoferes from './components/admin/documentos-choferes/GestionDocumentoChoferes';
 import FinalizarMantenimiento from './components/admin/mantenimientos/FinalizarMantinimento';
 import HomeUsuario from './components/usuario/HomeUsuario';
+import ResetPassword from './components/ResetPassword';
 import ReporteFallas from './components/supervisor/ReporteFallas.jsx/ReporteFallas';
 
 const App = () => {
@@ -79,6 +80,7 @@ const App = () => {
 
         {/* RUTAS USUARIO*/}  
         <Route path="/home-usuario" element={<HomeUsuario />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       </Routes>
     </Router>

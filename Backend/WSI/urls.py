@@ -38,7 +38,7 @@ urlpatterns = [
     path('api/vehiculos-mas-mantenimientos/', VehiculosMasMantenimientosAPIView.as_view(), name='vehiculos-mas-mantenimientos'),
     path('api/reportes-fallas/', ReporteFallaListAPIView.as_view(), name='listar-reportes-fallas'),
     path('api/solicitar-restablecimiento/', solicitar_restaurar_contraseña, name='solicitar-restablecimiento'),
-    path('api/restablecer-contraseña/', restablecer_contraseña, name='restablecer-contraseña'),
+    path('api/reset-password/', restablecer_contraseña, name='restablecer-contraseña'),
 
 
 ]   
