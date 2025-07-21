@@ -109,7 +109,7 @@ const GestionDocumentoChoferes = () => {
   };
 
   const handleEditarDocumento = (id) => {
-    navigate(`/editar-documento-chofer/${id}`);
+    navigate(`/actualizar-documento-choferes/${id}`);
   };
 
   const handleEliminarDocumento = (id) => {
@@ -194,7 +194,7 @@ const GestionDocumentoChoferes = () => {
         </div>
 
         {/* Filtros */}
-        <div className="documento-chofer-filtros-container">
+        <div className="documento-chofer-filtros-container" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div className="documento-chofer-filtro">
             <label>Filtrar por estado:</label>
             <select value={filtroEstado} onChange={handleFiltroEstado} className="documento-chofer-filtro-select" >
@@ -204,6 +204,15 @@ const GestionDocumentoChoferes = () => {
               <option value="VENCIDO">Vencido</option>
             </select>
           </div>
+          <button
+            className="documento-chofer-boton-crear"
+            style={{ minWidth: 180, marginLeft: 8, display: 'flex', alignItems: 'center' }}
+            onClick={() => navigate('/actualizar-documento-chofer')}
+            disabled={documentos.length === 0}
+          >
+            <FontAwesomeIcon icon={faPen} className="documento-chofer-icono-boton" style={{ marginRight: 8 }} />
+            Actualizar Documentos
+          </button>
         </div>
 
         <div className="documento-chofer-table-responsive">
@@ -276,13 +285,7 @@ const GestionDocumentoChoferes = () => {
                           >
                             <FontAwesomeIcon icon={faEye} size="lg" />
                           </button>
-                          <button 
-                            className="documento-chofer-accion-btn"
-                            onClick={() => handleEditarDocumento(documento.id_documento_chofer)}
-                            title="Editar documento"
-                          >
-                            <FontAwesomeIcon icon={faPen} size="lg" />
-                          </button>
+                          {/* Botón editar documento removido */}
                           <button 
                             className="documento-chofer-accion-btn"
                             onClick={() => handleEliminarDocumento(documento.id_documento_chofer)}

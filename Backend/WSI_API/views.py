@@ -442,7 +442,7 @@ class VehiculosMasMantenimientosAPIView(APIView):
         return Response(data)
 
 
-class DocumentoChoferDetailAPIView(RetrieveAPIView):
+class DocumentoChoferDetailAPIView(RetrieveUpdateAPIView):
     queryset = DocumentoChofer.objects.all()
     serializer_class = DocumentoChoferSerializer
     lookup_field = 'id_documento_chofer'

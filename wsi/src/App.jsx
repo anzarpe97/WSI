@@ -28,6 +28,7 @@ import GestionDocumentoChoferes from './components/admin/documentos-choferes/Ges
 import FinalizarMantenimiento from './components/admin/mantenimientos/FinalizarMantinimento';
 import HomeUsuario from './components/usuario/HomeUsuario';
 import ResetPassword from './components/ResetPassword';
+import ActualizarDocumentoChofer from './components/admin/documentos-choferes/ActualizarDocumentoChofer';
 import ReporteFallas from './components/supervisor/ReporteFallas.jsx/ReporteFallas';
 
 const App = () => {
@@ -69,7 +70,8 @@ const App = () => {
         <Route path="/reportar-falla" element={<ReporteFallas />} />
         {/* RUTAS VEHICULOS SUPERVISOR*/}
         <Route path="/ver-fallas" element={<VisualizarFallas />} />
-
+        <Route path="/actualizar-documento-chofer" element={<ActualizarDocumentoChofer />} />
+        <Route path="/actualizar-documento-chofer/:id" element={<ActualizarDocumentoChofer />} />
         {/* RUTAS VEHICULOS SUPERVISOR*/}
         {/* RUTAS DOCUMENTOS VEHICULOS SUPERVISOR*/}
 

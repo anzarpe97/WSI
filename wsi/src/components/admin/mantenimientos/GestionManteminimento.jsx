@@ -4,6 +4,8 @@ import { faEye, faCheck, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-
 import '../../../styles/GestionMantenimiento.css';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../header';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import bgImage from '../../../assets/bg-login.jpg';
 import { toast } from 'react-toastify';
 import { verifyToken } from '../../../services/auth';
@@ -13,6 +15,7 @@ const PAGE_SIZE = 5; // Cambia este valor si quieres más o menos filas por pág
 const GestionMantenimiento = () => {
   const [mantenimientos, setMantenimientos] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState('');
+  const [tipoReporte, setTipoReporte] = useState('TODOS');
   const [paginaActual, setPaginaActual] = useState(1);
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
@@ -85,10 +88,165 @@ const GestionMantenimiento = () => {
     // --- Fin temporizador ---
   }, [navigate]);
 
-  // Filtro por estado
-  const mantenimientosFiltrados = filtroEstado
-    ? mantenimientos.filter(m => m.estado === filtroEstado)
-    : mantenimientos;
+  // Filtro por estado y tipo de reporte
+  let mantenimientosFiltrados = mantenimientos;
+  if (tipoReporte !== 'TODOS') {
+    mantenimientosFiltrados = mantenimientosFiltrados.filter(m => m.estado === tipoReporte);
+  } else if (filtroEstado) {
+    mantenimientosFiltrados = mantenimientosFiltrados.filter(m => m.estado === filtroEstado);
+  }
+  // Exportar PDF
+  const handleExportPDF = () => {
+    let dataExport = mantenimientosFiltrados;
+    let estadoLabel = 'Todos';
+    if (tipoReporte === 'ACTIVO') estadoLabel = 'En Proceso';
+    else if (tipoReporte === 'FINALIZADO') estadoLabel = 'Completado';
+    else if (tipoReporte === 'PENDIENTE') estadoLabel = 'Pendiente';
+    else if (tipoReporte === 'CANCELADO') estadoLabel = 'Cancelado';
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'A4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Encabezado
+    doc.setFillColor(255, 106, 0);
+    doc.rect(0, 0, pageWidth, 60, 'F');
+    doc.setFontSize(22);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Reporte de Mantenimientos', 40, 38);
+    doc.setFontSize(12);
+    doc.setTextColor(255, 255, 255);
+    doc.text(`Filtro: ${estadoLabel}   |   Total: ${dataExport.length}`, 40, 54);
+
+    let y = 80;
+    const cardSpacing = 32;
+    const cardHeight = 220;
+    const cardWidth = pageWidth - 80;
+
+    dataExport.forEach((m, idx) => {
+      if (y + cardHeight + 60 > pageHeight) {
+        doc.addPage();
+        doc.setFillColor(255, 106, 0);
+        doc.rect(0, 0, pageWidth, 60, 'F');
+        doc.setFontSize(22);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Reporte de Mantenimientos', 40, 38);
+        doc.setFontSize(12);
+        doc.setTextColor(255, 255, 255);
+        doc.text(`Filtro: ${estadoLabel}   |   Total: ${dataExport.length}`, 40, 54);
+        y = 80;
+      }
+
+      // Card fondo
+      doc.setFillColor(250, 250, 250);
+      doc.roundedRect(40, y, cardWidth, cardHeight, 16, 16, 'F');
+      doc.setDrawColor(255, 106, 0);
+      doc.setLineWidth(2);
+      doc.roundedRect(40, y, cardWidth, cardHeight, 16, 16, 'S');
+
+      // Título de la ficha
+      doc.setFontSize(15);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 106, 0);
+      doc.text(`N° Orden: OMT-0${m.id_mantenimiento}`, 56, y + 32);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Estado: ${traducirEstado(m.estado)}`, 220, y + 32);
+
+      // --- Datos en filas ---
+      let rowY = y + 60;
+      const rowGap = 22;
+      const labelX = 56;
+      const valueX = 180;
+      const label2X = pageWidth / 2 + 10;
+      const value2X = label2X + 110;
+
+      // Fila 1
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Motivo:', labelX, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(String(m.id_motivo?.motivo || m.motivo || 'N/A'), valueX, rowY);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Placa:', label2X, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(String(m.id_vehiculo?.placa || m.placa || 'N/A'), value2X, rowY);
+
+      // Fila 2
+      rowY += rowGap;
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Tipo:', labelX, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(String(m.tipo_mantenimiento || 'N/A'), valueX, rowY);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Mecánico:', label2X, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(m.id_mecanico?.nombre ? `${m.id_mecanico.nombre} ${m.id_mecanico.apellido}` : 'N/A', value2X, rowY);
+
+      // Fila 3
+      rowY += rowGap;
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Fecha Programada:', labelX, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(m.fecha_programada ? new Date(m.fecha_programada).toLocaleDateString() : 'N/A', valueX, rowY);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Fecha Finalizado:', label2X, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(m.fecha_finalizado ? new Date(m.fecha_finalizado).toLocaleDateString() : 'N/A', value2X, rowY);
+
+      // Fila 4
+      rowY += rowGap;
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Observaciones:', labelX, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(String(m.observaciones || 'N/A'), valueX, rowY, { maxWidth: 260 });
+
+      // Suministros/Detalles
+      rowY += rowGap + 8;
+      if (m.detalles && Array.isArray(m.detalles) && m.detalles.length > 0) {
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(45, 55, 72);
+        doc.text('Suministros:', labelX, rowY);
+        rowY += rowGap - 8;
+        m.detalles.forEach((d, idx) => {
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(80, 80, 80);
+          doc.text(`- ${d.motivo}: ${d.cantidad} x ${d.precio_und} = ${d.total}`, labelX + 16, rowY);
+          rowY += 16;
+        });
+      }
+
+      y += cardHeight + cardSpacing;
+    });
+
+    // Pie de página
+    const footerY = pageHeight - 30;
+    doc.setFontSize(10);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Reporte generado el ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}`,
+      pageWidth / 2, footerY, null, null, 'center');
+
+    doc.save('reporte_mantenimientos.pdf');
+  };
 
   // Paginación
   const totalPaginas = Math.ceil(mantenimientosFiltrados.length / PAGE_SIZE);
@@ -169,16 +327,36 @@ const GestionMantenimiento = () => {
           </button>
         </div>
 
-        {/* Filtros */}
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ marginRight: 8 }}>Filtrar por estado:</label>
-          <select value={filtroEstado} onChange={handleFiltroEstado} className="mantenimiento-filtro-select" >
-            <option value="">Todos</option>
-            <option value="ACTIVO">En Proceso</option>
-            <option value="FINALIZADO">Completado</option>
-            <option value="PENDIENTE">Pendiente</option>
-            <option value="CANCELADO">Cancelado</option>
-          </select>
+        {/* Filtros y exportar PDF */}
+        <div className="mantenimiento-filtro-wrapper" style={{ marginBottom: 16, flexWrap: 'wrap', gap: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <label className="mantenimiento-filtro-label" style={{ marginRight: 8, minWidth: 90 }}>Filtrar por estado:</label>
+            <select value={filtroEstado} onChange={handleFiltroEstado} className="mantenimiento-filtro-select" style={{ minWidth: 150 }}>
+              <option value="">Todos</option>
+              <option value="ACTIVO">En Proceso</option>
+              <option value="FINALIZADO">Completado</option>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="CANCELADO">Cancelado</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 18, flexWrap: 'wrap' }}>
+            <label className="mantenimiento-filtro-label" style={{ marginRight: 8, minWidth: 60 }}>Reporte:</label>
+            <select value={tipoReporte} onChange={e => setTipoReporte(e.target.value)} className="mantenimiento-filtro-select" style={{ minWidth: 150 }}>
+              <option value="TODOS">Listado completo</option>
+              <option value="ACTIVO">Solo en proceso</option>
+              <option value="FINALIZADO">Solo completados</option>
+              <option value="PENDIENTE">Solo pendientes</option>
+              <option value="CANCELADO">Solo cancelados</option>
+            </select>
+          </div>
+          <button
+            onClick={handleExportPDF}
+            className="mantenimiento-boton-crear"
+            style={{ marginLeft: 18, display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, height: 40 }}
+            title="Exportar listado a PDF"
+          >
+            <FontAwesomeIcon icon={faEye} className="mantenimiento-icono-boton" /> Exportar
+          </button>
         </div>
 
         <div className="mantenimiento-table-responsive">
