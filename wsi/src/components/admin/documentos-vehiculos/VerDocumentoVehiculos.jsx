@@ -56,14 +56,26 @@ const VerDocumentoVehiculos = () => {
     const fetchDocumentos = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:8000/api/documentos-vehiculos-verificar/', {
+        const response = await fetch('http://localhost:8000/api/documentos-vehiculos/', {
           headers: {
             'Authorization': `Token ${token}`,
             'Content-Type': 'application/json'
           }
         });
+        if (!response.ok) {
+          setDocumentos([]);
+          return;
+        }
         const data = await response.json();
-        setDocumentos(data);
+        // Mapear para mostrar info del vehículo si es necesario
+        const documentosMapeados = Array.isArray(data)
+          ? data.map(doc => ({
+              ...doc,
+              vehiculo_placa: doc.Vehiculo?.placa || doc.vehiculo_placa || '',
+              vehiculo_marca: doc.Vehiculo?.marca || doc.vehiculo_marca || '',
+            }))
+          : [];
+        setDocumentos(documentosMapeados);
       } catch (error) {
         setDocumentos([]);
       }

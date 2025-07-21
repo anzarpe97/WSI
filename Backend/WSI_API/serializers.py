@@ -376,9 +376,20 @@ class DocumentoChoferSerializer(serializers.ModelSerializer):
 
 
 class DocumentoVehiculoSerializer(serializers.ModelSerializer):
+    vehiculo_placa = serializers.SerializerMethodField()
+    vehiculo_marca = serializers.SerializerMethodField()
+
     class Meta:
         model = DocumentoVehiculo
         fields = '__all__'
+        # Agregamos los campos extra
+        extra_fields = ['vehiculo_placa', 'vehiculo_marca']
+
+    def get_vehiculo_placa(self, obj):
+        return obj.Vehiculo.placa if obj.Vehiculo else ''
+
+    def get_vehiculo_marca(self, obj):
+        return obj.Vehiculo.marca if obj.Vehiculo else ''
 
 class ReporteFallaSerializer(serializers.ModelSerializer):
     class Meta:

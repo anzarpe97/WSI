@@ -30,6 +30,8 @@ import HomeUsuario from './components/usuario/HomeUsuario';
 import ResetPassword from './components/ResetPassword';
 import ActualizarDocumentoChofer from './components/admin/documentos-choferes/ActualizarDocumentoChofer';
 import ReporteFallas from './components/supervisor/ReporteFallas.jsx/ReporteFallas';
+import DetalleDocumentoVehiculo from './components/admin/documentos-vehiculos/DetalleDocumentoVehiculo.jsx';
+
 
 const App = () => {
   return (
@@ -79,6 +81,7 @@ const App = () => {
         <Route path="/perfil-usuario" element={<PerfilUsuario />} />
         {/* RUTAS NOTIFICACIONES*/}
         <Route path="/notificaciones" element={<Notificaciones />} />
+        <Route path="/detalle-documento-vehiculo/:id" element={<DetalleDocumentoVehiculo />} />
 
         {/* RUTAS USUARIO*/}  
         <Route path="/home-usuario" element={<HomeUsuario />} />

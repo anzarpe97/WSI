@@ -1,3 +1,5 @@
+# Detalle de documento de vehículo (GET por ID)
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.generics import DestroyAPIView
 from django.http import JsonResponse
 from django.utils import timezone
@@ -10,7 +12,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
-from .models import  ReporteFalla, MotivoMantenimiento, Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
+from .models import  ReporteFalla, MotivoMantenimiento, Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer, DocumentoVehiculo
 from .serializers import (ReporteFallaSerializer, DocumentoVehiculoSerializer, DetalleMantenimientoSerializer, MotivoMantenimientoSerializer, NotificacionUsuarioSerializer,DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
 from django.utils.decorators import method_decorator
 from rest_framework.generics import RetrieveAPIView
@@ -386,6 +388,16 @@ class VehiculoCreateView(CreateAPIView):
     queryset = Vehiculo.objects.all()
     serializer_class = VehiculoSerializer
 
+
+# List all vehicle documents (GET)
+from rest_framework.generics import ListAPIView
+
+class DocumentoVehiculoListAPIView(ListAPIView):
+    queryset = DocumentoVehiculo.objects.all()
+    serializer_class = DocumentoVehiculoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+# Create vehicle document (POST)
 class DocumentoVehiculoCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -559,6 +571,11 @@ class UsuarioDeleteAPIView(APIView):
             return Response({'error': 'Empleado no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
 
+class DocumentoVehiculoDetailAPIView(RetrieveAPIView):
+    queryset = DocumentoVehiculo.objects.all()
+    serializer_class = DocumentoVehiculoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id_documento_vehiculo'
 
 
 
