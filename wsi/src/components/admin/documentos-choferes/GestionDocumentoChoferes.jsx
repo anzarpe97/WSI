@@ -112,8 +112,28 @@ const GestionDocumentoChoferes = () => {
     navigate(`/actualizar-documento-choferes/${id}`);
   };
 
-  const handleEliminarDocumento = (id) => {
-    // Lógica de confirmación/eliminación
+  const handleEliminarDocumento = async (id) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este documento? Esta acción no se puede deshacer.')) {
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8000/api/documentos-chofer/${id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+      });
+      if (response.ok) {
+        setDocumentos(prev => prev.filter(doc => doc.id_documento_chofer !== id));
+        toast.success('Documento eliminado correctamente');
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.detail || 'Error al eliminar el documento');
+      }
+    } catch (error) {
+      toast.error('Error de red al eliminar el documento');
+    }
   };
 
   const traducirEstado = (estado) => {

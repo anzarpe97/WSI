@@ -347,13 +347,21 @@ class MarcarTodasNotificacionesLeidasView(APIView):
         )
         return Response({'success': True})
     
-class MotivoMantenimientoListAPIView(APIView):
+
+class MotivoMantenimientoListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         motivos = MotivoMantenimiento.objects.all()
         serializer = MotivoMantenimientoSerializer(motivos, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)   
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = MotivoMantenimientoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class MantenimientoDetailAPIView(APIView):
     def get(self, request, pk):
@@ -442,7 +450,11 @@ class VehiculosMasMantenimientosAPIView(APIView):
         return Response(data)
 
 
-class DocumentoChoferDetailAPIView(RetrieveUpdateAPIView):
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
+
+# ...
+
+class DocumentoChoferDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = DocumentoChofer.objects.all()
     serializer_class = DocumentoChoferSerializer
     lookup_field = 'id_documento_chofer'
