@@ -30,8 +30,8 @@ urlpatterns = [
     path('api/documentos-choferes-verificar/', DocumentosChoferListAPIView.as_view(), name='documentos-choferes-list'),
     path('api/motivos/', MotivoMantenimientoListCreateAPIView.as_view(), name='motivo-mantenimiento-list'),
     path('api/detalle-usuarios/<int:id>/', UsuarioDetailAPIView.as_view(), name='usuario-detail'),
-    path('api/documentos-vehiculos/', DocumentoVehiculoListAPIView.as_view(), name='documentos-vehiculos-list'),
-    path('api/documentos-vehiculos/crear/', DocumentoVehiculoCreateAPIView.as_view(), name='documentos-vehiculos-create'),
+    path('api/documentos-vehiculos/', DocumentoVehiculoListAPIView.as_view(), name='documentos-vehiculos-list'),  # GET
+    path('api/documentos-vehiculos/crear/', DocumentoVehiculoCreateAPIView.as_view(), name='documentos-vehiculos-create'),  # POST  
     path('api/mantenimientos/<int:id>/finalizar/', finalizar_mantenimiento, name='finalizar_mantenimiento'),
     # NOTIFICACIONES
     path('api/notificaciones/', NotificacionesUsuarioView.as_view(), name='notificaciones-usuario'),
