@@ -154,6 +154,7 @@ class Mantenimiento(models.Model):
     tipo_mantenimiento = models.CharField(max_length=10, choices=TIPO_MANTENIMIENTO_CHOICES)
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='ACTIVO')
     observaciones = models.TextField(blank=True, null=True)
+    borrado = models.BooleanField(null=True, blank=True, default=None, verbose_name="Borrado")
 
     
     # MOSTRAR EL NOMBRE DEL VEHICULO Y EL TIPO DE MANTENIMIENTO EN EL ADMINISTRADOR DJANGO

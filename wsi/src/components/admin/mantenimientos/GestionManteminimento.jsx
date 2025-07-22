@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faCheck, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faCheck, faTrashAlt, faPlus, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import '../../../styles/GestionMantenimiento.css';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../header';
@@ -10,13 +10,17 @@ import bgImage from '../../../assets/bg-login.jpg';
 import { toast } from 'react-toastify';
 import { verifyToken } from '../../../services/auth';
 
-const PAGE_SIZE = 5; // Cambia este valor si quieres más o menos filas por página
+const PAGE_SIZE = 5;
 
 const GestionMantenimiento = () => {
   const [mantenimientos, setMantenimientos] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState('');
   const [tipoReporte, setTipoReporte] = useState('TODOS');
   const [paginaActual, setPaginaActual] = useState(1);
+  const [showMotivoModal, setShowMotivoModal] = useState(false);
+  const [motivoModalMsg, setMotivoModalMsg] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [mantenimientoToDelete, setMantenimientoToDelete] = useState(null);
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
@@ -31,25 +35,23 @@ const GestionMantenimiento = () => {
 
   // Verificar rol del usuario al montar
   useEffect(() => {
- const check = async () => {
-    try {
-      const result = await verifyToken();
-      if (result.isValid && result.user) {
-        // Permitir acceso a roles 0, 1 y 2
-        const rol = String(result.user.rol);
-        if (rol !== "0" && rol !== "1" && rol !== "2") {
+    const check = async () => {
+      try {
+        const result = await verifyToken();
+        if (result.isValid && result.user) {
+          const rol = String(result.user.rol);
+          if (rol !== "0" && rol !== "1" && rol !== "2") {
+            logout();
+          }
+        } else {
           logout();
         }
-      } else {
+      } catch (error) {
         logout();
       }
-    } catch (error) {
-      logout();
-    }
     };
     check();
   }, [navigate]);
-  // --- FIN VERIFICACIÓN ROL ---
 
   useEffect(() => {
     const fetchMantenimientos = async () => {
@@ -69,14 +71,14 @@ const GestionMantenimiento = () => {
     };
     fetchMantenimientos();
 
-    // --- Temporizador de inactividad ---
+    // Temporizador de inactividad
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
     const resetTimer = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 1200000); 
+      }, 1200000);
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
@@ -85,16 +87,16 @@ const GestionMantenimiento = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
       events.forEach(event => window.removeEventListener(event, resetTimer));
     };
-    // --- Fin temporizador ---
   }, [navigate]);
 
-  // Filtro por estado y tipo de reporte
-  let mantenimientosFiltrados = mantenimientos;
+  // Filtro por estado, tipo de reporte y borrado
+  let mantenimientosFiltrados = mantenimientos.filter(m => !m.borrado);
   if (tipoReporte !== 'TODOS') {
     mantenimientosFiltrados = mantenimientosFiltrados.filter(m => m.estado === tipoReporte);
   } else if (filtroEstado) {
     mantenimientosFiltrados = mantenimientosFiltrados.filter(m => m.estado === filtroEstado);
   }
+
   // Exportar PDF
   const handleExportPDF = () => {
     let dataExport = mantenimientosFiltrados;
@@ -156,7 +158,7 @@ const GestionMantenimiento = () => {
       doc.setTextColor(120, 120, 120);
       doc.text(`Estado: ${traducirEstado(m.estado)}`, 220, y + 32);
 
-      // --- Datos en filas ---
+      // Datos en filas
       let rowY = y + 60;
       const rowGap = 22;
       const labelX = 56;
@@ -259,21 +261,55 @@ const GestionMantenimiento = () => {
     navigate('/registro-mantenimiento');
   };
 
-  // Redirige al formulario de finalización
   const handleTerminarMantenimiento = (id, estado) => {
-    // Solo permite si no está finalizado
     if (estado !== 'FINALIZADO' && estado !== 'COMPLETADO') {
       navigate(`/finalizar-mantenimiento/${id}`);
     }
   };
 
-  // Envía el id del mantenimiento seleccionado a la ruta de detalles
   const handleVerDetalles = (id) => {
     navigate(`/detalle-mantenimiento/${id}`);
   };
 
-  const handleEliminarMantenimiento = (id) => {
-    // Aquí puedes usar Swal o tu lógica de confirmación/eliminación
+  const handleEliminarMantenimiento = (id, estado) => {
+    if (estado === 'FINALIZADO' || estado === 'COMPLETADO') {
+      setMantenimientoToDelete(id);
+      setShowDeleteModal(true);
+    } else {
+      setMotivoModalMsg('Solo puedes eliminar mantenimientos que estén COMPLETADOS. Los mantenimientos en proceso, pendientes o cancelados no pueden ser eliminados.');
+      setShowMotivoModal(true);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (mantenimientoToDelete) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:8000/api/detalle-mantenimiento/${mantenimientoToDelete}/`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ borrado: true })
+        });
+
+        if (response.ok) {
+          toast.success('Mantenimiento eliminado correctamente');
+          setMantenimientos(mantenimientos.map(m =>
+            m.id_mantenimiento === mantenimientoToDelete
+              ? { ...m, borrado: true }
+              : m
+          ));
+        } else {
+          toast.error('Error al eliminar el mantenimiento');
+        }
+      } catch (error) {
+        toast.error('Error al eliminar el mantenimiento');
+      }
+      setShowDeleteModal(false);
+      setMantenimientoToDelete(null);
+    }
   };
 
   const traducirEstado = (estado) => {
@@ -288,17 +324,14 @@ const GestionMantenimiento = () => {
     return estados[estado] || estado;
   };
 
-  // Formatear el número de orden como OMT-00{id}
   const formatNumeroOrden = (id) => `OMT-0${id}`;
 
-  // Cambiar de página
   const handlePagina = (nuevaPagina) => {
     if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
       setPaginaActual(nuevaPagina);
     }
   };
 
-  // Cambiar filtro y resetear página
   const handleFiltroEstado = (e) => {
     setFiltroEstado(e.target.value);
     setPaginaActual(1);
@@ -392,7 +425,7 @@ const GestionMantenimiento = () => {
                         {mantenimiento.id_vehiculo?.placa || mantenimiento.placa || 'N/A'}
                       </td>
                       <td data-label="Estado">
-                        <span className={`mantenimiento-estado-badge estado-${mantenimiento.estado?.toLowerCase()}`}>
+                        <span className={`mantenimiento-estado-badge estado-${(mantenimiento.estado === 'FINALIZADO' || mantenimiento.estado === 'COMPLETADO') ? 'completado' : (mantenimiento.estado?.toLowerCase() || '')}`}>
                           {traducirEstado(mantenimiento.estado)}
                         </span>
                       </td>
@@ -428,7 +461,7 @@ const GestionMantenimiento = () => {
                             size="lg" 
                             className="mantenimiento-accion-icon" 
                             title="Eliminar mantenimiento"
-                            onClick={() => handleEliminarMantenimiento(mantenimiento.id_mantenimiento)}
+                            onClick={() => handleEliminarMantenimiento(mantenimiento.id_mantenimiento, mantenimiento.estado)}
                           />
                         </div>
                       </td>
@@ -496,8 +529,58 @@ const GestionMantenimiento = () => {
             </button>
           </div>
         )}
+
+        {/* Modal de confirmación para eliminar */}
+        {showDeleteModal && (
+          <div className="modal-overlay-mantenimiento">
+            <div className="modal-mantenimiento delete-modal">
+              <div className="modal-icon-delete">
+                <FontAwesomeIcon icon={faTrashAlt} />
+              </div>
+              <h3 className="modal-mantenimiento-titulo">Confirmar Eliminación</h3>
+              <p className="modal-mantenimiento-mensaje">
+                ¿Estás seguro de que deseas eliminar este mantenimiento completado? 
+                Esta acción no se puede deshacer.
+              </p>
+              <div className="modal-buttons-container">
+                <button
+                  className="modal-mantenimiento-boton cancel-btn"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="modal-mantenimiento-boton delete-btn"
+                  onClick={confirmDelete}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de motivo para no permitir eliminar */}
+        {showMotivoModal && (
+          <div className="modal-overlay-mantenimiento">
+            <div className="modal-mantenimiento">
+              <div className="modal-icon-info">
+                <FontAwesomeIcon icon={faExclamationTriangle} />
+              </div>
+              <h3 className="modal-mantenimiento-titulo">No permitido</h3>
+              <p className="modal-mantenimiento-mensaje">{motivoModalMsg}</p>
+              <button
+                className="modal-mantenimiento-boton"
+                onClick={() => setShowMotivoModal(false)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
 export default GestionMantenimiento;

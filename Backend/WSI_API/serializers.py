@@ -391,23 +391,15 @@ class DocumentoVehiculoSerializer(serializers.ModelSerializer):
     def get_vehiculo_marca(self, obj):
         return obj.Vehiculo.marca if obj.Vehiculo else ''
 
+
+# Solo una definición, sin campos anidados, para permitir PATCH simple
 class ReporteFallaSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReporteFalla
         fields = '__all__'
         extra_kwargs = {
-            'id_usuario': {'read_only': True}
-        }
-
-class ReporteFallaSerializer(serializers.ModelSerializer):
-    id_vehiculo = PlacaSerializer(read_only=True)
-    id_usuario = UsuarioSerializer(read_only=True)
-
-    class Meta:
-        model = ReporteFalla
-        fields = '__all__'
-        extra_kwargs = {
-            'id_usuario': {'read_only': True}
+            'id_usuario': {'read_only': True},
+            'id_vehiculo': {'read_only': True},
         }
 
 

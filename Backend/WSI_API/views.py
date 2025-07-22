@@ -373,6 +373,22 @@ class MantenimientoDetailAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Mantenimiento.DoesNotExist:
             return Response({'error': 'Mantenimiento no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request, pk):
+        try:
+            mantenimiento = Mantenimiento.objects.get(pk=pk)
+        except Mantenimiento.DoesNotExist:
+            return Response({'error': 'Mantenimiento no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        data = request.data
+        # Solo permitir actualizar el campo 'borrado'
+        if 'borrado' in data:
+            mantenimiento.borrado = data['borrado']
+            mantenimiento.save()
+            serializer = DetalleMantenimientoSerializer(mantenimiento)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Campo "borrado" requerido'}, status=status.HTTP_400_BAD_REQUEST)
     
 class UsuarioDetailAPIView(RetrieveUpdateAPIView):
     queryset = Usuario.objects.all()
@@ -509,6 +525,7 @@ class CrearReporteFallaAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class ReporteFallaListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -516,6 +533,30 @@ class ReporteFallaListAPIView(APIView):
         reportes = ReporteFalla.objects.select_related('id_vehiculo', 'id_usuario').all().order_by('-fecha_reporte')
         serializer = ReporteFallaSerializer(reportes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# NEW: Detail view for GET/PATCH
+from rest_framework.generics import get_object_or_404
+
+class ReporteFallaDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        reporte = get_object_or_404(ReporteFalla, pk=pk)
+        serializer = ReporteFallaSerializer(reporte)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        reporte = get_object_or_404(ReporteFalla, pk=pk)
+        data = request.data
+        # Only allow updating 'estado' and 'eliminada'
+        allowed_fields = {'estado', 'eliminada'}
+        update_data = {k: v for k, v in data.items() if k in allowed_fields}
+        serializer = ReporteFallaSerializer(reporte, data=update_data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

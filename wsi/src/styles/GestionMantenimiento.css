@@ -1,4 +1,4 @@
-/* Estilos base */
+/* GestionMantenimiento.css */
 .mantenimiento-home-wrapper {
   position: relative;
   min-height: 100vh;
@@ -166,6 +166,37 @@
   font-size: clamp(0.75rem, 2.5vw, 0.8rem);
   font-weight: 600;
   display: inline-block;
+  background: #eee;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+/* Badge de estado: Completado/Finalizado */
+.estado-completado {
+  background: #4caf50 !important;
+  color: #fff !important;
+  border: 1px solid #388e3c !important;
+}
+
+/* Badge de estado: En Proceso */
+.estado-activo, .estado-en_proceso {
+  background: #ff9800 !important;
+  color: #fff !important;
+  border: 1px solid #e65100 !important;
+}
+
+/* Badge de estado: Pendiente */
+.estado-pendiente {
+  background: #ffc107 !important;
+  color: #333 !important;
+  border: 1px solid #ffa000 !important;
+}
+
+/* Badge de estado: Cancelado */
+.estado-cancelado {
+  background: #f44336 !important;
+  color: #fff !important;
+  border: 1px solid #b71c1c !important;
 }
 
 /* Acciones */
@@ -330,5 +361,124 @@
   
   .mantenimiento-accion-icon {
     font-size: 0.95rem;
+  }
+}
+
+/* -------- MODALES -------- */
+.modal-overlay-mantenimiento {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.25);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-mantenimiento {
+  background: #fff;
+  border-radius: 16px;
+  padding: 36px 28px 28px 28px;
+  max-width: 380px;
+  width: 92vw;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  text-align: center;
+  position: relative;
+  border: 2px solid #ff6a00;
+  animation: slideIn 0.3s ease-out;
+}
+
+.delete-modal {
+  max-width: 420px;
+  padding-top: 20px;
+}
+
+.modal-icon-delete, .modal-icon-info {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.modal-icon-delete svg {
+  font-size: 48px;
+  color: #e65500;
+}
+
+.modal-icon-info svg {
+  font-size: 48px;
+  color: #e67e22;
+}
+
+.modal-mantenimiento-titulo {
+  color: #ff6a00;
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 14px;
+}
+
+.modal-mantenimiento-mensaje {
+  color: #333;
+  font-size: 1rem;
+  margin-bottom: 22px;
+  line-height: 1.4;
+}
+
+.modal-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.modal-mantenimiento-boton {
+  background: #ff6a00;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 28px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.18s;
+  min-width: 100px;
+}
+
+.modal-mantenimiento-boton:hover {
+  background: #e65500;
+}
+
+.modal-mantenimiento-boton.cancel-btn {
+  background: #718096;
+}
+
+.modal-mantenimiento-boton.cancel-btn:hover {
+  background: #4a5568;
+}
+
+.modal-mantenimiento-boton.delete-btn {
+  background: #e65500;
+}
+
+.modal-mantenimiento-boton.delete-btn:hover {
+  background: #e65500;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
   }
 }

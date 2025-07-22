@@ -74,20 +74,20 @@ const VisualizarFallas = () => {
   };
 
   const handleAtendido = async (id) => {
-    // Actualizar el estado a 'Atendido' en el backend (opcional)
+    // PATCH: cambiar revisada a true
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8000/api/reportes-fallas/${id}/marcar-atendido/`, {
+      const response = await fetch(`http://localhost:8000/api/reportes-fallas/${id}/`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ estado: 'Atendido' })
+        body: JSON.stringify({ revisada: true })
       });
       if (response.ok) {
         setFallas(fallas.map(falla =>
-          falla.id_reporte === id ? { ...falla, estado: 'Atendido' } : falla
+          falla.id_reporte === id ? { ...falla, revisada: true } : falla
         ));
         toast.success('Reporte marcado como atendido');
       } else {
@@ -99,17 +99,18 @@ const VisualizarFallas = () => {
   };
 
   const handleEliminar = async (id) => {
-    // Eliminar el reporte en el backend (opcional)
+    // PATCH: borrado lógico (eliminada=true)
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:8000/api/reportes-fallas/${id}/`, {
-        method: 'DELETE',
+        method: 'PATCH',
         headers: {
           'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ eliminada: true })
       });
-      if (response.ok || response.status === 204) {
+      if (response.ok) {
         setFallas(fallas.filter(falla => falla.id_reporte !== id));
         toast.info('Reporte eliminado');
       } else {
@@ -189,10 +190,10 @@ const VisualizarFallas = () => {
           </div>
 
           <div className="fallas-list">
-            {fallas.length === 0 ? (
+            {fallas.filter(f => !f.eliminada).length === 0 ? (
               <p className="fallas-sin-datos">No hay reportes de fallas registrados.</p>
             ) : (
-              fallas.map(falla => (
+              fallas.filter(f => !f.eliminada).map(falla => (
                 <div key={falla.id_reporte} className="falla-item">
                   <div className="falla-header">
                     <span className="falla-id">Reporte #{falla.id_reporte}</span>
@@ -239,10 +240,10 @@ const VisualizarFallas = () => {
                     <button
                       className="falla-btn-atendido"
                       onClick={() => handleAtendido(falla.id_reporte)}
-                      disabled={falla.estado === 'Atendido'}
+                      disabled={falla.revisada}
                     >
                       <FontAwesomeIcon icon={faCheckCircle} />
-                      {falla.estado === 'Atendido' ? 'Atendido' : 'Marcar como atendido'}
+                      {falla.revisada ? 'Atendido' : 'Marcar como atendido'}
                     </button>
                     <button
                       className="falla-btn-eliminar"
