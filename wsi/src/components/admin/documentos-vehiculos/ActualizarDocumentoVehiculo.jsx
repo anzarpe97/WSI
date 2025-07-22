@@ -107,9 +107,15 @@ const ActualizarDocumentoVehiculo = () => {
             marca: data.marca,
             modelo: data.modelo
           });
-          // Buscar documentos del vehículo
+          // Buscar documentos del vehículo con autenticación
           try {
-            const docsResponse = await fetch(`http://localhost:8000/api/documentos-vehiculos/?vehiculo=${data.id_vehiculo}`);
+            const token = localStorage.getItem('token');
+            const docsResponse = await fetch(`http://localhost:8000/api/documentos-vehiculos/?vehiculo=${data.id_vehiculo}`, {
+              headers: {
+                'Authorization': `Token ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
             if (docsResponse.ok) {
               const docs = await docsResponse.json();
               setDocumentos(Array.isArray(docs) ? docs : []);
@@ -223,8 +229,12 @@ const ActualizarDocumentoVehiculo = () => {
         toast.error('No se pudo determinar el ID del documento a actualizar.');
         return;
       }
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:8000/api/documentos-vehiculos/${idDoc}/`, {
         method: 'PUT',
+        headers: {
+          'Authorization': `Token ${token}`
+        },
         body: formData,
       });
       if (response.ok) {
@@ -440,7 +450,7 @@ const ActualizarDocumentoVehiculo = () => {
                   {fileError && (
                     <div className="error-message">{fileError}</div>
                   )}
-                  <div className="file-help">Si no selecciona un archivo, se mantendrá el documento actual</div>
+                  <div className="file-help">Se debe subir el documento actializado</div>
                 </div>
                 <div className="actualizarDocumentoVehiculo-actions">
                   <button

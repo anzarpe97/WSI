@@ -408,10 +408,17 @@ class VehiculoCreateView(CreateAPIView):
 # List all vehicle documents (GET)
 from rest_framework.generics import ListAPIView
 
+
 class DocumentoVehiculoListAPIView(ListAPIView):
-    queryset = DocumentoVehiculo.objects.all()
     serializer_class = DocumentoVehiculoSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = DocumentoVehiculo.objects.all()
+        vehiculo_id = self.request.query_params.get('vehiculo')
+        if vehiculo_id:
+            queryset = queryset.filter(Vehiculo_id=vehiculo_id)
+        return queryset
 
 # Create vehicle document (POST)
 class DocumentoVehiculoCreateAPIView(APIView):
@@ -612,11 +619,31 @@ class UsuarioDeleteAPIView(APIView):
             return Response({'error': 'Empleado no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
 
+
+from rest_framework.parsers import MultiPartParser, FormParser
+
 class DocumentoVehiculoDetailAPIView(RetrieveAPIView):
     queryset = DocumentoVehiculo.objects.all()
     serializer_class = DocumentoVehiculoSerializer
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'id_documento_vehiculo'
+    parser_classes = [MultiPartParser, FormParser]
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
