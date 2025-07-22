@@ -28,10 +28,11 @@ import GestionDocumentoChoferes from './components/admin/documentos-choferes/Ges
 import FinalizarMantenimiento from './components/admin/mantenimientos/FinalizarMantinimento';
 import HomeUsuario from './components/usuario/HomeUsuario';
 import ResetPassword from './components/ResetPassword';
-import ActualizarDocumentoChofer from './components/admin/documentos-choferes/ActualizarDocumentoChofer';
 import ReporteFallas from './components/supervisor/ReporteFallas.jsx/ReporteFallas';
 import DetalleDocumentoVehiculo from './components/admin/documentos-vehiculos/DetalleDocumentoVehiculo.jsx';
-
+import ActualizarDocumentoChofer from './components/admin/documentos-choferes/ActualizarDocumentoChofer';
+import ActualizarDocumentoVehiculo from './components/admin/documentos-vehiculos/ActualizarDocumentoVehiculo';
+// import EditarDocumentoVehiculo from './components/admin/documentos-vehiculos/EditarDocumentoVehiculo'; // Descomenta si tienes este componente
 
 const App = () => {
   return (
@@ -82,7 +83,9 @@ const App = () => {
         {/* RUTAS NOTIFICACIONES*/}
         <Route path="/notificaciones" element={<Notificaciones />} />
         <Route path="/detalle-documento-vehiculo/:id" element={<DetalleDocumentoVehiculo />} />
-
+      <Route path="/actualizar-documento-chofer/:id" element={<ActualizarDocumentoChofer />} />
+      <Route path="/actualizar-documento-vehiculo" element={<ActualizarDocumentoVehiculo />} />
+      {/* <Route path="/editar-documento-vehiculo/:id" element={<EditarDocumentoVehiculo />} /> */}
         {/* RUTAS USUARIO*/}  
         <Route path="/home-usuario" element={<HomeUsuario />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />

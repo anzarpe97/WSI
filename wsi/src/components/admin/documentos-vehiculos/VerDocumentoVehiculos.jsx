@@ -208,7 +208,7 @@ const VerDocumentoVehiculos = () => {
         </div>
 
         {/* Filtros */}
-        <div className="documento-vehiculo-filtros-container">
+        <div className="documento-vehiculo-filtros-container" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div className="documento-vehiculo-filtro">
             <label>Filtrar por estado:</label>
             <select value={filtroEstado} onChange={handleFiltroEstado} className="documento-vehiculo-filtro-select" >
@@ -218,6 +218,15 @@ const VerDocumentoVehiculos = () => {
               <option value="VENCIDO">Vencido</option>
             </select>
           </div>
+          <button
+            className="documento-vehiculo-boton-crear"
+            style={{ minWidth: 180, display: 'flex', alignItems: 'center' }}
+            onClick={() => navigate('/actualizar-documento-vehiculo')}
+            disabled={documentos.length === 0}
+          >
+            <FontAwesomeIcon icon={faPen} className="documento-vehiculo-icono-boton" style={{ marginRight: 8 }} />
+            Actualizar Documentos
+          </button>
         </div>
 
         <div className="documento-vehiculo-table-responsive">
@@ -289,13 +298,6 @@ const VerDocumentoVehiculos = () => {
                             title="Ver detalles"
                           >
                             <FontAwesomeIcon icon={faEye} size="lg" />
-                          </button>
-                          <button 
-                            className="documento-vehiculo-accion-btn"
-                            onClick={() => handleEditarDocumento(documento.id_documento_vehiculo)}
-                            title="Editar documento"
-                          >
-                            <FontAwesomeIcon icon={faPen} size="lg" />
                           </button>
                           <button 
                             className="documento-vehiculo-accion-btn"
