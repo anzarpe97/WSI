@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 
 # USUARIO PERSONALIZADO DJANGO
 class UsuarioManager(BaseUserManager):
+
     def create_user(self, email, nombre, apellido, tipoCedula, cedula, telefono, rol, password=None):
         if not email:
             raise ValueError("Debe ingresar un correo electrónico")
@@ -20,6 +21,10 @@ class UsuarioManager(BaseUserManager):
         usuario.set_password(password)
         usuario.save(using=self._db)
         return usuario
+
+    def get_queryset(self):
+        # Solo usuarios no borrados
+        return super().get_queryset().filter(borrado__isnull=True)
 
     def create_superuser(self, email, nombre, apellido, tipoCedula, cedula, telefono, rol, password=None):
         usuario = self.create_user(
@@ -49,16 +54,18 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     fechaRegistro = models.DateTimeField('fecha de registro', auto_now_add=True)
     rol = models.CharField('rol', max_length=1, null=False)
     reset_token = models.CharField(max_length=100, null=True, blank=True)
-
-    # Django Admin
+    borrado = models.BooleanField(null=True, blank=True, default=None, verbose_name="Borrado")
     is_active = models.BooleanField('activo', default=True)
     is_staff = models.BooleanField('es personal', default=False)
     is_superuser = models.BooleanField('es superusuario', default=False)
 
+
+    # Manager personalizado para filtrar usuarios no borrados
     objects = UsuarioManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['nombre', 'apellido', 'tipoCedula', 'cedula', 'telefono', 'rol']
+
 
     def __str__(self):
         roles = {
@@ -67,6 +74,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
             '2': 'Empleado',
         }
         return f'{self.nombre} {self.apellido} - {roles.get(self.rol, "Rol no definido")}'
+
+    def delete(self, using=None, keep_parents=False):
+        # Borrado lógico: marcar como borrado
+        self.borrado = True
+        self.save(update_fields=["borrado"])
 
     def has_perm(self, perm, obj=None):
         return True
@@ -142,6 +154,7 @@ class Mantenimiento(models.Model):
     tipo_mantenimiento = models.CharField(max_length=10, choices=TIPO_MANTENIMIENTO_CHOICES)
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='ACTIVO')
     observaciones = models.TextField(blank=True, null=True)
+    borrado = models.BooleanField(null=True, blank=True, default=None, verbose_name="Borrado")
 
     
     # MOSTRAR EL NOMBRE DEL VEHICULO Y EL TIPO DE MANTENIMIENTO EN EL ADMINISTRADOR DJANGO

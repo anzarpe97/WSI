@@ -264,7 +264,7 @@ const RegistroDocumentosVehiculos = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/documentos-vehiculos/', {
+      const response = await fetch('http://localhost:8000/api/documentos-vehiculos/crear/', {
         method: 'POST',
         headers: {
           'Authorization': `Token ${token}`

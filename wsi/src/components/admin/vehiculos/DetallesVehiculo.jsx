@@ -101,18 +101,27 @@ const DetalleVehiculo = () => {
         const data = await response.json();
         setVehiculo(data);
 
-        // Mantenimientos de ejemplo (puedes reemplazar esto con una llamada real a la API)
-        setMantenimientos([
-          {
-            id: 1,
-            tipo: 'Cambio de aceite',
-            fecha: '2023-10-15T14:30:00Z',
-            costo: 120.50,
-            descripcion: 'Cambio de aceite y filtro según especificaciones del fabricante.',
-            kilometraje: 15000,
-            estado: 'COMPLETADO'
+        // Obtener los últimos 3 mantenimientos reales del vehículo
+        const mantResponse = await fetch(`http://localhost:8000/api/mantenimientos/`, {
+          headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
           }
-        ]);
+        });
+        if (mantResponse.ok) {
+          let mantData = await mantResponse.json();
+          if (Array.isArray(mantData)) {
+            mantData = mantData
+              .filter(m => String(m.id_vehiculo) === String(id) || (m.id_vehiculo && String(m.id_vehiculo.id_vehiculo) === String(id)))
+              .sort((a, b) => new Date(b.fecha_programada || b.fecha_finalizado || b.fecha_terminado) - new Date(a.fecha_programada || a.fecha_finalizado || a.fecha_terminado))
+              .slice(0, 3);
+            setMantenimientos(mantData);
+          } else {
+            setMantenimientos([]);
+          }
+        } else {
+          setMantenimientos([]);
+        }
       } catch (err) {
         setError(err.message || 'No se pudo cargar la información completa');
       } finally {
@@ -506,21 +515,21 @@ const handleGenerarReporte = () => {
               </div>
             ) : (
               <div className="mantenimientos-container">
-                {mantenimientos.slice(0, 1).map(mant => ( // Mostrar solo el último
+                {mantenimientos.slice(0, 3).map(mant => (
                   <div className="mantenimiento-card" key={mant.id}>
                     <div className="mantenimiento-header">
-                      <span className="mantenimiento-fecha">{formatFechaHora(mant.fecha)}</span>
+                      <span className="mantenimiento-fecha">{formatFechaHora(mant.fecha_programada || mant.fecha_finalizado || mant.fecha_terminado)}</span>
                       <span className={`mantenimiento-estado ${String(mant.estado)?.toLowerCase() || 'completado'}`}>
                         {String(mant.estado)?.toUpperCase() || 'COMPLETADO'}
                       </span>
                     </div>
                     <div className="mantenimiento-body">
-                      <h4 className="mantenimiento-titulo">{mant.tipo || 'Mantenimiento General'}</h4>
-                      <p className="mantenimiento-descripcion">{mant.descripcion || 'Sin descripción detallada.'}</p>
+                      <h4 className="mantenimiento-titulo">{mant.tipo_mantenimiento || mant.tipo || 'Mantenimiento General'}</h4>
+                      <p className="mantenimiento-descripcion">{mant.observaciones || mant.descripcion || 'Sin descripción detallada.'}</p>
                     </div>
                     <div className="mantenimiento-footer">
                       <span className="mantenimiento-costo">
-                        {mant.costo ? `$${Number(mant.costo).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Costo N/A'}
+                        {mant.costo_total ? `$${Number(mant.costo_total).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : (mant.costo ? `$${Number(mant.costo).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Costo N/A')}
                       </span>
                       <span className="mantenimiento-kilometraje">
                         {mant.kilometraje ? `${Number(mant.kilometraje).toLocaleString('es-ES')} km` : 'Km N/A'}

@@ -313,37 +313,80 @@ const handleExportPDF = () => {
     setVehicleToDelete(null);
   };
 
+  const [showActiveMaintModal, setShowActiveMaintModal] = useState(false);
+  const [activeMaintCount, setActiveMaintCount] = useState(0);
+
   const handleConfirmDelete = async () => {
     if (!vehicleToDelete || !deleteReason.trim()) {
       alert("Por favor, ingrese un motivo para la eliminación.");
       return;
     }
     try {
-      const response = await fetch(`http://localhost:8000/api/vehiculos/${vehicleToDelete.id_vehiculo}/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          borrado: true,
-          motivo_borrado: deleteReason,
-        }),
-      });
-
+      // Verificar mantenimientos activos
+      const response = await fetch(
+        `http://localhost:8000/api/mantenimientos/?vehiculo=${vehicleToDelete.id_vehiculo}`
+      );
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: "Error al actualizar el vehículo." }));
-        throw new Error(errorData.message || `Error del servidor: ${response.status}`);
+        throw new Error("Error al verificar mantenimientos");
+      }
+      const mantenimientosData = await response.json();
+      const mantenimientos = mantenimientosData.results || mantenimientosData;
+      // Filtrar primero por placa del vehículo seleccionado
+      const mantenimientosVehiculo = mantenimientos.filter(
+        (m) => (m.placa || '').toUpperCase() === (vehicleToDelete.placa || '').toUpperCase()
+      );
+      // Luego filtrar los ACTIVOS
+      const mantenimientosActivos = mantenimientosVehiculo.filter(
+        (m) => (m.estado || '').toUpperCase() === 'ACTIVO'
+      );
+      // Mostrar en consola cómo se está validando
+      console.log('[VALIDACIÓN] Vehículo:', vehicleToDelete.placa, 'Mantenimientos:', mantenimientosVehiculo, 'Activos:', mantenimientosActivos);
+      if (mantenimientosActivos.length > 0) {
+        // Mostrar modal de advertencia
+        setShowActiveMaintModal(true);
+        return;
       }
 
-      setVehiculos(prevVehiculos =>
-        prevVehiculos.map(v =>
-          v.id_vehiculo === vehicleToDelete.id_vehiculo ? { ...v, borrado: true, motivo_borrado: deleteReason } : v
+      // Si no hay mantenimientos activos, proceder con la eliminación
+      const deleteResponse = await fetch(
+        `http://localhost:8000/api/vehiculos/${vehicleToDelete.id_vehiculo}/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            borrado: true,
+            motivo_borrado: deleteReason,
+          }),
+        }
+      );
+
+      if (!deleteResponse.ok) {
+        const errorData = await deleteResponse.json().catch(() => ({
+          message: "Error al actualizar el vehículo.",
+        }));
+        throw new Error(
+          errorData.message || `Error del servidor: ${deleteResponse.status}`
+        );
+      }
+
+      setVehiculos((prevVehiculos) =>
+        prevVehiculos.map((v) =>
+          v.id_vehiculo === vehicleToDelete.id_vehiculo
+            ? {
+                ...v,
+                borrado: true,
+                motivo_borrado: deleteReason,
+              }
+            : v
         )
       );
 
       handleCloseDeleteModal();
+      toast.success("Vehículo marcado como eliminado correctamente");
     } catch (error) {
-      alert(`Error al eliminar el vehículo: ${error.message}`);
+      toast.error(`Error al eliminar el vehículo: ${error.message}`);
     }
   };
 
@@ -565,6 +608,40 @@ const handleExportPDF = () => {
             <div className="modal-actions">
               <button onClick={handleConfirmDelete} className="btn btn-confirmar">Aceptar</button>
               <button onClick={handleCloseDeleteModal} className="btn btn-cancelar">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de advertencia de mantenimientos activos */}
+      {showActiveMaintModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 style={{ color: "#ff6a00", textAlign: "center" }}>
+              ¡No se puede eliminar el vehículo!
+            </h2>
+            <p
+              style={{
+                color: "#b03800",
+                fontWeight: 500,
+                textAlign: "center",
+                fontSize: "1.1rem",
+              }}
+            >
+              Este vehículo tiene mantenimientos activos asociados.
+              <br />
+              Debe finalizar todos los mantenimientos antes de poder eliminarlo.
+            </p>
+            <div
+              className="modal-actions"
+              style={{ justifyContent: "center", marginTop: "20px" }}
+            >
+              <button
+                onClick={() => setShowActiveMaintModal(false)}
+                className="btn btn-confirmar"
+              >
+                Entendido
+              </button>
             </div>
           </div>
         </div>

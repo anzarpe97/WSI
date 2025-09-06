@@ -1,3 +1,6 @@
+# Detalle de documento de vehículo (GET por ID)
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import DestroyAPIView
 from django.http import JsonResponse
 from django.utils import timezone
 from django.middleware.csrf import get_token
@@ -9,7 +12,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.models import Token
-from .models import  ReporteFalla, MotivoMantenimiento, Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer
+from .models import  ReporteFalla, MotivoMantenimiento, Usuario,NotificacionUsuario, Vehiculo, Mantenimiento, DetalleMantenimiento, DocumentoChofer, DocumentoVehiculo
 from .serializers import (ReporteFallaSerializer, DocumentoVehiculoSerializer, DetalleMantenimientoSerializer, MotivoMantenimientoSerializer, NotificacionUsuarioSerializer,DocumentoChoferSerializer, MantenimientoSerializer, PlacaSerializer, EmpleadoSerializer, MecanicoSerializer, VehiculoPlacaSerializer, VehiculoSerializer, RegistroUsuarioSerializer, CustomAuthTokenSerializer, UsuarioSerializer)
 from django.utils.decorators import method_decorator
 from rest_framework.generics import RetrieveAPIView
@@ -228,7 +231,8 @@ class UsuarioListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        usuarios = Usuario.objects.filter(rol__in=['1', '2'])
+        # Solo usuarios activos (no borrados)
+        usuarios = Usuario.objects.filter(rol__in=['1', '2']).filter(borrado__isnull=True)
         serializer = EmpleadoSerializer(usuarios, many=True)
         return Response(serializer.data)
     
@@ -345,13 +349,21 @@ class MarcarTodasNotificacionesLeidasView(APIView):
         )
         return Response({'success': True})
     
-class MotivoMantenimientoListAPIView(APIView):
+
+class MotivoMantenimientoListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         motivos = MotivoMantenimiento.objects.all()
         serializer = MotivoMantenimientoSerializer(motivos, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)   
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = MotivoMantenimientoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class MantenimientoDetailAPIView(APIView):
     def get(self, request, pk):
@@ -361,6 +373,22 @@ class MantenimientoDetailAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Mantenimiento.DoesNotExist:
             return Response({'error': 'Mantenimiento no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request, pk):
+        try:
+            mantenimiento = Mantenimiento.objects.get(pk=pk)
+        except Mantenimiento.DoesNotExist:
+            return Response({'error': 'Mantenimiento no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        data = request.data
+        # Solo permitir actualizar el campo 'borrado'
+        if 'borrado' in data:
+            mantenimiento.borrado = data['borrado']
+            mantenimiento.save()
+            serializer = DetalleMantenimientoSerializer(mantenimiento)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Campo "borrado" requerido'}, status=status.HTTP_400_BAD_REQUEST)
     
 class UsuarioDetailAPIView(RetrieveUpdateAPIView):
     queryset = Usuario.objects.all()
@@ -376,6 +404,23 @@ class VehiculoCreateView(CreateAPIView):
     queryset = Vehiculo.objects.all()
     serializer_class = VehiculoSerializer
 
+
+# List all vehicle documents (GET)
+from rest_framework.generics import ListAPIView
+
+
+class DocumentoVehiculoListAPIView(ListAPIView):
+    serializer_class = DocumentoVehiculoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = DocumentoVehiculo.objects.all()
+        vehiculo_id = self.request.query_params.get('vehiculo')
+        if vehiculo_id:
+            queryset = queryset.filter(Vehiculo_id=vehiculo_id)
+        return queryset
+
+# Create vehicle document (POST)
 class DocumentoVehiculoCreateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -440,7 +485,11 @@ class VehiculosMasMantenimientosAPIView(APIView):
         return Response(data)
 
 
-class DocumentoChoferDetailAPIView(RetrieveAPIView):
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
+
+# ...
+
+class DocumentoChoferDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = DocumentoChofer.objects.all()
     serializer_class = DocumentoChoferSerializer
     lookup_field = 'id_documento_chofer'
@@ -483,6 +532,7 @@ class CrearReporteFallaAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class ReporteFallaListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -490,6 +540,30 @@ class ReporteFallaListAPIView(APIView):
         reportes = ReporteFalla.objects.select_related('id_vehiculo', 'id_usuario').all().order_by('-fecha_reporte')
         serializer = ReporteFallaSerializer(reportes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# NEW: Detail view for GET/PATCH
+from rest_framework.generics import get_object_or_404
+
+class ReporteFallaDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        reporte = get_object_or_404(ReporteFalla, pk=pk)
+        serializer = ReporteFallaSerializer(reporte)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        reporte = get_object_or_404(ReporteFalla, pk=pk)
+        data = request.data
+        # Only allow updating 'estado' and 'eliminada'
+        allowed_fields = {'estado', 'eliminada'}
+        update_data = {k: v for k, v in data.items() if k in allowed_fields}
+        serializer = ReporteFallaSerializer(reporte, data=update_data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -532,9 +606,44 @@ def restablecer_contraseña(request):
     except Usuario.DoesNotExist:
         return Response({'error': 'Token inválido o expirado.'}, status=status.HTTP_400_BAD_REQUEST)
 
+# Vista para borrado lógico de empleados
+class UsuarioDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        try:
+            usuario = Usuario.objects.get(id=id)
+            usuario.delete()  # Esto marca como borrado
+            return Response({'success': 'Empleado eliminado correctamente.'}, status=status.HTTP_204_NO_CONTENT)
+        except Usuario.DoesNotExist:
+            return Response({'error': 'Empleado no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 
+from rest_framework.parsers import MultiPartParser, FormParser
+
+class DocumentoVehiculoDetailAPIView(RetrieveAPIView):
+    queryset = DocumentoVehiculo.objects.all()
+    serializer_class = DocumentoVehiculoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id_documento_vehiculo'
+    parser_classes = [MultiPartParser, FormParser]
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

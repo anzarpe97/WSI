@@ -1,3 +1,4 @@
+
 /* Reset básico */
 * {
   margin: 0;
@@ -263,4 +264,81 @@ body {
     max-width: 90px;
     justify-content: space-around;
   }
+}
+
+/* --- MODAL (copiado de VerVehiculos.css) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.014);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(199, 191, 191, 0);
+  width: 90%;
+  max-width: 500px;
+  text-align: left;
+}
+
+.modal-content h2 {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.modal-content p {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 1.2rem;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+}
+
+.modal-actions .btn {
+  border: none;
+  border-radius: 20px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.btn-confirmar {
+  background-color: #ff6a00;
+  color: white;
+}
+
+.btn-confirmar:hover {
+  background-color: #e65500;
+  transform: translateY(-1px);
+}
+
+.btn-cancelar {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc !important;
+}
+
+.btn-cancelar:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-1px);
 }

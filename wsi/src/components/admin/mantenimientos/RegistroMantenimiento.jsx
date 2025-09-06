@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrashAlt, faSearch, faCar, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt, faSearch, faCar, faSpinner, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "../../../styles/RegistroMantenimiento.css";
@@ -104,20 +104,26 @@ const RegistroMantenimiento = () => {
   // Estado para controlar el envío del formulario
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Estados para el modal de nuevo motivo
+  const [showMotivoModal, setShowMotivoModal] = useState(false);
+  const [nuevoMotivo, setNuevoMotivo] = useState('');
+  const [isSavingMotivo, setIsSavingMotivo] = useState(false);
+
   // Obtener motivos de mantenimiento desde la API
+  const fetchMotivos = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8000/api/motivos/', {
+        headers: { Authorization: `Token ${token}` }
+      });
+      const data = await response.json();
+      setMotivos(Array.isArray(data) ? data : []);
+    } catch {
+      setMotivos([]);
+    }
+  };
+
   useEffect(() => {
-    const fetchMotivos = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:8000/api/motivos/', {
-          headers: { Authorization: `Token ${token}` }
-        });
-        const data = await response.json();
-        setMotivos(Array.isArray(data) ? data : []);
-      } catch {
-        setMotivos([]);
-      }
-    };
     fetchMotivos();
   }, []);
 
@@ -272,6 +278,47 @@ const RegistroMantenimiento = () => {
     setKilometrajeError('');
   };
 
+  // Guardar nuevo motivo
+  const guardarNuevoMotivo = async () => {
+    if (!nuevoMotivo.trim()) {
+      toast.error('Ingrese un motivo válido');
+      return;
+    }
+    
+    setIsSavingMotivo(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8000/api/motivos/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify({ motivo: nuevoMotivo.trim() })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Actualizar la lista de motivos
+        setMotivos([...motivos, data]);
+        // Seleccionar el nuevo motivo en el combobox
+        setMotivo(data.id_motivo);
+        // Cerrar modal y limpiar
+        setShowMotivoModal(false);
+        setNuevoMotivo('');
+        toast.success('Motivo agregado correctamente');
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.detail || 'Error al guardar el motivo');
+      }
+    } catch (error) {
+      toast.error('Error de conexión');
+    } finally {
+      setIsSavingMotivo(false);
+    }
+  };
+
   // Manejar envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -393,20 +440,29 @@ const RegistroMantenimiento = () => {
               <div className="registroMantenimiento-row">
                 <div className="registroMantenimiento-field">
                   <label htmlFor="registroMantenimiento-motivo">Motivo Mantenimiento</label>
-                  <select
-                    id="registroMantenimiento-motivo"
-                    value={motivo}
-                    onChange={e => setMotivo(e.target.value)}
-                    required
-                    style={{ maxWidth: '320px', width: '100%' }}
-                  >
-                    <option value="">Seleccione motivo...</option>
-                    {motivos.map(m => (
-                      <option key={m.id_motivo} value={m.id_motivo}>
-                        {m.motivo}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="motivo-combobox-container">
+                    <select
+                      id="registroMantenimiento-motivo"
+                      value={motivo}
+                      onChange={e => setMotivo(e.target.value)}
+                      required
+                    >
+                      <option value="">Seleccione motivo...</option>
+                      {motivos.map(m => (
+                        <option key={m.id_motivo} value={m.id_motivo}>
+                          {m.motivo}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="add-motivo-btn"
+                      onClick={() => setShowMotivoModal(true)}
+                      title="Agregar nuevo motivo"
+                    >
+                      <FontAwesomeIcon icon={faPlus} />
+                    </button>
+                  </div>
                 </div>
                 <div className="registroMantenimiento-field">
                   <label htmlFor="registroMantenimiento-placa">Placa vehículo</label>
@@ -560,6 +616,45 @@ const RegistroMantenimiento = () => {
           </form>
         </div>
       </div>
+
+      {/* Modal para agregar nuevo motivo */}
+      {showMotivoModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Agregar Nuevo Motivo</h3>
+            <div className="modal-input-container">
+              <input
+                type="text"
+                value={nuevoMotivo}
+                onChange={(e) => setNuevoMotivo(e.target.value)}
+                placeholder="Ingrese el motivo de mantenimiento"
+                className="modal-input"
+                onKeyPress={(e) => e.key === 'Enter' && guardarNuevoMotivo()}
+              />
+            </div>
+            <div className="modal-buttons">
+              <button 
+                onClick={() => setShowMotivoModal(false)} 
+                className="modal-btn cancel"
+                disabled={isSavingMotivo}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={guardarNuevoMotivo} 
+                className="modal-btn save"
+                disabled={isSavingMotivo || !nuevoMotivo.trim()}
+              >
+                {isSavingMotivo ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} spin /> Guardando...
+                  </>
+                ) : "Guardar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

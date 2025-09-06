@@ -1,19 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faCheck, faTrashAlt, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faCheck, faTrashAlt, faPlus, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import '../../../styles/GestionMantenimiento.css';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../header';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import bgImage from '../../../assets/bg-login.jpg';
 import { toast } from 'react-toastify';
 import { verifyToken } from '../../../services/auth';
 
-const PAGE_SIZE = 5; // Cambia este valor si quieres más o menos filas por página
+const PAGE_SIZE = 5;
 
 const GestionMantenimiento = () => {
   const [mantenimientos, setMantenimientos] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState('');
+  const [tipoReporte, setTipoReporte] = useState('TODOS');
   const [paginaActual, setPaginaActual] = useState(1);
+  const [showMotivoModal, setShowMotivoModal] = useState(false);
+  const [motivoModalMsg, setMotivoModalMsg] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [mantenimientoToDelete, setMantenimientoToDelete] = useState(null);
   const navigate = useNavigate();
   const inactivityTimer = useRef(null);
 
@@ -28,25 +35,23 @@ const GestionMantenimiento = () => {
 
   // Verificar rol del usuario al montar
   useEffect(() => {
- const check = async () => {
-    try {
-      const result = await verifyToken();
-      if (result.isValid && result.user) {
-        // Permitir acceso a roles 0, 1 y 2
-        const rol = String(result.user.rol);
-        if (rol !== "0" && rol !== "1" && rol !== "2") {
+    const check = async () => {
+      try {
+        const result = await verifyToken();
+        if (result.isValid && result.user) {
+          const rol = String(result.user.rol);
+          if (rol !== "0" && rol !== "1" && rol !== "2") {
+            logout();
+          }
+        } else {
           logout();
         }
-      } else {
+      } catch (error) {
         logout();
       }
-    } catch (error) {
-      logout();
-    }
     };
     check();
   }, [navigate]);
-  // --- FIN VERIFICACIÓN ROL ---
 
   useEffect(() => {
     const fetchMantenimientos = async () => {
@@ -66,14 +71,14 @@ const GestionMantenimiento = () => {
     };
     fetchMantenimientos();
 
-    // --- Temporizador de inactividad ---
+    // Temporizador de inactividad
     const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
     const resetTimer = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
       inactivityTimer.current = setTimeout(() => {
         toast.info('Sesión cerrada por inactividad');
         logout(true);
-      }, 1200000); 
+      }, 1200000);
     };
     events.forEach(event => window.addEventListener(event, resetTimer));
     resetTimer();
@@ -82,13 +87,168 @@ const GestionMantenimiento = () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
       events.forEach(event => window.removeEventListener(event, resetTimer));
     };
-    // --- Fin temporizador ---
   }, [navigate]);
 
-  // Filtro por estado
-  const mantenimientosFiltrados = filtroEstado
-    ? mantenimientos.filter(m => m.estado === filtroEstado)
-    : mantenimientos;
+  // Filtro por estado, tipo de reporte y borrado
+  let mantenimientosFiltrados = mantenimientos.filter(m => !m.borrado);
+  if (tipoReporte !== 'TODOS') {
+    mantenimientosFiltrados = mantenimientosFiltrados.filter(m => m.estado === tipoReporte);
+  } else if (filtroEstado) {
+    mantenimientosFiltrados = mantenimientosFiltrados.filter(m => m.estado === filtroEstado);
+  }
+
+  // Exportar PDF
+  const handleExportPDF = () => {
+    let dataExport = mantenimientosFiltrados;
+    let estadoLabel = 'Todos';
+    if (tipoReporte === 'ACTIVO') estadoLabel = 'En Proceso';
+    else if (tipoReporte === 'FINALIZADO') estadoLabel = 'Completado';
+    else if (tipoReporte === 'PENDIENTE') estadoLabel = 'Pendiente';
+    else if (tipoReporte === 'CANCELADO') estadoLabel = 'Cancelado';
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'A4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Encabezado
+    doc.setFillColor(255, 106, 0);
+    doc.rect(0, 0, pageWidth, 60, 'F');
+    doc.setFontSize(22);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Reporte de Mantenimientos', 40, 38);
+    doc.setFontSize(12);
+    doc.setTextColor(255, 255, 255);
+    doc.text(`Filtro: ${estadoLabel}   |   Total: ${dataExport.length}`, 40, 54);
+
+    let y = 80;
+    const cardSpacing = 32;
+    const cardHeight = 220;
+    const cardWidth = pageWidth - 80;
+
+    dataExport.forEach((m, idx) => {
+      if (y + cardHeight + 60 > pageHeight) {
+        doc.addPage();
+        doc.setFillColor(255, 106, 0);
+        doc.rect(0, 0, pageWidth, 60, 'F');
+        doc.setFontSize(22);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Reporte de Mantenimientos', 40, 38);
+        doc.setFontSize(12);
+        doc.setTextColor(255, 255, 255);
+        doc.text(`Filtro: ${estadoLabel}   |   Total: ${dataExport.length}`, 40, 54);
+        y = 80;
+      }
+
+      // Card fondo
+      doc.setFillColor(250, 250, 250);
+      doc.roundedRect(40, y, cardWidth, cardHeight, 16, 16, 'F');
+      doc.setDrawColor(255, 106, 0);
+      doc.setLineWidth(2);
+      doc.roundedRect(40, y, cardWidth, cardHeight, 16, 16, 'S');
+
+      // Título de la ficha
+      doc.setFontSize(15);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 106, 0);
+      doc.text(`N° Orden: OMT-0${m.id_mantenimiento}`, 56, y + 32);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Estado: ${traducirEstado(m.estado)}`, 220, y + 32);
+
+      // Datos en filas
+      let rowY = y + 60;
+      const rowGap = 22;
+      const labelX = 56;
+      const valueX = 180;
+      const label2X = pageWidth / 2 + 10;
+      const value2X = label2X + 110;
+
+      // Fila 1
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Motivo:', labelX, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(String(m.id_motivo?.motivo || m.motivo || 'N/A'), valueX, rowY);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Placa:', label2X, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(String(m.id_vehiculo?.placa || m.placa || 'N/A'), value2X, rowY);
+
+      // Fila 2
+      rowY += rowGap;
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Tipo:', labelX, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(String(m.tipo_mantenimiento || 'N/A'), valueX, rowY);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Mecánico:', label2X, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(m.id_mecanico?.nombre ? `${m.id_mecanico.nombre} ${m.id_mecanico.apellido}` : 'N/A', value2X, rowY);
+
+      // Fila 3
+      rowY += rowGap;
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Fecha Programada:', labelX, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(m.fecha_programada ? new Date(m.fecha_programada).toLocaleDateString() : 'N/A', valueX, rowY);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Fecha Finalizado:', label2X, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(m.fecha_finalizado ? new Date(m.fecha_finalizado).toLocaleDateString() : 'N/A', value2X, rowY);
+
+      // Fila 4
+      rowY += rowGap;
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(45, 55, 72);
+      doc.text('Observaciones:', labelX, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(String(m.observaciones || 'N/A'), valueX, rowY, { maxWidth: 260 });
+
+      // Suministros/Detalles
+      rowY += rowGap + 8;
+      if (m.detalles && Array.isArray(m.detalles) && m.detalles.length > 0) {
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(45, 55, 72);
+        doc.text('Suministros:', labelX, rowY);
+        rowY += rowGap - 8;
+        m.detalles.forEach((d, idx) => {
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(80, 80, 80);
+          doc.text(`- ${d.motivo}: ${d.cantidad} x ${d.precio_und} = ${d.total}`, labelX + 16, rowY);
+          rowY += 16;
+        });
+      }
+
+      y += cardHeight + cardSpacing;
+    });
+
+    // Pie de página
+    const footerY = pageHeight - 30;
+    doc.setFontSize(10);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Reporte generado el ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}`,
+      pageWidth / 2, footerY, null, null, 'center');
+
+    doc.save('reporte_mantenimientos.pdf');
+  };
 
   // Paginación
   const totalPaginas = Math.ceil(mantenimientosFiltrados.length / PAGE_SIZE);
@@ -101,21 +261,55 @@ const GestionMantenimiento = () => {
     navigate('/registro-mantenimiento');
   };
 
-  // Redirige al formulario de finalización
   const handleTerminarMantenimiento = (id, estado) => {
-    // Solo permite si no está finalizado
     if (estado !== 'FINALIZADO' && estado !== 'COMPLETADO') {
       navigate(`/finalizar-mantenimiento/${id}`);
     }
   };
 
-  // Envía el id del mantenimiento seleccionado a la ruta de detalles
   const handleVerDetalles = (id) => {
     navigate(`/detalle-mantenimiento/${id}`);
   };
 
-  const handleEliminarMantenimiento = (id) => {
-    // Aquí puedes usar Swal o tu lógica de confirmación/eliminación
+  const handleEliminarMantenimiento = (id, estado) => {
+    if (estado === 'FINALIZADO' || estado === 'COMPLETADO') {
+      setMantenimientoToDelete(id);
+      setShowDeleteModal(true);
+    } else {
+      setMotivoModalMsg('Solo puedes eliminar mantenimientos que estén COMPLETADOS. Los mantenimientos en proceso, pendientes o cancelados no pueden ser eliminados.');
+      setShowMotivoModal(true);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (mantenimientoToDelete) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:8000/api/detalle-mantenimiento/${mantenimientoToDelete}/`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ borrado: true })
+        });
+
+        if (response.ok) {
+          toast.success('Mantenimiento eliminado correctamente');
+          setMantenimientos(mantenimientos.map(m =>
+            m.id_mantenimiento === mantenimientoToDelete
+              ? { ...m, borrado: true }
+              : m
+          ));
+        } else {
+          toast.error('Error al eliminar el mantenimiento');
+        }
+      } catch (error) {
+        toast.error('Error al eliminar el mantenimiento');
+      }
+      setShowDeleteModal(false);
+      setMantenimientoToDelete(null);
+    }
   };
 
   const traducirEstado = (estado) => {
@@ -130,17 +324,14 @@ const GestionMantenimiento = () => {
     return estados[estado] || estado;
   };
 
-  // Formatear el número de orden como OMT-00{id}
   const formatNumeroOrden = (id) => `OMT-0${id}`;
 
-  // Cambiar de página
   const handlePagina = (nuevaPagina) => {
     if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
       setPaginaActual(nuevaPagina);
     }
   };
 
-  // Cambiar filtro y resetear página
   const handleFiltroEstado = (e) => {
     setFiltroEstado(e.target.value);
     setPaginaActual(1);
@@ -169,16 +360,36 @@ const GestionMantenimiento = () => {
           </button>
         </div>
 
-        {/* Filtros */}
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ marginRight: 8 }}>Filtrar por estado:</label>
-          <select value={filtroEstado} onChange={handleFiltroEstado} className="mantenimiento-filtro-select" >
-            <option value="">Todos</option>
-            <option value="ACTIVO">En Proceso</option>
-            <option value="FINALIZADO">Completado</option>
-            <option value="PENDIENTE">Pendiente</option>
-            <option value="CANCELADO">Cancelado</option>
-          </select>
+        {/* Filtros y exportar PDF */}
+        <div className="mantenimiento-filtro-wrapper" style={{ marginBottom: 16, flexWrap: 'wrap', gap: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <label className="mantenimiento-filtro-label" style={{ marginRight: 8, minWidth: 90 }}>Filtrar por estado:</label>
+            <select value={filtroEstado} onChange={handleFiltroEstado} className="mantenimiento-filtro-select" style={{ minWidth: 150 }}>
+              <option value="">Todos</option>
+              <option value="ACTIVO">En Proceso</option>
+              <option value="FINALIZADO">Completado</option>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="CANCELADO">Cancelado</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 18, flexWrap: 'wrap' }}>
+            <label className="mantenimiento-filtro-label" style={{ marginRight: 8, minWidth: 60 }}>Reporte:</label>
+            <select value={tipoReporte} onChange={e => setTipoReporte(e.target.value)} className="mantenimiento-filtro-select" style={{ minWidth: 150 }}>
+              <option value="TODOS">Listado completo</option>
+              <option value="ACTIVO">Solo en proceso</option>
+              <option value="FINALIZADO">Solo completados</option>
+              <option value="PENDIENTE">Solo pendientes</option>
+              <option value="CANCELADO">Solo cancelados</option>
+            </select>
+          </div>
+          <button
+            onClick={handleExportPDF}
+            className="mantenimiento-boton-crear"
+            style={{ marginLeft: 18, display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, height: 40 }}
+            title="Exportar listado a PDF"
+          >
+            <FontAwesomeIcon icon={faEye} className="mantenimiento-icono-boton" /> Exportar
+          </button>
         </div>
 
         <div className="mantenimiento-table-responsive">
@@ -214,7 +425,7 @@ const GestionMantenimiento = () => {
                         {mantenimiento.id_vehiculo?.placa || mantenimiento.placa || 'N/A'}
                       </td>
                       <td data-label="Estado">
-                        <span className={`mantenimiento-estado-badge estado-${mantenimiento.estado?.toLowerCase()}`}>
+                        <span className={`mantenimiento-estado-badge estado-${(mantenimiento.estado === 'FINALIZADO' || mantenimiento.estado === 'COMPLETADO') ? 'completado' : (mantenimiento.estado?.toLowerCase() || '')}`}>
                           {traducirEstado(mantenimiento.estado)}
                         </span>
                       </td>
@@ -250,7 +461,7 @@ const GestionMantenimiento = () => {
                             size="lg" 
                             className="mantenimiento-accion-icon" 
                             title="Eliminar mantenimiento"
-                            onClick={() => handleEliminarMantenimiento(mantenimiento.id_mantenimiento)}
+                            onClick={() => handleEliminarMantenimiento(mantenimiento.id_mantenimiento, mantenimiento.estado)}
                           />
                         </div>
                       </td>
@@ -318,8 +529,58 @@ const GestionMantenimiento = () => {
             </button>
           </div>
         )}
+
+        {/* Modal de confirmación para eliminar */}
+        {showDeleteModal && (
+          <div className="modal-overlay-mantenimiento">
+            <div className="modal-mantenimiento delete-modal">
+              <div className="modal-icon-delete">
+                <FontAwesomeIcon icon={faTrashAlt} />
+              </div>
+              <h3 className="modal-mantenimiento-titulo">Confirmar Eliminación</h3>
+              <p className="modal-mantenimiento-mensaje">
+                ¿Estás seguro de que deseas eliminar este mantenimiento completado? 
+                Esta acción no se puede deshacer.
+              </p>
+              <div className="modal-buttons-container">
+                <button
+                  className="modal-mantenimiento-boton cancel-btn"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="modal-mantenimiento-boton delete-btn"
+                  onClick={confirmDelete}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de motivo para no permitir eliminar */}
+        {showMotivoModal && (
+          <div className="modal-overlay-mantenimiento">
+            <div className="modal-mantenimiento">
+              <div className="modal-icon-info">
+                <FontAwesomeIcon icon={faExclamationTriangle} />
+              </div>
+              <h3 className="modal-mantenimiento-titulo">No permitido</h3>
+              <p className="modal-mantenimiento-mensaje">{motivoModalMsg}</p>
+              <button
+                className="modal-mantenimiento-boton"
+                onClick={() => setShowMotivoModal(false)}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
 export default GestionMantenimiento;

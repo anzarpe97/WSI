@@ -23,12 +23,16 @@ import MenuGestionDocumentos from './components/admin/MenuGestionDocumentos';
 import VerDocumentoVehiculos from './components/admin/documentos-vehiculos/VerDocumentoVehiculos';
 import DetalleMantenimiento from './components/admin/mantenimientos/DetalleMantenimiento';
 import DetalleEmpleado from './components/admin/empleados/DetalleEmpleados';
+import DetalleDocumentoVehiculo from './components/admin/documentos-vehiculos/DetalleDocumentoVehiculo';
 import Notificaciones from './components/Notificaciones';
 import GestionDocumentoChoferes from './components/admin/documentos-choferes/GestionDocumentoChoferes';
 import FinalizarMantenimiento from './components/admin/mantenimientos/FinalizarMantinimento';
 import HomeUsuario from './components/usuario/HomeUsuario';
 import ResetPassword from './components/ResetPassword';
 import ReporteFallas from './components/supervisor/ReporteFallas.jsx/ReporteFallas';
+import ActualizarDocumentoChofer from './components/admin/documentos-choferes/ActualizarDocumentoChofer';
+import ActualizarDocumentoVehiculo from './components/admin/documentos-vehiculos/ActualizarDocumentoVehiculo';
+// import EditarDocumentoVehiculo from './components/admin/documentos-vehiculos/EditarDocumentoVehiculo'; // Descomenta si tienes este componente
 
 const App = () => {
   return (
@@ -69,15 +73,18 @@ const App = () => {
         <Route path="/reportar-falla" element={<ReporteFallas />} />
         {/* RUTAS VEHICULOS SUPERVISOR*/}
         <Route path="/ver-fallas" element={<VisualizarFallas />} />
-
+        <Route path="/actualizar-documento-chofer" element={<ActualizarDocumentoChofer />} />
+        <Route path="/actualizar-documento-chofer/:id" element={<ActualizarDocumentoChofer />} />
         {/* RUTAS VEHICULOS SUPERVISOR*/}
         {/* RUTAS DOCUMENTOS VEHICULOS SUPERVISOR*/}
-
+        <Route path="/detalle-documento-vehiculo/:id" element={<DetalleDocumentoVehiculo />} />
         {/* RUTAS USUARIO*/}
         <Route path="/perfil-usuario" element={<PerfilUsuario />} />
         {/* RUTAS NOTIFICACIONES*/}
         <Route path="/notificaciones" element={<Notificaciones />} />
-
+      <Route path="/actualizar-documento-chofer/:id" element={<ActualizarDocumentoChofer />} />
+      <Route path="/actualizar-documento-vehiculo" element={<ActualizarDocumentoVehiculo />} />
+      {/* <Route path="/editar-documento-vehiculo/:id" element={<EditarDocumentoVehiculo />} /> */}
         {/* RUTAS USUARIO*/}  
         <Route path="/home-usuario" element={<HomeUsuario />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />

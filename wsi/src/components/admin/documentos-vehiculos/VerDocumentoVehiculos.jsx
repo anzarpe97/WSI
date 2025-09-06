@@ -56,14 +56,26 @@ const VerDocumentoVehiculos = () => {
     const fetchDocumentos = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:8000/api/documentos-vehiculos-verificar/', {
+        const response = await fetch('http://localhost:8000/api/documentos-vehiculos/', {
           headers: {
             'Authorization': `Token ${token}`,
             'Content-Type': 'application/json'
           }
         });
+        if (!response.ok) {
+          setDocumentos([]);
+          return;
+        }
         const data = await response.json();
-        setDocumentos(data);
+        // Mapear para mostrar info del vehículo si es necesario
+        const documentosMapeados = Array.isArray(data)
+          ? data.map(doc => ({
+              ...doc,
+              vehiculo_placa: doc.Vehiculo?.placa || doc.vehiculo_placa || '',
+              vehiculo_marca: doc.Vehiculo?.marca || doc.vehiculo_marca || '',
+            }))
+          : [];
+        setDocumentos(documentosMapeados);
       } catch (error) {
         setDocumentos([]);
       }
@@ -196,7 +208,7 @@ const VerDocumentoVehiculos = () => {
         </div>
 
         {/* Filtros */}
-        <div className="documento-vehiculo-filtros-container">
+        <div className="documento-vehiculo-filtros-container" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div className="documento-vehiculo-filtro">
             <label>Filtrar por estado:</label>
             <select value={filtroEstado} onChange={handleFiltroEstado} className="documento-vehiculo-filtro-select" >
@@ -206,6 +218,15 @@ const VerDocumentoVehiculos = () => {
               <option value="VENCIDO">Vencido</option>
             </select>
           </div>
+          <button
+            className="documento-vehiculo-boton-crear"
+            style={{ minWidth: 180, display: 'flex', alignItems: 'center' }}
+            onClick={() => navigate('/actualizar-documento-vehiculo')}
+            disabled={documentos.length === 0}
+          >
+            <FontAwesomeIcon icon={faPen} className="documento-vehiculo-icono-boton" style={{ marginRight: 8 }} />
+            Actualizar Documentos
+          </button>
         </div>
 
         <div className="documento-vehiculo-table-responsive">
@@ -277,13 +298,6 @@ const VerDocumentoVehiculos = () => {
                             title="Ver detalles"
                           >
                             <FontAwesomeIcon icon={faEye} size="lg" />
-                          </button>
-                          <button 
-                            className="documento-vehiculo-accion-btn"
-                            onClick={() => handleEditarDocumento(documento.id_documento_vehiculo)}
-                            title="Editar documento"
-                          >
-                            <FontAwesomeIcon icon={faPen} size="lg" />
                           </button>
                           <button 
                             className="documento-vehiculo-accion-btn"
