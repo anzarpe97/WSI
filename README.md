@@ -189,14 +189,11 @@ VS Code (opcional): tareas preconfiguradas
 
 ## 🎬 Demo
 
-Demostración:
+Demostración (GIF):
 
-<video width="720" controls>
-	<source src="docs/demo/demo.mp4" type="video/mp4" />
-	Tu navegador no soporta video embebido.
-</video>
+![Demo](docs/media/demo.gif)
 
-Enlace directo (fallback): [Ver demo MP4](docs/demo/demo.mp4)
+Si no se reproduce el GIF, abre el MP4: [Ver demo MP4](docs/media/demo.mp4)
 
 ---
 
