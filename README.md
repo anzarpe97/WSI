@@ -189,18 +189,14 @@ VS Code (opcional): tareas preconfiguradas
 
 ## 🎬 Demo
 
-Coloca un archivo `demo.gif` o `demo.mp4` en `docs/media/`.
-
-GIF (recomendado en GitHub):
-
-![Demo](docs/media/demo.gif)
-
-Video MP4 (alternativa):
+Demostración:
 
 <video width="720" controls>
-	<source src="docs/media/demo.mp4" type="video/mp4" />
+	<source src="docs/demo/demo.mp4" type="video/mp4" />
 	Tu navegador no soporta video embebido.
 </video>
+
+Enlace directo (fallback): [Ver demo MP4](docs/demo/demo.mp4)
 
 ---
 
