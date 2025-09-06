@@ -187,6 +187,23 @@ VS Code (opcional): tareas preconfiguradas
 
 ---
 
+## 🎬 Demo
+
+Coloca un archivo `demo.gif` o `demo.mp4` en `docs/media/`.
+
+GIF (recomendado en GitHub):
+
+![Demo](docs/media/demo.gif)
+
+Video MP4 (alternativa):
+
+<video width="720" controls>
+	<source src="docs/media/demo.mp4" type="video/mp4" />
+	Tu navegador no soporta video embebido.
+</video>
+
+---
+
 ## 🚀 Despliegue (notas rápidas)
 
 - Restringe `ALLOWED_HOSTS`, `CORS` y `CSRF` a tus dominios.
