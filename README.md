@@ -204,5 +204,5 @@ VS Code (opcional): tareas preconfiguradas
 
 ## 📄 Licencia
 
-Proyecto académico. Licencia pendiente/privada (sin licencia pública declarada).
+Proyecto académico. Licencia pendiente/privada (sin licencia pública declarada)
 
